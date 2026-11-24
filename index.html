@@ -279,6 +279,10 @@ button.item:active{background:var(--fill)}
 .f select{direction:rtl}.f select option{direction:ltr}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
+.av{position:relative;width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:17px;
+  background:color-mix(in srgb,var(--brick) 13%,var(--card));color:var(--brick);letter-spacing:-.01em}
+.av-ph{position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;background:var(--brick);color:#fff;border:2px solid var(--card)}
+.av-ph.off{background:var(--sec)}
 .rg-mois{display:flex;justify-content:space-between;align-items:baseline;margin:26px 6px 10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
 .rg-mois span:last-child{font-size:14.5px;font-weight:600;color:var(--sec);font-variant-numeric:tabular-nums}
 .rg{display:flex;gap:13px;align-items:flex-start;width:100%;padding:15px 16px;border:0;background:none;font:inherit;color:inherit;text-align:left}
@@ -675,7 +679,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "2.0";
+const VERSION = "2.1";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1371,7 +1375,7 @@ function regItem(r){
     ? `label class="rg press" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
     : `button class="rg press" onclick="voir('${encodeURIComponent(r.photo)}')"`;
   const per = joliPeriode(r.periode);
-  return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}" style="${manque?"opacity:.45":""}">${ic(r.photo?"photo":"money",19)}</div>
+  return `<${tag}>${avatar(r.client, r.photo ? `<i class="av-ph${manque ? " off" : ""}">${ic("photo", 11)}</i>` : "")}
     <div class="rg-c">
       <div class="rg-l1"><b>${esc(nomPropre(r.client))}</b><b class="rg-m">${dh(r.montant)}</b></div>
       <div class="rg-t">${typ}${origine ? " " + esc(origine) : ""}</div>
@@ -1387,12 +1391,17 @@ async function voir(f){
 function closeViewer(){ $("#viewer").classList.remove("on"); $("#viewerImg").src = ""; }
 
 /* ============ CLIENTS ============ */
+function avatar(nom, extra){
+  const k = String(nom||"").trim().toLowerCase().split(/\s+/).join(" "), c = couleurClient(k);
+  const l = (nomPropre(nom).match(/\p{L}/u) || ["?"])[0];
+  return `<div class="av"${c !== "#fff" ? ` style="background:${c};color:#1c1c1e"` : ""}>${l}${extra || ""}</div>`;
+}
 const nomPropre = s => String(s).trim().toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
 function vClients(){
   const C = S.analyse.clients;
   return shell("Situation", "Clients", `<div class="group">${C.map((c,i)=>`
     <button class="item" onclick="ficheClient(${i})">
-      <div class="chip c-brick" style="font-weight:800;font-size:15px">${esc(c.nom.trim()[0]?.toUpperCase()||"?")}</div>
+      ${avatar(c.nom)}
       <div class="body"><div class="ttl nom">${esc(nomPropre(c.nom))}</div><div class="meta">${c.livraisons} livraisons · ${depuis(c.derniere)}</div>
         <div style="height:5px;border-radius:3px;background:var(--fill);margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.max(2,c.part*100)}%;background:${c.part>0.6?"var(--red)":c.part>0.4?"var(--orange)":"var(--brick)"};border-radius:3px"></div></div></div>
       <div class="end">${dh(c.benef)}<small>${pct(c.part)}</small></div>
