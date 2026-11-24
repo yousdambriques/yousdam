@@ -730,10 +730,16 @@ async function importer(type, input){
   }catch(e){ busy(false); const m = $("#impMsg"); if(m) m.textContent = "Ce fichier ne convient pas : " + e.message; else toast(e.message, false); }
   input.value = "";
 }
-async function importerPhotos(input){
+async function importerPhotos(input, ouvrir){
   if(!input.files || !input.files.length) return;
   busy(true, "Import des photos…");
-  try{ const n = await STOCK.importerPhotos(input.files); toast(`${n} photo${n>1?"s":""} importée${n>1?"s":""}`); if($("#sheet").classList.contains("on")) ouvrirThemes(); }
+  try{
+    const n = await STOCK.importerPhotos(input.files);
+    toast(`${n} photo${n>1?"s":""} importée${n>1?"s":""}`);
+    if($("#sheet").classList.contains("on")) ouvrirThemes(); else render();
+    if(ouvrir && STOCK.aPhoto(decodeURIComponent(ouvrir))) voir(ouvrir);
+    else if(ouvrir) toast("Ce n'est pas la bonne photo : choisis « " + decodeURIComponent(ouvrir) + " »", false);
+  }
   catch(e){ toast(e.message, false); } finally{ busy(false); input.value = ""; }
 }
 async function envoyerAuPC(){
@@ -1172,6 +1178,10 @@ function vReglements(){
       <button class="w press" onclick="SEGR='impayes';render()"><div class="chip c-red">${ic("warn",18)}</div><div class="t">Impayés</div><div class="v ${imp.length?"down":""}">${dh(imp.reduce((s,r)=>s+r.montant,0))}</div><div class="d muted">${imp.length} règlement${imp.length>1?"s":""}</div></button>
       <div class="w" style="grid-column:1/-1;min-height:0"><div class="chip c-green">${ic("check",18)}</div><div class="t">Encaissé en ${an}</div><div class="v">${dh(enc.reduce((s,r)=>s+r.montant,0))}</div><div class="d muted">${enc.length} règlements</div></div>
     </div>
+    ${(() => { const avec = R.filter(r => r.photo), manquent = avec.filter(r => STOCK.aPhoto && !STOCK.aPhoto(r.photo)).length;
+      return manquent ? `<div class="alert" style="background:var(--card);box-shadow:var(--shadow);margin-top:18px;display:flex;align-items:center;gap:12px">
+        <div style="flex:1"><b>${manquent} photo${manquent>1?"s":""} pas encore sur ce téléphone</b><div class="muted" style="font-size:13.5px;margin-top:2px">OneDrive → REGLEMENTS : sélectionne-les toutes d'un coup.</div></div>
+        <label class="btn btn-fill btn-sm press" style="cursor:pointer;flex:none">Importer<input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this)"></label></div>` : ""; })()}
     <div class="seg" style="margin-top:26px"><button class="${SEGR==="tous"?"on":""}" onclick="SEGR='tous';render()">Tous</button><button class="${SEGR==="avenir"?"on":""}" onclick="SEGR='avenir';render()">À venir</button><button class="${SEGR==="impayes"?"on":""}" onclick="SEGR='impayes';render()">Impayés</button></div>
     <div class="group">${liste.map(regItem).join("") || `<div class="empty"><div class="chip c-green">${ic("check")}</div>Rien ici.</div>`}</div>
     `);
@@ -1179,10 +1189,13 @@ function vReglements(){
 function regItem(r){
   const st = /impay/i.test(r.remarque) ? `<span class="badge c-red">${esc(r.remarque)}</span>` : /encaiss/i.test(r.remarque) ? `<span class="badge c-green">Encaissé</span>` : `<span class="badge c-orange">${r.echeance ? dans(r.echeance) : "À venir"}</span>`;
   const typ = /^chq/i.test(r.ref) ? "Chèque" : /^eff/i.test(r.ref) ? "Effet" : "Règlement";
-  const tag = r.photo ? `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"` : `div class="item"`;  // photo importée : s'ouvre ; sinon message
-  return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}">${ic(r.photo?"photo":"money",19)}</div>
-    <div class="body"><div class="ttl">${esc(r.client)}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div><div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
-    <div class="end">${dh(r.montant)}<small>${esc(r.periode)}</small></div></${tag.split(" ")[0]}>`;
+  const manque = r.photo && STOCK.aPhoto && !STOCK.aPhoto(r.photo);
+  const tag = !r.photo ? `div class="item"` : manque
+    ? `label class="item" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
+    : `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"`;
+  return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}" style="${manque?"opacity:.45":""}">${ic(r.photo?"photo":"money",19)}</div>
+    <div class="body"><div class="ttl">${esc(r.client)}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div>${manque ? `<div class="meta" style="color:var(--link);font-weight:600">Toucher pour importer la photo « ${esc(r.photo)} »</div>` : ""}<div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
+    <div class="end">${dh(r.montant)}<small>${esc(r.periode)}</small></div></${tag.split(" ")[0].split(">")[0]}>`;
 }
 async function voir(f){
   $("#viewer").classList.add("on"); $("#viewerImg").removeAttribute("src");
