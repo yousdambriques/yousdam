@@ -374,6 +374,10 @@ button.item:active{background:var(--fill)}
 .rg-p{font-size:14px;margin-top:6px;line-height:1.35}
 .rg-e{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font-size:13.5px;color:var(--sec)}
 @media (hover:hover){button.rg:hover,label.rg:hover{background:var(--fill)}}
+.pal-f{flex-wrap:wrap}
+.pal-c{display:flex;gap:8px;margin-left:auto}
+.pal-c button{min-width:58px;padding:9px 0;border:0;border-radius:12px;font:inherit;font-size:17px;font-weight:700;background:var(--fill);color:var(--label);cursor:pointer;transition:background .18s var(--ease-out),color .18s,transform .12s}
+.pal-c button.on{background:var(--brick);color:#fff;transform:scale(1.04)}
 .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .choix button{border:0;font:inherit;font-size:15px;font-weight:600;padding:10px 15px;border-radius:14px;background:var(--card);color:var(--k);box-shadow:var(--shadow);cursor:pointer;
   transition:background .18s var(--ease-out),color .18s var(--ease-out),transform .1s}
@@ -605,6 +609,17 @@ table.xls tr.nv td.xrn{background:#d9ead3;color:#1e6b35}
 .rg2 .v{font-size:18px;font-weight:700;letter-spacing:-.03em;margin-top:3px}
 .rg2 .s{font-size:12px;color:var(--sec);margin-top:1px}
 .mini-chart{width:100%;height:auto;display:block}
+svg .hit{cursor:pointer}
+svg .bar{transform-box:fill-box;transform-origin:50% 100%;animation:barup .6s var(--ease-out) both;animation-delay:var(--d,0ms);transition:opacity .2s,transform .25s var(--ease-out)}
+svg.choisi .bar{opacity:.28!important}
+svg.choisi .bar.on{opacity:1!important;transform:scaleX(1.12)}
+@keyframes barup{from{transform:scaleY(0)}}
+.bulle{position:absolute;z-index:5;min-width:150px;padding:10px 13px;border-radius:14px;background:var(--label);color:var(--card);pointer-events:none;box-shadow:var(--shadow-lg);
+  display:flex;flex-direction:column;gap:2px;opacity:0;transform:translateY(6px) scale(.92);transform-origin:var(--fx,50%) 100%;transition:opacity .18s,transform .3s cubic-bezier(.34,1.4,.64,1)}
+.bulle.on{opacity:1;transform:none}
+.bulle b{font-size:18px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.bulle span{font-size:12.5px;opacity:.8}.bulle i{font-style:normal;font-size:12.5px;font-weight:700;margin-top:2px}
+.bulle::after{content:"";position:absolute;left:calc(var(--fx,50%) - 6px);bottom:-6px;border:6px solid transparent;border-top-color:var(--label);border-bottom:0}
+@media (prefers-reduced-motion:reduce){svg .bar{animation:none}.bulle{transition:opacity .15s}}
 .swipe{position:relative;margin-bottom:16px;border-radius:var(--r)}
 .swipe .order{margin-bottom:0;position:relative;touch-action:pan-y;will-change:transform}
 .sw-bg{position:absolute;inset:0;border-radius:var(--r);display:flex;justify-content:space-between;align-items:center;padding:0 22px;color:#fff;font-weight:700;font-size:15px;
@@ -788,7 +803,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.1";
+const VERSION = "3.2";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1020,6 +1035,29 @@ async function partagerNatif(fichier){
   NATIF.partager(btoa(s), fichier.name, fichier.type || "application/octet-stream"); return true;
 }
 if(typeof YousdamNatif !== "undefined") document.documentElement.classList.add("natif");
+/* graphe des mois : toucher une barre affiche le bénéfice du mois (bulle animée) */
+document.addEventListener("click", e => {
+  const hit = e.target.closest("svg .hit"); const svg = hit && hit.closest("svg");
+  document.querySelectorAll(".bulle").forEach(b => { if(!hit || b.dataset.svg !== svg.dataset.id){ b.classList.remove("on"); setTimeout(() => b.remove(), 200); } });
+  if(!hit) { document.querySelectorAll("svg.choisi").forEach(s => { s.classList.remove("choisi"); s.querySelectorAll(".bar.on").forEach(b => b.classList.remove("on")); }); return; }
+  const bar = svg.querySelector(`.bar[data-i="${hit.dataset.i}"]`); if(!bar) return;
+  if(!svg.dataset.id) svg.dataset.id = Math.random().toString(36).slice(2);
+  const deja = bar.classList.contains("on");
+  svg.querySelectorAll(".bar.on").forEach(b => b.classList.remove("on"));
+  document.querySelectorAll(`.bulle[data-svg="${svg.dataset.id}"]`).forEach(b => b.remove());
+  if(deja){ svg.classList.remove("choisi"); return; }
+  svg.classList.add("choisi"); bar.classList.add("on"); vibre();
+  const box = svg.parentElement; box.style.position = "relative";
+  const rb = bar.getBoundingClientRect(), rp = box.getBoundingClientRect();
+  const v = +bar.dataset.v, o = +bar.dataset.o, k = bar.dataset.m;
+  const b = document.createElement("div"); b.className = "bulle"; b.dataset.svg = svg.dataset.id;
+  b.innerHTML = `<b>${dh(v)}</b><span>${moisLong(k)}</span><span>${bar.dataset.l} livraison${+bar.dataset.l > 1 ? "s" : ""} · ${num(+bar.dataset.p)} pal.</span><i style="color:${couleurObjectif(v, o)}">${Math.round(v / (o || 1) * 100)} % de l'objectif</i>`;
+  box.appendChild(b);
+  const w = b.offsetWidth, x = Math.min(Math.max(rb.left - rp.left + rb.width / 2 - w / 2, 0), rp.width - w);
+  b.style.left = x + "px"; b.style.top = Math.max(0, rb.top - rp.top - b.offsetHeight - 8) + "px";
+  b.style.setProperty("--fx", (rb.left - rp.left + rb.width / 2 - x) + "px");
+  requestAnimationFrame(() => b.classList.add("on"));
+});
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
 function shell(over, title, body, action){
@@ -1155,7 +1193,7 @@ function vAccueil(){
   if(S.a_excel.length) todo.push(`<button class="item" onclick="SEGC='livrees';go('commandes')"><div class="chip">${ic("excel",19)}</div><div class="body"><div class="ttl">${S.a_excel.length} livraison${S.a_excel.length>1?"s":""} à passer dans Excel</div></div><span class="chev">${ic("chev",16)}</span></button>`);
   topProspects(3).forEach(x => todo.push(prospectItem(x)));
   const mx = Math.max(A.objectif, ...M.map(m=>m.benef)) * 1.1, W = 340, H = 120, bw = W/M.length, y = v => H - 18 - (v/mx)*(H-26);
-  const bars = M.map((m,i) => `<rect x="${(i*bw+bw*.2).toFixed(1)}" y="${y(m.benef).toFixed(1)}" width="${(bw*.6).toFixed(1)}" height="${Math.max(2,H-18-y(m.benef)).toFixed(1)}" rx="3" style="fill:${couleurObjectif(m.benef, A.objectif)}" opacity="${m.mois===A.mois_cle?1:.55}"/>
+  const bars = M.map((m,i) => `<rect class="hit" x="${(i*bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent" data-i="${i}"/><rect class="bar" data-i="${i}" data-m="${m.mois}" data-v="${Math.round(m.benef)}" data-l="${m.livraisons}" data-p="${m.palettes}" data-o="${A.objectif}" x="${(i*bw+bw*.2).toFixed(1)}" y="${y(m.benef).toFixed(1)}" width="${(bw*.6).toFixed(1)}" height="${Math.max(2,H-18-y(m.benef)).toFixed(1)}" rx="3" style="--d:${i*35}ms;fill:${couleurObjectif(m.benef, A.objectif)}" opacity="${m.mois===A.mois_cle?1:.55}"/>
     <text x="${(i*bw+bw/2).toFixed(1)}" y="${H-4}" font-size="8.5" font-weight="600" text-anchor="middle" fill="currentColor" opacity=".45">${MC[+m.mois.split("-")[1]-1].replace(".","").slice(0,1).toUpperCase()}</text>`).join("");
   const an = M.filter(m => m.mois.startsWith(String(d.getFullYear()))).reduce((s,m)=>s+m.benef,0);
   const actions = `<div style="display:flex;gap:10px"><button class="round press" onclick="ouvrirThemes()" aria-label="Réglages"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button></div>`;
@@ -1341,6 +1379,18 @@ addEventListener("popstate", () => {
 const optClients = sel => S.clients_noms.map(n=>`<option ${n.trim().toLowerCase()===String(sel||"").trim().toLowerCase()?"selected":""}>${esc(n)}</option>`).join("");
 const optVilles = sel => { const v = [...new Set(S.villes.map(x=>x.ville).concat(["Marrakech","Benguerir","Beni Mellal","Kenitra","Tetouan","Azemour"]))]; if(sel && !v.includes(sel)) v.unshift(sel); return v.map(n=>`<option ${n===sel?"selected":""}>${esc(n)}</option>`).join(""); };
 const optType = sel => ["B7","B10"].map(t=>`<option ${t===sel?"selected":""}>${t}</option>`).join("");
+/* palettes : boutons à toucher quand le camion est à confirmer (plateau/remorque : 44·48·52, avec grue : 44·48) */
+function champPal(c){
+  if(!c.choix) return `<div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes||24)}</select></div>`;
+  const v = c.choix.includes(+c.palettes) ? +c.palettes : c.choix[c.choix.length > 2 ? 1 : 1];
+  return `<div class="f pal-f"><label>Palettes${c.grue ? " (grue)" : ""}</label><input type="hidden" name="palettes" value="${v}">
+    <div class="pal-c">${c.choix.map(n => `<button type="button" class="press${n === v ? " on" : ""}" onclick="choisirPal(this, ${n})">${n}</button>`).join("")}</div></div>`;
+}
+function choisirPal(b, n){
+  const f = b.closest(".pal-f"), inp = f.querySelector("input[name=palettes]");
+  f.querySelectorAll(".pal-c button").forEach(x => x.classList.toggle("on", x === b)); inp.value = n; vibre();
+  inp.dispatchEvent(new Event("change"));
+}
 const optPal = (sel, choix) => { const o = choix ? [...choix] : [24,44,48,52]; if(sel && !o.includes(+sel)) o.push(+sel); return o.map(p=>`<option value="${p}" ${+p===+sel?"selected":""}>${p} palettes</option>`).join(""); };
 
 /* Formulaire d'une commande. Interrupteur « Déjà livrée » : ajoute prix + bénéfice, et le bouton Passer à Excel. */
@@ -1348,8 +1398,8 @@ function cmdForm(c, i){
   return `<div class="cf" data-i="${i}"><input type="hidden" name="brut" value="${esc(c.brut||"")}">
     ${i>0?`<div class="flabel">Commande ${i+1}</div>`:""}
     <div class="form">
-      ${c.a_confirmer?`<div class="f warn">${ic("warn",16)} ${c.grue ? "Plateau avec grue : 44 ou 48 palettes" : (c.unite === "plateau" ? "Plateau" : "Remorque") + " : vérifie 44, 48 ou 52 palettes avec l'usine"}</div>`:""}
-      <div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes||24, c.choix)}</select></div>
+      ${c.a_confirmer?`<div class="f warn">${ic("warn",16)} ${c.grue ? (c.unite === "remorque" ? "Remorque" : "Plateau") + " avec grue : 44 ou 48 palettes" : (c.unite === "plateau" ? "Plateau" : "Remorque") + " : vérifie 44, 48 ou 52 palettes avec l'usine"}</div>`:""}
+      ${champPal(c)}
       <div class="f"><label>Format</label><select name="type">${optType(c.type||"B7")}</select></div>
       <div class="f"><label>Chantier</label><input name="chantier" value="${esc(c.chantier||"")}" placeholder="Quartier"></div>
       <div class="f"><label>Ville</label><select name="ville">${optVilles(c.ville||"Casa")}</select></div>
@@ -1803,7 +1853,7 @@ function vAnalyse(){
       <p>${esc(x.detail)}</p>
       ${x.action?`<button class="go press" onclick="agir('${x.cible}')">${esc(x.action)} ${ic("chev",15)}</button>`:""}</div>`;
   const mx = Math.max(A.objectif, ...M.map(m=>m.benef)) * 1.12, W = 340, H = 170, bw = W/M.length, y = v => H - 22 - (v/mx)*(H-34);
-  const bars = M.map((m,i) => `<rect x="${(i*bw+bw*.18).toFixed(1)}" y="${y(m.benef).toFixed(1)}" width="${(bw*.64).toFixed(1)}" height="${Math.max(2,H-22-y(m.benef)).toFixed(1)}" rx="4" style="fill:${couleurObjectif(m.benef, A.objectif)}" opacity="${m.mois===A.mois_cle?1:.55}"/>
+  const bars = M.map((m,i) => `<rect class="hit" x="${(i*bw).toFixed(1)}" y="0" width="${bw.toFixed(1)}" height="${H}" fill="transparent" data-i="${i}"/><rect class="bar" data-i="${i}" data-m="${m.mois}" data-v="${Math.round(m.benef)}" data-l="${m.livraisons}" data-p="${m.palettes}" data-o="${A.objectif}" x="${(i*bw+bw*.18).toFixed(1)}" y="${y(m.benef).toFixed(1)}" width="${(bw*.64).toFixed(1)}" height="${Math.max(2,H-22-y(m.benef)).toFixed(1)}" rx="4" style="--d:${i*35}ms;fill:${couleurObjectif(m.benef, A.objectif)}" opacity="${m.mois===A.mois_cle?1:.55}"/>
     <text x="${(i*bw+bw/2).toFixed(1)}" y="${H-6}" font-size="9" font-weight="600" text-anchor="middle" fill="currentColor" opacity=".45">${MC[+m.mois.split("-")[1]-1].replace(".","").slice(0,4)}</text>`).join("");
   const oy = y(A.objectif).toFixed(1);
   const st = (l, v, s) => `<div class="item"><div class="body"><div class="ttl" style="font-weight:500">${l}</div><div class="meta">${s||""}</div></div><div class="end">${v}</div></div>`;
