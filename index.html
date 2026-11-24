@@ -373,6 +373,21 @@ button.item:active{background:var(--fill)}
 .lv-e{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}.lv-e b{color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
 .order .l1 .av{width:44px;height:44px;font-size:18px}
 .order .qty{width:auto;min-width:58px;padding:0 10px}
+.fab{position:fixed;right:20px;bottom:calc(100px + env(safe-area-inset-bottom));z-index:30;width:58px;height:58px;border-radius:50%;border:0;display:grid;place-items:center;
+  background:var(--brick);color:#fff;box-shadow:0 10px 26px -8px color-mix(in srgb,var(--brick) 70%,#000),0 2px 6px rgba(0,0,0,.15);cursor:pointer;transition:transform .3s cubic-bezier(.34,1.4,.64,1)}
+.fab svg{transition:transform .3s cubic-bezier(.34,1.4,.64,1)}.fab.ouvert svg{transform:rotate(45deg)}
+.fab-m{position:fixed;right:20px;bottom:calc(170px + env(safe-area-inset-bottom));z-index:31;display:flex;flex-direction:column;gap:10px;align-items:flex-end;pointer-events:none}
+.fab-m button{pointer-events:auto;display:flex;align-items:center;gap:12px;border:0;font:inherit;text-align:left;padding:12px 16px 12px 12px;border-radius:18px;background:var(--card);color:var(--label);box-shadow:var(--shadow-lg);
+  opacity:0;transform:translateY(14px) scale(.94);transform-origin:100% 100%;transition:opacity .2s,transform .32s cubic-bezier(.34,1.4,.64,1);cursor:pointer}
+.fab-m button:nth-child(2){transition-delay:.04s}
+.fab-m.on button{opacity:1;transform:none}
+.fab-m i{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--fill);color:var(--brick)}.fab-m i.wa{background:#25D366;color:#fff}
+.fab-m b{display:block;font-size:15.5px}.fab-m small{font-size:12.5px;color:var(--sec)}
+@media (min-width:900px){.fab{bottom:32px;right:32px}.fab-m{bottom:104px;right:32px}}
+.lv-sum{display:block;width:100%;border:0;font:inherit;text-align:left;color:var(--label);background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:14px 16px;margin:4px 0 6px;cursor:pointer}
+.lv-t{display:flex;align-items:center;gap:10px;font-size:15px}.lv-t .av{width:26px;height:26px;font-size:12px}.lv-t span{flex:1}.lv-t i{color:var(--sec)}
+.lv-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.lv-k b{display:block;font-size:21px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.lv-k b.up{color:var(--green)}.lv-k span{font-size:12.5px;color:var(--sec)}
 .rg-mois{display:flex;justify-content:space-between;align-items:baseline;margin:26px 6px 10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
 .rg-mois span:last-child{font-size:14.5px;font-weight:600;color:var(--sec);font-variant-numeric:tabular-nums}
 .rg::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3.5px;border-radius:0 4px 4px 0;background:var(--b)}
@@ -816,7 +831,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.5";
+const VERSION = "3.6";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1083,6 +1098,32 @@ document.addEventListener("click", e => {
   b.style.setProperty("--fx", (rb.left - rp.left + rb.width / 2 - x) + "px");
   requestAnimationFrame(() => b.classList.add("on"));
 });
+function filtresLivrees(){
+  const L0 = S.livrees, mk = today().slice(0, 7), mp = (() => { const d = new Date(); d.setMonth(d.getMonth() - 1); return iso(d).slice(0, 7); })();
+  const clients = [...new Map(L0.map(v => [cleNom(v.client), v.client])).values()];
+  const nb = c => L0.filter(v => cleNom(v.client) === cleNom(c) && (FLP === "tout" || v.date.startsWith(FLP === "mois" ? mk : mp))).length;
+  clients.sort((a, b) => nb(b) - nb(a));
+  sheet("Afficher", `<div class="flabel" style="margin-top:0">Période</div>
+    <div class="choix">${[["mois", MOIS[+mk.slice(5) - 1]], ["prec", MOIS[+mp.slice(5) - 1]], ["tout", "60 dernières"]].map(([k, l]) => `<button class="press${FLP === k ? " on" : ""}" onclick="FLP='${k}';render();filtresLivrees()">${l.replace(/^./, x => x.toUpperCase())}</button>`).join("")}</div>
+    <div class="flabel">Client</div>
+    <div class="group">${[`<button class="item" onclick="FLC='';render();closeSheet()"><div class="body"><div class="ttl">Tous les clients</div></div>${!FLC ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`,
+      ...clients.map(c => `<button class="item" onclick="FLC='${esc(cleNom(c))}';render();closeSheet()">${avatar(c)}<div class="body"><div class="ttl nom">${esc(nomPropre(c))}</div><div class="meta">${nb(c)} livraison${nb(c) > 1 ? "s" : ""}</div></div>${FLC === cleNom(c) ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`)].join("")}</div>`);
+}
+function menuAjout(b){
+  if(document.querySelector(".fab-m")) return fermerMenuAjout();
+  b.classList.add("ouvert"); vibre();
+  const m = document.createElement("div"); m.className = "fab-m";
+  m.innerHTML = `<button class="press" onclick="fermerMenuAjout();ouvrirWhatsApp()"><i class="wa">${ic("wa",20)}</i><span><b>Message WhatsApp</b><small>Colle le message, l'appli lit tout</small></span></button>
+    <button class="press" onclick="fermerMenuAjout();ouvrirNouvelle()"><i>${ic("plus",20)}</i><span><b>Nouvelle commande</b><small>Remplir à la main</small></span></button>`;
+  document.body.appendChild(m); requestAnimationFrame(() => m.classList.add("on"));
+  setTimeout(() => addEventListener("click", fermerSiDehors, true), 0);
+}
+function fermerSiDehors(e){ if(!e.target.closest(".fab-m,.fab")) fermerMenuAjout(); }
+function fermerMenuAjout(){
+  removeEventListener("click", fermerSiDehors, true);
+  document.querySelector(".fab")?.classList.remove("ouvert");
+  const m = document.querySelector(".fab-m"); if(m){ m.classList.remove("on"); setTimeout(() => m.remove(), 220); }
+}
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
 function shell(over, title, body, action){
@@ -1096,7 +1137,7 @@ function shell(over, title, body, action){
 const PREV = [];   // onglets visités, pour la flèche retour
 function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"}); return; } if(!retour){ PREV.push(TAB); if(PREV.length > 20) PREV.shift(); }
   const ordre = TABS.map(x => x[0]), sens = (ordre.indexOf(t) < ordre.indexOf(TAB)) !== !!retour ? "arriere" : "avant";
-  TAB = t; localStorage.setItem("tab", t);
+  TAB = t; localStorage.setItem("tab", t); if(typeof fermerMenuAjout === "function") fermerMenuAjout();
   const faire = () => { render(false); window.scrollTo(0,0); };
   if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){ document.documentElement.dataset.sens = sens; document.startViewTransition(faire); }
   else { render(true); window.scrollTo(0,0); } }
@@ -1283,8 +1324,7 @@ function vCommandes(){
       : `<div class="group"><div class="empty"><div class="chip c-orange">${ic("box")}</div><b style="color:var(--label)">Aucune commande en attente</b><br>Colle un message WhatsApp pour en ajouter une.</div></div>`;
   } else body = vLivrees();
   return shell("Suivi des livraisons", "Commandes", `
-    <div class="duo" style="margin-bottom:14px"><button class="btn btn-fill press" onclick="ouvrirWhatsApp()">${ic("wa",19)} WhatsApp</button>
-      <button class="btn btn-tint press" onclick="ouvrirNouvelle()">${ic("plus",19)} Nouvelle</button></div>
+    <button class="fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",26)}</button>
     <div class="seg"><button class="${SEGC==="attente"?"on":""}" onclick="SEGC='attente';render()">À livrer${att.length?` · ${att.length}`:""}</button>
       <button class="${SEGC==="livrees"?"on":""}" onclick="SEGC='livrees';render()">Livrées</button></div>${body}`);
 }
@@ -1313,12 +1353,10 @@ function vLivrees(){
       if(FLP === "mois") L = L.filter(v => v.date.startsWith(mk)); else if(FLP === "prec") L = L.filter(v => v.date.startsWith(mp));
       const pal = L.reduce((s, v) => s + v.palettes, 0), ben = L.reduce((s, v) => s + v.benef, 0);
       const jours = []; L.forEach(v => { const g = jours.at(-1); if(g && g.d === v.date) g.v.push(v); else jours.push({d: v.date, v: [v]}); });
-      return `<div class="filtres" style="margin-top:4px">
-        <div class="fl">${[`<button class="${!FLC ? "on" : ""}" onclick="FLC='';render()">Tous</button>`,
-          ...clients.map(c => `<button class="${FLC === cleNom(c) ? "on" : ""}" onclick="FLC=FLC==='${esc(cleNom(c))}'?'':'${esc(cleNom(c))}';render()">${avatar(c)}${esc(nomPropre(c))}</button>`)].join("")}</div>
-        <div class="fl">${[["mois", MOIS[+mk.slice(5) - 1].replace(/^./, x => x.toUpperCase())], ["prec", MOIS[+mp.slice(5) - 1].replace(/^./, x => x.toUpperCase())], ["tout", "60 dernières"]]
-          .map(([k, l]) => `<button class="${FLP === k ? "on" : ""}" onclick="FLP='${k}';render()">${l}</button>`).join("")}</div></div>
-      <div class="lv-res"><div><b>${L.length}</b><span>livraison${L.length > 1 ? "s" : ""}</span></div><div><b>${num(pal)}</b><span>palettes</span></div><div><b class="up">+${num(ben)}</b><span>DH de bénéfice</span></div></div>
+      const per = {mois: MOIS[+mk.slice(5) - 1], prec: MOIS[+mp.slice(5) - 1], tout: "60 dernières"}[FLP];
+      return `<button class="lv-sum press" onclick="filtresLivrees()">
+        <div class="lv-t">${FLC ? avatar(clients.find(c => cleNom(c) === FLC) || FLC) : ""}<span><b>${esc(per.replace(/^./, x => x.toUpperCase()))}</b> · ${FLC ? esc(nomPropre(clients.find(c => cleNom(c) === FLC) || FLC)) : "tous les clients"}</span><i>${ic("chev",15)}</i></div>
+        <div class="lv-k"><div><b>${L.length}</b><span>livraison${L.length > 1 ? "s" : ""}</span></div><div><b>${num(pal)}</b><span>palettes</span></div><div><b class="up">+${num(ben)}</b><span>DH</span></div></div></button>
       ${jours.map(g => `<div class="daylab"><span>${jourLabel(g.d)}</span><span>+${dh(g.v.reduce((s,v)=>s+v.benef,0))}</span></div>
       <div class="lv-l">${g.v.map((v, k) => `<div class="lv" style="--i:${k}">
         ${avatar(v.client)}
