@@ -44,6 +44,18 @@ function lireClasseur(buf) {
   const villes = [];
   for (let r = 4; r < 60; r++) { const v = g("AB", r); if (v == null) break; villes.push({ville: sStr(v), decharge: sNum(g("AC", r))}); }
   const solde = {initial: sNum(g("B", 1)), consomme: sNum(g("F", 1)), courant: sNum(g("Q", 4)), encaisse: sNum(g("R", 4))};
+  // espèces tirées : le tableau « Tiré | Source » de l'onglet PRINCIPAL (trouvé par son titre, où qu'il soit)
+  let sommeO = 0; for (let r = 4; r <= dern; r++) { const o = g("O", r); if (typeof o === "number") sommeO += o; }
+  const especes = [];
+  const R = XLSX.utils.decode_range(p["!ref"]);
+  trouve: for (let r = 1; r <= dern; r++) for (let c = 0; c <= Math.min(R.e.c, 40); c++) {
+    const ref = XLSX.utils.encode_col(c);
+    if (sStr(g(ref, r)).toLowerCase() === "tiré" || sStr(g(ref, r)).toLowerCase() === "tire") {
+      const src = XLSX.utils.encode_col(c + 1);
+      for (let k = r + 1; k <= Math.min(dern, r + 60); k++) { const m = g(ref, k); if (typeof m === "number" && m > 0) especes.push({row: k, montant: m, source: sStr(g(src, k))}); }
+      break trouve;
+    }
+  }
   const rg = wb.Sheets["REGLEMENT"], regs = [];
   if (rg) {
     const fin = XLSX.utils.decode_range(rg["!ref"]).e.r + 1;
@@ -58,7 +70,7 @@ function lireClasseur(buf) {
         ref: sStr(cellule(rg, "E" + r)), echeance: isoDate(cellule(rg, "F" + r)), montant: sNum(cellule(rg, "G" + r)), remarque: sStr(cellule(rg, "H" + r)), photo});
     }
   }
-  return {ventes, villes, solde, regs};
+  return {ventes, villes, solde, regs, especes, sommeO};
 }
 
 function lireProspects(buf) {

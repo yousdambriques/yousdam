@@ -156,10 +156,21 @@ function etatComplet() {
   const prospects = CACHE.prospects.map(p => ({...p, ...((A.prospects || {})[p.feuille + "|" + p.nom] || {})}));
   const livrees = ventes.slice().sort((x, y) => y.date.localeCompare(x.date) || (y.row || 1e9) - (x.row || 1e9)).slice(0, 60);
   const noms = [...new Set(v0.map(x => x.client))].sort((x, y) => x.toLowerCase().localeCompare(y.toLowerCase()));
+  // solde usine (formule de l'Excel : dépôts + règlements échus - total usine des livraisons), recalculé pour aujourd'hui,
+  // et diminué des livraisons saisies dans l'appli mais pas encore dans l'Excel
+  const auj = new Date().toISOString().slice(0, 10), virt = ventes.filter(v => v.virtuelle);
+  const echus = regs.filter(r => r.echeance && r.echeance <= auj).reduce((s, r) => s + r.montant, 0);
+  const avenir = regs.filter(r => r.echeance && r.echeance > auj).sort((x, y) => x.echeance.localeCompare(y.echeance));
+  const courant = solde.courant - solde.encaisse + echus - virt.reduce((s, v) => s + v.tu, 0);
+  const usine = {courant, initial: solde.initial, avenir: avenir.reduce((s, r) => s + r.montant, 0), apres: courant + avenir.reduce((s, r) => s + r.montant, 0),
+    prochaine: avenir[0] || null, en_attente_excel: virt.length};
+  const esp = CACHE.classeur.especes || [], benefTotal = (CACHE.classeur.sommeO || 0) + virt.reduce((s, v) => s + v.benef, 0);
+  const tire = esp.reduce((s, e) => s + e.montant, 0);
+  const especes = {liste: esp, tire, benef_total: benefTotal, reste: benefTotal - tire};
   const m = CACHE.maj ? new Date(CACHE.maj) : new Date();
   const maj = `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}-${String(m.getDate()).padStart(2, "0")}T${String(m.getHours()).padStart(2, "0")}:${String(m.getMinutes()).padStart(2, "0")}`;
   return {analyse: a, attente, livrees, reglements: regs.slice().sort((x, y) => (y.echeance || "").localeCompare(x.echeance || "")), villes, clients_noms: noms, clients_brut: brut,
-    prospects, maj, a_excel: aExcel, passees: cmds.filter(ligneExcelDe).slice(-20).reverse().map(c => ({...c, excel_row: ligneExcelDe(c)})),
+    prospects, maj, usine, especes, a_excel: aExcel, passees: cmds.filter(ligneExcelDe).slice(-20).reverse().map(c => ({...c, excel_row: ligneExcelDe(c)})),
     tarifs: A.tarifs || TARIFS_DEFAUT, hors_ligne: !!CACHE.horsLigne, compte: STOCK.compte(), prenom: STOCK.prenom ? STOCK.prenom() : "", fichier: CHEMINS.excel};
 }
 
