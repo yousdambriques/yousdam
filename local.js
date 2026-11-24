@@ -49,8 +49,24 @@ class StockLocal {
     localStorage.setItem("photos", JSON.stringify([...l]));
     return n;
   }
+  /* « donnees-yousdam.json », préparé par l'agent du PC : l'Excel + les photos de ses liens hypertexte + la prospection */
+  async importerDonnees(fichier) {
+    const d = JSON.parse(await fichier.text());
+    if (!d || d.type !== "yousdam-donnees" || !d.excel) throw new Error("Ce n'est pas le fichier « donnees-yousdam.json » de l'appli.");
+    const versBuf = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0)).buffer;
+    const xl = versBuf(d.excel); lireClasseur(xl);
+    await BASE.ecrire("excel", xl);
+    await BASE.ecrire("excel_meta", {nom: d.excel_nom || "Excel", importe: d.cree || new Date().toISOString()});
+    if (d.prospection) { const p = versBuf(d.prospection); await BASE.ecrire("prosp", p); await BASE.ecrire("prosp_meta", {nom: "Prospection", importe: d.cree}); }
+    const noms = [];
+    for (const [nom, ph] of Object.entries(d.photos || {})) { await BASE.ecrire("photo:" + nom, new Blob([versBuf(ph.b64)], {type: ph.type})); noms.push(nom); }
+    const l = new Set(JSON.parse(localStorage.getItem("photos") || "[]")); noms.forEach(n => l.add(n));
+    localStorage.setItem("photos", JSON.stringify([...l]));
+    return {photos: noms.length};
+  }
   aPhoto(nom) { return JSON.parse(localStorage.getItem("photos") || "[]").includes(String(nom).toLowerCase()); }
   async importer(type, fichier) {
+    if (/\.json$/i.test(fichier.name)) return this.importerDonnees(fichier);
     const buf = await fichier.arrayBuffer();
     if (type === "excel") lireClasseur(buf);            // vérifie que c'est bien le bon fichier avant de le garder
     else lireProspects(buf);
