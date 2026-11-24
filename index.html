@@ -683,6 +683,10 @@ async function load(){ try{ S = await api("/api/etat"); render(); } catch(e){ if
 
 /* ============ verrou ============ */
 async function boot(){
+  if(!(window.YOUSDAM_CONFIG && (YOUSDAM_CONFIG.mode === "test" || /^[0-9a-f-]{36}$/i.test(YOUSDAM_CONFIG.clientId||"")))){
+    $("#root").innerHTML = `<div class="lock"><img src="icon-192.png" alt=""><h1>YOUSDAM</h1><div class="muted" style="text-align:center;max-width:300px;margin-top:8px">L'appli est presque prête : il manque l'inscription Microsoft. Une fois faite, cette page affichera « Se connecter avec Microsoft ».</div></div>`;
+    return;
+  }
   try{
     STOCK = (window.YOUSDAM_CONFIG && YOUSDAM_CONFIG.mode === "test") ? new StockDev() : new StockOneDrive(YOUSDAM_CONFIG.clientId);
     await STOCK.init();
