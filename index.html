@@ -444,12 +444,16 @@ button.item:active{background:var(--fill)}
 @keyframes bulr{from{stroke-dashoffset:100}}
 .bul b{position:relative;font-size:19px;letter-spacing:-.035em;line-height:1.05;font-variant-numeric:tabular-nums}.bul span{position:relative;font-size:11.5px;color:var(--sec)}
 .tl{position:relative;margin:18px 0 0;padding-left:4px}
-.tl::before{content:"";position:absolute;left:27px;top:6px;bottom:6px;width:2px;border-radius:1px;background:linear-gradient(var(--fill2),var(--fill2) 85%,transparent)}
-.tl-j{position:relative;display:flex;justify-content:space-between;align-items:center;margin:16px 0 6px}
-.tl-j span{position:relative;z-index:1;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:999px;background:var(--card);box-shadow:var(--shadow);color:var(--label)}
+.tl-c{background:var(--card);border-radius:24px;box-shadow:var(--shadow);padding:2px 16px;animation:capin .3s var(--ease-out) both;animation-delay:calc(var(--i) * 40ms)}
+.tl-j{position:relative;display:flex;justify-content:space-between;align-items:center;margin:20px 4px 8px}
+.tl-j span{font-size:15px;font-weight:750;letter-spacing:-.01em;color:var(--ink-bg,var(--label))}
 .tl-j b{font-size:13px;color:var(--green);font-variant-numeric:tabular-nums}
-.tl-n{position:relative;background:none!important;padding:9px 2px 9px 0!important;border:0!important}
-.tl-n .av{position:relative;z-index:1;width:46px;height:46px;font-size:18px;box-shadow:0 0 0 4px var(--bg,var(--card))}
+.tl-n{position:relative;background:none!important;padding:13px 0!important;animation:none!important}
+.tl-n + .tl-n{border-top:.5px solid var(--sep)!important}
+.tl-n .av{width:44px;height:44px;font-size:17px}
+.tl-n .lv-dest{font-size:16px;font-weight:700;color:var(--label)}
+.tl-n .lv-m{color:var(--sec)}
+.tl-n .lv-e b{font-size:15.5px}
 @media (prefers-reduced-motion:reduce){.order.cap,.bul,.jauge .j-v,.bul .b-v{animation:none}}
 .lv-sum{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:6px 16px 14px;margin:4px 0 6px}
 .lv-t{width:100%;border:0;background:none;font:inherit;color:var(--label);text-align:left;padding:10px 0 2px;cursor:pointer}
@@ -913,7 +917,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "4.2";
+const VERSION = "4.3";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1522,11 +1526,11 @@ function vLivrees(){
               <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" class="b-f"/><circle cx="50" cy="50" r="46" class="b-v" ${defi ? `pathLength="100"` : ""}/></svg><b>+${num(ben)}</b><span>DH</span></button>
           </div>${defi ? `<div class="defi-l"><b style="color:${coul}">Défi de ${nomMois} : ${Math.round(pc * 100)} %</b> de ${dh(obj)}${pc >= 1 ? " · objectif atteint" : ` · encore ${dh(obj - ben)}`}</div>` : ""}`; })()}</div>
       <div class="tl">${jours.map((g, gi) => `<div class="tl-j"><span>${jourLabel(g.d)}</span><b>+${dh(g.v.reduce((s,v)=>s+v.benef,0))}</b></div>
-      ${g.v.map((v, k) => `<div class="lv tl-n" style="--i:${Math.min(gi * 2 + k, 14)}">
+      <div class="tl-c" style="--i:${Math.min(gi, 8)}">${g.v.map((v, k) => `<div class="lv tl-n">
         ${avatar(v.client)}
         <div class="lv-c"><div class="lv-dest">${esc(v.chantier || v.ville || "—")}${v.client_final ? ` <span>· ${esc(v.client_final)}</span>` : ""}</div>
           <div class="lv-m">${esc(nomPropre(v.client))} · <b class="${v.type === "B7" ? "t7" : "t10"}">${num(v.palettes)} pal. ${esc(v.type)}</b>${v.ville && v.chantier ? ` · ${esc(v.ville)}` : ""}</div></div>
-        <div class="lv-e"><b>+${dh(v.benef)}</b>${v.virtuelle ? `<span class="badge c-blue">Pas encore dans l'Excel</span>` : payBadge(v.paiement)}</div></div>`).join("")}`).join("")}</div>${jours.length ? "" : `<div class="group"><div class="empty">Aucune livraison pour ce choix.</div></div>`}`;
+        <div class="lv-e"><b>+${dh(v.benef)}</b>${v.virtuelle ? `<span class="badge c-blue">Pas encore dans l'Excel</span>` : payBadge(v.paiement)}</div></div>`).join("")}</div>`).join("")}</div>${jours.length ? "" : `<div class="group"><div class="empty">Aucune livraison pour ce choix.</div></div>`}`;
     })()}
     <div class="note" style="margin-top:20px">Livraisons lues dans ton Excel (60 dernières)</div>`;
 }
