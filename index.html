@@ -214,6 +214,7 @@ button.item:active{background:var(--fill)}
 .item .chip.c-orange,.item .chip.c-blue,.item .chip.c-purple,.item .chip.c-brick,.item .chip.c-gray{background:var(--fill);color:var(--label)}
 .item .body{flex:1;min-width:0}
 .item .ttl{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .ttl.nom{white-space:normal;overflow-wrap:anywhere;line-height:1.25}
 .item .meta{font-size:14px;color:var(--sec);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item .end{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .item .end small{display:block;margin-top:3px;font-weight:500;color:var(--sec);font-size:13px}
@@ -403,6 +404,36 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .mini{display:flex;align-items:flex-end;gap:4px;height:56px}
 .mini i{flex:1;border-radius:4px;background:var(--brick);min-height:3px}
 .hidden{display:none!important}
+.xl-bg{position:fixed;inset:0;z-index:86;background:rgba(20,22,25,.38);display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s var(--ease-out)}
+.xl-bg.on{opacity:1}
+.xl{width:min(100%,720px);max-height:88dvh;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));
+  transform:translateY(40px);transition:transform .35s var(--ease-out);box-shadow:var(--shadow-lg)}
+.xl-bg.on .xl{transform:none}
+@media (min-width:900px){.xl-bg{align-items:center}.xl{border-radius:24px}}
+.xl h4{margin:0;font-size:19px;letter-spacing:-.02em}
+.xl .sous{color:var(--sec);font-size:14px;margin:4px 0 14px}
+.xl-wrap{overflow-x:auto;padding-bottom:6px;border:1px solid #d4d4d4;border-radius:6px;background:#fff;-webkit-overflow-scrolling:touch}
+table.xls{border-collapse:collapse;font:12.5px/1.3 Calibri,"Segoe UI",Arial,sans-serif;color:#111;min-width:1180px;width:100%}
+table.xls th,table.xls td{border:1px solid #d9d9d9;padding:5px 7px;white-space:nowrap}
+table.xls thead th{background:#f2f2f2;font-weight:600;color:#222;text-align:center}
+table.xls thead th.d{background:#ffff00}
+table.xls .xrn{background:#f2f2f2;color:#666;text-align:center;font-weight:600;width:34px}
+table.xls td.xn{text-align:right}
+table.xls td.xdt{background:#ffff00;text-align:right}
+table.xls td.xty{background:#4a8fd8;color:#111}
+table.xls td.xpay{background:#f8cbad}
+table.xls td.xcl{font-weight:700}
+table.xls tr.nv td{animation:xlin .7s var(--ease-out) both, xlflash 1.6s .5s ease-out both}
+table.xls tr.nv td.xrn{background:#d9ead3;color:#1e6b35}
+@keyframes xlin{from{opacity:0;transform:translateY(-14px)}}
+@keyframes xlflash{0%{box-shadow:inset 0 0 0 999px rgba(52,168,83,.28)}100%{box-shadow:inset 0 0 0 999px rgba(52,168,83,.13)}}
+.xl .tag{display:inline-block;margin:12px 0 0;font-size:13px;font-weight:600;color:var(--green)}
+.xl .bt{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:16px}
+.donnee{display:flex;align-items:center;gap:14px;padding:16px;background:var(--card);border-radius:20px;box-shadow:var(--shadow);margin-bottom:12px}
+.donnee .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--fill);flex:none}
+.donnee .tx{flex:1;min-width:0}.donnee b{display:block;font-size:16px;letter-spacing:-.01em}
+.donnee span{display:block;font-size:13.5px;color:var(--sec);margin-top:2px}
+.donnee.reco{outline:2px solid var(--brick);outline-offset:-2px}
 .majban{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:35;width:min(calc(100% - 24px),440px);
   display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:18px;background:var(--card);box-shadow:var(--shadow-lg);transition:transform .35s var(--ease-out),opacity .25s}
 .majban.on{transform:translate(-50%,0);opacity:1}
@@ -462,7 +493,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .panel .ph button{border:0;background:none;color:var(--brick);font-weight:600;font-size:14px;padding:0}
 .cl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;padding:9px 0;align-items:center}
 .cl+.cl{border-top:.5px solid var(--sep)}
-.cl .nm{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl .nm{font-weight:600;font-size:14.5px;line-height:1.25;overflow-wrap:anywhere}
 .cl .bn{font-weight:600;font-size:14.5px;text-align:right}
 .cl .tr{grid-column:1/-1;height:5px;border-radius:3px;background:var(--fill)}
 .cl .tr i{display:block;height:100%;border-radius:3px;background:var(--brick)}
@@ -625,7 +656,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "1.5";
+const VERSION = "1.6";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -757,7 +788,7 @@ async function importer(type, input){
     busy(false);
     if(type === "excel" && !S){ boot(); return; }
     await load(); toast(/\.json$/i.test(f.name) ? "Données à jour : Excel, photos et prospection" : type === "excel" ? "Excel mis à jour" : "Prospection importée");
-    if($("#sheet").classList.contains("on")) ouvrirThemes();
+    if($("#sheet").classList.contains("on")) ($("#sheetTitle").textContent==="Mes données" ? ouvrirDonnees() : ouvrirThemes());
   }catch(e){ busy(false); const m = $("#impMsg"); if(m) m.textContent = "Ce fichier ne convient pas : " + e.message; else toast(e.message, false); }
   input.value = "";
 }
@@ -767,11 +798,24 @@ async function importerPhotos(input, ouvrir){
   try{
     const n = await STOCK.importerPhotos(input.files);
     toast(`${n} photo${n>1?"s":""} importée${n>1?"s":""}`);
-    if($("#sheet").classList.contains("on")) ouvrirThemes(); else render();
+    if($("#sheet").classList.contains("on")) ($("#sheetTitle").textContent==="Mes données" ? ouvrirDonnees() : ouvrirThemes()); else render();
     if(ouvrir && STOCK.aPhoto(decodeURIComponent(ouvrir))) voir(ouvrir);
     else if(ouvrir) toast("Ce n'est pas la bonne photo : choisis « " + decodeURIComponent(ouvrir) + " »", false);
   }
   catch(e){ toast(e.message, false); } finally{ busy(false); input.value = ""; }
+}
+function ouvrirDonnees(){
+  const avec = S.reglements.filter(r => r.photo), ok = avec.filter(r => STOCK.aPhoto && STOCK.aPhoto(r.photo)).length;
+  sheet("Mes données", `
+    <div class="muted" style="margin:0 4px 14px;font-size:14.5px">Tout reste sur ce téléphone.</div>
+    <div class="donnee reco"><div class="ic">${ic("refresh",22)}</div><div class="tx"><b>Tout mettre à jour</b><span>Excel, photos et prospection d'un coup</span></div>
+      <label class="btn btn-fill btn-sm press" style="cursor:pointer;flex:none">Choisir<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
+    <div class="donnee"><div class="ic">${ic("excel",22)}</div><div class="tx"><b>Fichier Excel</b><span>${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</span></div>
+      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
+    <div class="donnee"><div class="ic">${ic("photo",22)}</div><div class="tx"><b>Photos des règlements</b><span>${ok} sur ${avec.length}</span></div>
+      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this)"></label></div>
+    <div class="donnee"><div class="ic">${ic("phone",22)}</div><div class="tx"><b>Prospection</b><span>${S.prospects.length ? S.prospects.length + " prospects" : "pas encore ajoutée"}</span></div>
+      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept=".xlsx" hidden onchange="importer('prosp', this)"></label></div>`);
 }
 async function envoyerAuPC(){
   const e = fichierEnvoi(); if(!e) return toast("Rien à envoyer", false);
@@ -920,7 +964,7 @@ function vAccueil(){
     <text x="${(i*bw+bw/2).toFixed(1)}" y="${H-4}" font-size="8.5" font-weight="600" text-anchor="middle" fill="currentColor" opacity=".45">${MC[+m.mois.split("-")[1]-1].replace(".","").slice(0,1).toUpperCase()}</text>`).join("");
   const an = M.filter(m => m.mois.startsWith(String(d.getFullYear()))).reduce((s,m)=>s+m.benef,0);
   const actions = `<div style="display:flex;gap:10px"><button class="round press" onclick="ouvrirThemes()" aria-label="Réglages"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button></div>`;
-  return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync"><i></i>Excel importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}
+  return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync" onclick="if(!event.target.closest('label')) ouvrirDonnees()" style="cursor:pointer"><i></i>Données du ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}
       <label class="press" style="margin-left:auto;color:var(--link);font-weight:600;cursor:pointer">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div><div class="board">
     <div class="b-hero"><div class="hero press" onclick="editObjectif()">
       <div class="row1"><div><div class="lab">Bénéfice de ${MOIS[d.getMonth()]}</div><div class="big"><span data-count="${Math.round(mc.benef)}">${num(mc.benef)}</span> <small>DH</small></div>
@@ -944,7 +988,7 @@ function vAccueil(){
     <div class="b-chart panel"><div class="ph"><b>Bénéfice par mois</b><span>${dh(an)} en ${d.getFullYear()}</span></div>
       <svg class="mini-chart" viewBox="0 0 ${W} ${H}" style="color:var(--label)"><line x1="0" x2="${W}" y1="${y(A.objectif).toFixed(1)}" y2="${y(A.objectif).toFixed(1)}" stroke="var(--label)" stroke-opacity=".35" stroke-dasharray="4 5" stroke-width="1.2"/>${bars}</svg>${legende}</div>
     <div class="b-cli panel"><div class="ph"><b>Clients</b><button onclick="go('clients')">Tout voir</button></div>
-      ${A.clients.slice(0,4).map((c,i) => `<div class="cl"><span class="nm">${esc(c.nom)}</span><span class="bn">${dh(c.benef)}</span>
+      ${A.clients.slice(0,4).map((c,i) => `<div class="cl"><span class="nm">${esc(nomPropre(c.nom))}</span><span class="bn">${dh(c.benef)}</span>
         <span class="tr"><i style="width:${Math.max(2,c.part*100)}%;background:${c.part>0.6?"var(--red)":c.part>0.4?"var(--orange)":"var(--brick)"}"></i></span><span class="pc2">${pct(c.part)} du bénéfice, ${depuis(c.derniere)}</span></div>`).join("")}</div>
     <div class="b-reg panel"><div class="ph"><b>Règlements</b><button onclick="go('reglements')">Voir</button></div>
       <div class="rg2"><div><div class="l">À encaisser</div><div class="v">${dh(avenir.reduce((s,r)=>s+r.montant,0))}</div><div class="s">${avenir.length} effet${avenir.length>1?"s":""} ou chèque${avenir.length>1?"s":""}</div></div>
@@ -1117,6 +1161,7 @@ async function enregistrer(excel){
   for(const c of cmds) if(c.livree && !(parseFloat(String(c.pu).replace(",","."))>0 && parseFloat(String(c.pv).replace(",","."))>0)) return toast("Indique les prix", false);
   for(const c of cmds) if(c.livree && !(await margeOk(c))) return;
   if(excel && !(await sansDoublon(client, cmds.filter(c=>c.livree)))) return;
+  if(excel && !(await apercuExcel(cmds.filter(c=>c.livree).map(c => versLigne(client, c))))) return;
   busy(true, "Enregistrement…");
   try{
     const r = await api("/api/commande", {client, commandes:cmds, excel});
@@ -1168,6 +1213,7 @@ async function livrer(id, excel){
   if(!(parseFloat(String(v.pu).replace(",","."))>0 && parseFloat(String(v.pv).replace(",","."))>0)) return toast("Indique les prix", false);
   if(!(await margeOk(v))) return;
   if(excel && !(await sansDoublon(c.client, [v]))) return;
+  if(excel && !(await apercuExcel([versLigne(c.client, v)]))) return;
   busy(true, "Enregistrement…");
   try{ const r = await api("/api/livrer", {...v, id, excel}); closeSheet(); await load(); SEGC = "livrees"; render(); toast(excel ? "Prête : touche « Envoyer au PC » (onglet Commandes, Livrées)" : "Livraison enregistrée"); }
   catch(e){ toast(e.message, false); await load(); }
@@ -1178,6 +1224,45 @@ async function annuler(id){
   if(!await confirmer(`Annuler la commande de ${c.client} (${c.palettes} palettes) ?`)) return;
   try{ await api("/api/annuler", {id}); await load(); toast("Commande annulée"); } catch(e){ toast(e.message, false); }
 }
+/* Aperçu : la (ou les) nouvelle(s) ligne(s) telles qu'elles apparaîtront dans l'onglet PRINCIPAL */
+const couleurClient = k => { try{ return JSON.parse(localStorage.getItem("couleurs") || "{}")[k] || "#fff"; }catch(e){ return "#fff"; } };
+function cellulesExcel(o){
+  const k = o.client.toLowerCase().split(/\s+/).filter(Boolean).join(" ");
+  const brut = (S.clients_brut && S.clients_brut[k]) || o.client;
+  const md = (o.decharge === true || o.decharge === "Oui") ? ((S.villes.find(v => v.ville === o.ville) || {}).decharge || 0) : 0;
+  const tu = o.qte * o.pu + md, tt = o.qte * o.pv + md;
+  const d = String(o.date).slice(0,10).split("-").reverse().join("/");
+  const n2 = x => (Math.round(x*100)/100).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}).replace(/[\u202f\u00a0]/g," ");
+  const ng = x => (Math.round(x*100)/100).toLocaleString("fr-FR",{maximumFractionDigits:2}).replace(/[\u202f\u00a0]/g," ");
+  return `<td class="xdt">${d}</td><td class="xcl" style="background:${couleurClient(k)}">${esc(brut)}</td><td class="xn">${o.palettes}</td><td class="xty">${esc(o.type)}</td>
+    <td class="xn">${o.qte}</td><td class="xn">${n2(o.pu)} MAD</td><td class="xn">${n2(tu)}</td><td class="xn">${ng(o.pv)}</td><td class="xn">${ng(tt)}</td>
+    <td>${esc(o.ville)}</td><td>${esc(o.chantier||"")}</td><td>${esc(o.client_final||"")}</td><td>${md?"Oui":"Non"}</td><td class="xn">${md}</td><td class="xn">${ng(tt - tu)}</td><td class="xpay">${esc(o.paiement||"En cours")}</td>`;
+}
+function apercuExcel(nouvelles){
+  return new Promise(res => {
+    const vraies = S.livrees.filter(v => !v.virtuelle && v.row).sort((a,b) => b.row - a.row);
+    const avant = vraies.slice(0, 1);
+    const enAttente = S.livrees.filter(v => v.virtuelle).length;      // déjà envoyées, pas encore écrites
+    let ligne = (vraies[0] ? vraies[0].row : 3) + enAttente; const premiere = ligne + 1;
+    const lignes = avant.map(v => `<tr><td class="xrn">${v.row}</td>${cellulesExcel({...v, client: v.brut || v.client, decharge: v.decharge})}</tr>`).join("")
+      + nouvelles.map((o, i) => `<tr class="nv" style="--i:${i}"><td class="xrn">${++ligne}</td>${cellulesExcel(o)}</tr>`).join("");
+    const bg = document.createElement("div"); bg.className = "xl-bg";
+    bg.innerHTML = `<div class="xl" role="dialog" aria-modal="true">
+      <h4>Aperçu dans ton Excel</h4>
+      <div class="sous">Onglet PRINCIPAL · ${nouvelles.length > 1 ? `lignes ${premiere} à ${premiere + nouvelles.length - 1}` : `ligne ${premiere}`}</div>
+      <div class="xl-wrap"><table class="xls"><thead><tr><th class="xrn"></th><th class="d">Date LIVRAISON</th><th>Client</th><th>Palettes</th><th>Type briques</th><th>Quantité de briques</th>
+        <th>Prix Usine Unitaire</th><th>Total Usine</th><th>Prix unitaire vente</th><th>Prix total</th><th>Destination</th><th>Chantier</th><th>Client final</th>
+        <th>Décharge</th><th>Montant décharge</th><th>Bénéfice</th><th>PAIEMENT</th></tr></thead><tbody>${lignes}</tbody></table></div>
+      <div class="bt"><button class="btn btn-gray press" data-r="0">Annuler</button><button class="btn btn-fill press" data-r="1">${ic("check",18)} Confirmer l'ajout</button></div></div>`;
+    document.body.appendChild(bg); requestAnimationFrame(() => bg.classList.add("on"));
+    const fin = v => { bg.classList.remove("on"); setTimeout(() => bg.remove(), 250); res(v); };
+    bg.addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(b) fin(b.dataset.r === "1"); else if(e.target === bg) fin(false); });
+  });
+}
+const versLigne = (client, v) => { const typ = v.type || "B7", pal = parseInt(v.palettes, 10);
+  return {client, date: v.date || today(), palettes: pal, type: typ, qte: v.qte || pal * (PAR[typ] || 256), pu: parseFloat(String(v.pu).replace(",", ".")),
+    pv: parseFloat(String(v.pv).replace(",", ".")), ville: v.ville || "Casa", chantier: v.chantier || "", client_final: v.client_final || "", decharge: !!v.decharge}; };
+
 async function classer(id, row){
   try{ await api("/api/classer", {id, row}); await load(); toast("Classée : déjà dans ton Excel"); } catch(e){ toast(e.message, false); }
 }
@@ -1186,12 +1271,13 @@ async function remettre(id){ try{ await api("/api/remettre", {id}); await load()
 async function unExcel(id){
   const c = S.a_excel.find(x=>x.id===id); if(!c) return;
   if(!(await sansDoublon(c.client, [c.livraison]))) return;
+  if(!(await apercuExcel([versLigne(c.client, c.livraison)]))) return;
   busy(true, "Envoi…");
   try{ await api("/api/excel", {id}); await load(); toast("Prête : touche « Envoyer au PC » (onglet Commandes, Livrées)"); }
   catch(e){ toast(e.message, false); } finally{ busy(false); }
 }
 async function toutExcel(){
-  const L = S.a_excel.filter(c => !c.en_file); if(!await confirmer(`Passer ${L.length} livraisons dans ton Excel (onglet PRINCIPAL) ?`)) return;
+  const L = S.a_excel.filter(c => !c.en_file); if(!(await apercuExcel(L.map(c => versLigne(c.client, c.livraison))))) return;
   let ok = 0; busy(true, "Envoi…");
   try{ for(const c of L){ await api("/api/excel", {id:c.id}); ok++; } } catch(e){ toast(e.message, false); }
   busy(false); await load(); if(ok) toast(`${ok} livraison${ok>1?"s":""} prête${ok>1?"s":""} : touche « Envoyer au PC »`);
@@ -1235,12 +1321,13 @@ async function voir(f){
 function closeViewer(){ $("#viewer").classList.remove("on"); $("#viewerImg").src = ""; }
 
 /* ============ CLIENTS ============ */
+const nomPropre = s => String(s).trim().toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
 function vClients(){
   const C = S.analyse.clients;
   return shell("Situation", "Clients", `<div class="group">${C.map((c,i)=>`
     <button class="item" onclick="ficheClient(${i})">
       <div class="chip c-brick" style="font-weight:800;font-size:15px">${esc(c.nom.trim()[0]?.toUpperCase()||"?")}</div>
-      <div class="body"><div class="ttl">${esc(c.nom)}</div><div class="meta">${c.livraisons} livraisons · ${depuis(c.derniere)}</div>
+      <div class="body"><div class="ttl nom">${esc(nomPropre(c.nom))}</div><div class="meta">${c.livraisons} livraisons · ${depuis(c.derniere)}</div>
         <div style="height:5px;border-radius:3px;background:var(--fill);margin-top:8px;overflow:hidden"><div style="height:100%;width:${Math.max(2,c.part*100)}%;background:${c.part>0.6?"var(--red)":c.part>0.4?"var(--orange)":"var(--brick)"};border-radius:3px"></div></div></div>
       <div class="end">${dh(c.benef)}<small>${pct(c.part)}</small></div>
       <span class="chev">${ic("chev",16)}</span></button>`).join("")}</div>`);
@@ -1249,7 +1336,7 @@ const moisLabel = k => { if(!k) return ""; const [y,m] = k.split("-"); return MC
 let SIT = null;
 async function ficheClient(i){
   const c = S.analyse.clients[i];
-  sheet(c.nom, `<div class="empty"><span class="spin" style="display:inline-block"></span></div>`);
+  sheet(nomPropre(c.nom), `<div class="empty"><span class="spin" style="display:inline-block"></span></div>`);
   try{ const r = await api("/api/situation?client=" + encodeURIComponent(c.nom)); SIT = {c, lignes:r.lignes, mois:null}; }
   catch(e){ return toast(e.message, false); }
   const ms = [...new Set(SIT.lignes.map(l => l.date.slice(0,7)))].sort().reverse();
@@ -1292,7 +1379,7 @@ async function imageSituation(){
   g.fillStyle = "#fff"; g.fillRect(0,0,W,H);
   g.fillStyle = "#1c1c1e"; g.font = `800 44px ${F}`; g.fillText("Livraisons", 80, 115);
   const pal = L.reduce((s,l)=>s+l.palettes,0), tot = L.reduce((s,l)=>s+l.ca,0);
-  g.fillStyle = "#6e6e73"; g.font = `500 22px ${F}`; g.fillText(`${c.nom.trim()} · ${L.length} livraison${L.length>1?"s":""} · ${num(pal)} au total`, 80, 156);
+  g.fillStyle = "#6e6e73"; g.font = `500 22px ${F}`; g.fillText(`${nomPropre(c.nom)} · ${L.length} livraison${L.length>1?"s":""} · ${num(pal)} au total`, 80, 156);
   const ml = moisLong(SIT.mois); g.font = `700 22px ${F}`; const pw = g.measureText(ml).width + 52;
   g.fillStyle = "#2e9b47"; rr(W-80-pw, 114, pw, 48, 24); g.fillStyle = "#fff"; g.fillText(ml, W-80-pw+26, 146);
   // en-tête
@@ -1323,7 +1410,7 @@ async function imageSituation(){
   g.textAlign = "right"; g.fillStyle = "#6e6e73"; g.font = `600 18px ${F}`; g.fillText("MAD", W-103, yb+58);
   const mw = g.measureText("MAD").width; g.fillStyle = "#d1202f"; g.font = `800 36px ${F}`; g.fillText(mad(tot), W-103-mw-8, yb+60);
   const blob = await new Promise(r => cv.toBlob(r, "image/png"));
-  const nom = `Situation ${c.nom.trim()} ${moisLong(SIT.mois)}.png`;
+  const nom = `Situation ${nomPropre(c.nom)} ${moisLong(SIT.mois)}.png`;
   const file = new File([blob], nom, {type:"image/png"});
   if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:nom}); return; } catch(e){ if(e.name==="AbortError") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nom; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
@@ -1401,6 +1488,7 @@ function ouvrirThemes(){
     <div class="flabel" style="margin-top:4px">Appli</div>
     <div class="group"><div class="item"><div class="body"><div class="ttl">Version ${VERSION}</div><div class="meta">${NOUVELLE ? "Nouvelle version " + esc(NOUVELLE.version) + " disponible" : "À jour"}</div></div>
       ${NOUVELLE ? `<button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>` : `<button class="btn btn-gray btn-sm press" onclick="verifierMaj().then(()=>{ouvrirThemes(); if(!NOUVELLE) toast('Tu as la dernière version')})">Vérifier</button>`}</div></div>
+    <div class="group"><button class="item" onclick="ouvrirDonnees()"><div class="body"><div class="ttl">Mes données</div><div class="meta">Excel, photos des règlements, prospection</div></div><span class="chev">${ic("chev",16)}</span></button></div>
     <div class="flabel">Mes fichiers (gardés sur ce téléphone)</div>
     <div class="group">
       <div class="item"><div class="body"><div class="ttl">Excel de suivi</div><div class="meta">importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</div></div>

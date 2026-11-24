@@ -58,6 +58,7 @@ class StockLocal {
     await BASE.ecrire("excel", xl);
     await BASE.ecrire("excel_meta", {nom: d.excel_nom || "Excel", importe: d.cree || new Date().toISOString()});
     if (d.prospection) { const p = versBuf(d.prospection); await BASE.ecrire("prosp", p); await BASE.ecrire("prosp_meta", {nom: "Prospection", importe: d.cree}); }
+    localStorage.setItem("couleurs", JSON.stringify(d.couleurs || {}));   // couleurs des clients dans l'Excel (aperçu)
     const noms = [];
     for (const [nom, ph] of Object.entries(d.photos || {})) { await BASE.ecrire("photo:" + nom, new Blob([versBuf(ph.b64)], {type: ph.type})); noms.push(nom); }
     const l = new Set(JSON.parse(localStorage.getItem("photos") || "[]")); noms.forEach(n => l.add(n));
