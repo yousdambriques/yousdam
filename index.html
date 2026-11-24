@@ -279,6 +279,11 @@ button.item:active{background:var(--fill)}
 .f select{direction:rtl}.f select option{direction:ltr}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
+.choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
+.choix button{border:0;font:inherit;font-size:15px;font-weight:600;padding:10px 15px;border-radius:14px;background:var(--card);color:var(--k);box-shadow:var(--shadow);cursor:pointer;
+  transition:background .18s var(--ease-out),color .18s var(--ease-out),transform .1s}
+.choix button.on{background:var(--brick);color:#fff;box-shadow:none}
+@media (hover:hover){.choix button:not(.on):hover{background:var(--fill)}}
 textarea{width:100%;border:0;border-radius:var(--r);background:var(--card);box-shadow:var(--shadow);padding:16px;min-height:160px;resize:vertical;outline:none;line-height:1.45}
 .switch{position:relative;width:51px;height:31px;flex:none;margin-left:auto}
 .switch input{opacity:0;width:0;height:0;position:absolute}
@@ -657,7 +662,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "1.8";
+const VERSION = "1.9";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -678,7 +683,8 @@ async function installerMaj(){
   location.reload();
 }
 setTimeout(verifierMaj, 2500);
-setInterval(verifierMaj, 30 * 60 * 1000);
+setInterval(verifierMaj, 5 * 60 * 1000);
+addEventListener("focus", verifierMaj); addEventListener("pageshow", verifierMaj);   // le navigateur Samsung ne signale pas toujours le retour au premier plan
 document.addEventListener("visibilitychange", () => { if(!document.hidden) verifierMaj(); });
 
 /* ============ outils ============ */
@@ -1149,7 +1155,16 @@ function majBoutons(){
     : `<button class="btn btn-fill btn-w press" onclick="enregistrer(false)">Ajouter ${cfs.length>1?cfs.length+" commandes":"la commande"} à livrer</button>
        <div class="note">Enregistré dans l'appli. Ton Excel n'est pas touché.</div>`;
 }
-function clientField(){ return `<div class="form"><div class="f"><label>Client</label><select id="wClient">${optClients(localStorage.getItem("dernierClient")||S.clients_noms[0])}</select></div></div>`; }
+/* choix du client : des boutons de l'appli (noms en entier), les plus gros clients d'abord */
+function clientField(){
+  const cle = s => String(s||"").trim().toLowerCase(), sel = localStorage.getItem("dernierClient") || S.clients_noms[0];
+  const rang = n => { const i = (S.analyse?.clients || []).findIndex(c => cle(c.nom) === cle(n)); return i < 0 ? 999 : i; };
+  const noms = [...S.clients_noms].sort((a, b) => rang(a) - rang(b));
+  const choisi = noms.find(n => cle(n) === cle(sel)) || noms[0];
+  return `<div class="flabel" style="margin-top:4px">Client</div><input type="hidden" id="wClient" value="${esc(choisi)}">
+    <div class="choix" onclick="const b=event.target.closest('button'); if(!b) return; this.querySelectorAll('button').forEach(x=>x.classList.toggle('on', x===b)); $('#wClient').value=b.dataset.v; vibre()">
+    ${noms.map(n => `<button type="button" class="press${n === choisi ? " on" : ""}" data-v="${esc(n)}">${esc(nomPropre(n))}</button>`).join("")}</div>`;
+}
 
 function ouvrirWhatsApp(){
   sheet("Commande WhatsApp", `${clientField()}
