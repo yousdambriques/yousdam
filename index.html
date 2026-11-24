@@ -1006,7 +1006,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "4.7";
+const VERSION = "4.8";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1414,6 +1414,7 @@ function render(anim){
   }
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
   placerPoint();
+  setTimeout(natifMaj, 400);
   const lmm = document.querySelector(".lm-mois .on"); if(lmm) lmm.parentElement.scrollLeft = lmm.offsetLeft - 24;
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
 }
@@ -1535,6 +1536,37 @@ function ouvrirProgression(){
     </div>
     <div class="note" style="margin-top:4px">Objectif 2027 : 50 000 DH par mois. Ce mois : ${Math.round(P.mc / 500)} %.</div>`);
   document.querySelectorAll("#sheetBody .jx-sem > div").forEach((d, i) => d.style.animationDelay = i * 40 + "ms");
+}
+
+/* APK : rappels Android (échéances, défi du jour, commandes en attente) et widget d'écran d'accueil */
+let SIG_NATIF = "";
+function natifMaj(){
+  if(typeof NATIF === "undefined" || !NATIF || !NATIF.programmer || !S) return;
+  const sig = [S.maj, S.attente.length, S.livrees.length, today()].join("|");
+  if(sig === SIG_NATIF) return; SIG_NATIF = sig;
+  const {R, W} = donneesNatif();
+  try{ NATIF.programmer(JSON.stringify(R)); }catch(e){}
+  try{ NATIF.majWidget(JSON.stringify(W)); }catch(e){}
+}
+function donneesNatif(){
+  const P = progression();
+  const a = (d, hh, mm) => { const x = new Date(d + "T00:00:00"); x.setHours(hh, mm || 0, 0, 0); return x.getTime(); };
+  const R = [], plus = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return iso(x); };
+  let id = 100;
+  S.reglements.filter(r => r.echeance && r.echeance > today() && !/encaiss/i.test(r.remarque) && r.echeance <= plus(today(), 60)).forEach(r => {
+    const bq = (typeof banque === "function" && banque(r.ref)) || null, quoi = `${nomPropre(r.client)} · ${dh(r.montant)}${bq ? " · " + bq[0] : ""}`;
+    R.push({id: id++, quand: a(plus(r.echeance, -3), 9), titre: "Échéance dans 3 jours", texte: quoi});
+    R.push({id: id++, quand: a(r.echeance, 9), titre: "Échéance aujourd'hui", texte: quoi});
+  });
+  const dim = d => new Date(d + "T12:00:00").getDay() === 0;
+  if(!P.aujd.ok && !dim(today())) R.push({id: 900, quand: a(today(), 18), titre: "Défi du jour", texte: `Encore ${dh(P.cible - P.aujd.benef)} pour réussir ton défi (${dh(P.cible)}).`});
+  const dem = plus(today(), dim(plus(today(), 1)) ? 2 : 1);
+  R.push({id: 901, quand: a(dem, 8, 30), titre: "Nouveau défi du jour", texte: `Objectif du jour : ${dh(P.cible)} de bénéfice. Série en cours : ${P.serie}.`});
+  S.attente.filter(c => ecart(c.date) >= 2).slice(0, 5).forEach((c, k) => R.push({id: 950 + k, quand: a(plus(today(), 1), 10), titre: "Commande en attente",
+    texte: `${nomPropre(c.client)} · ${num(c.palettes)} pal. pour ${c.chantier || c.ville || "—"} depuis ${ecart(c.date) + 1} jours.`}));
+  const pcMois = Math.round(Math.min(1, S.analyse.mois_courant.benef / (S.analyse.objectif || 30000)) * 100);
+  return {R, W: ({mois: `${MOIS[new Date().getMonth()].replace(/^./, x => x.toUpperCase())} · ${NIVEAUX[P.nv][1]}`, benef: dh(S.analyse.mois_courant.benef), pc: pcMois,
+    defi: P.aujd.ok ? "✓ Défi du jour réussi" : `Défi du jour : ${dh(P.aujd.benef)} / ${dh(P.cible)}`, livrer: S.attente.length ? `${S.attente.length} commande${S.attente.length > 1 ? "s" : ""} à livrer` : `${pcMois} % de l'objectif`})};
 }
 
 /* ============ ACCUEIL ============ */
