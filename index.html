@@ -1020,7 +1020,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "4.9";
+const VERSION = "5.0";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1686,7 +1686,7 @@ function vCommandes(){
           <div class="cap-tags"><span class="tag-r">${esc(c.ville || "Casa")}</span><span class="tag-r ${ageCls(c.date)}">${depuis(c.date)}</span>${c.grue ? `<span class="tag-r">grue</span>` : ""}</div></div>
       </div>
       ${c.dans_excel ? `<div class="alert" style="background:var(--green-soft);color:var(--label);margin:12px 0 0;border-radius:18px">Déjà livrée dans ton Excel le <b>${dcourt(c.dans_excel.date)}</b> (ligne ${c.dans_excel.row}${c.dans_excel.client_final?", "+esc(c.dans_excel.client_final):""}).
-        <button class="btn btn-green btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">Oui, c'est elle : classer</button></div>` : ""}
+        <button class="btn btn-gray btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">C'est la même ligne : classer</button></div>` : ""}
       <div class="ronds">
         <button class="rond r-ok press" onclick="ouvrirLivrer('${c.id}')" aria-label="Livrée">${ic("check",22)}<small>Livrée</small></button>
         ${c.contact ? `<a class="rond press" href="tel:${esc(telNum(c.contact))}" aria-label="Appeler">${ic("phone",20)}<small>Appeler</small></a>
@@ -1752,11 +1752,11 @@ function vLivrees(){
         <div style="flex:1;min-width:0"><div class="who">${esc(L.client_final || L.chantier || c.client)}</div><div class="what">${esc(nomPropre(c.client))} · ${esc(L.type)} · ${dcourt(L.date)}</div></div>
         <div class="end" style="font-weight:800;color:var(--green)">+${dh(benefL(L))}</div></div>
         ${c.dans_excel ? `<div class="alert" style="background:var(--orange-soft);color:var(--label);margin:12px 0 0">Tu l'as peut-être déjà saisie dans Excel le <b>${dcourt(c.dans_excel.date)}</b> (ligne ${c.dans_excel.row}).
-          <button class="btn btn-green btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">C'est la même : relier sans ajouter</button></div>` : ""}
+          <button class="btn btn-gray btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">C'est exactement la même : ne pas ajouter</button></div>` : ""}
         ${c.erreur ? `<div class="alert" style="background:var(--red-soft);color:var(--label);margin:12px 0 0"><b>Le PC n'a pas pu l'écrire :</b> ${esc(c.erreur.msg||"")}
           <button class="btn btn-gray btn-sm press" style="margin-top:10px;width:100%" onclick="reessayer('${c.id}')">Réessayer</button></div>` : ""}
         ${c.en_file && !c.erreur ? `<div class="alert" style="background:var(--fill);color:var(--label);margin:12px 0 0">${c.excel_envoye ? `Envoyée au PC le ${dcourt(c.excel_envoye)}. Elle sera marquée « faite » quand tu mettras à jour l'Excel.` : "Prête à partir : touche « Envoyer au PC » en haut de la liste."} Elle compte déjà dans tes chiffres.</div>` : `
-        <div class="acts"><button class="btn ${c.dans_excel?"btn-gray":"btn-fill"} btn-sm press" onclick="unExcel('${c.id}')">${ic("excel",17)} ${c.dans_excel?"Ajouter quand même":"Passer à Excel"}</button>
+        <div class="acts"><button class="btn btn-fill btn-sm press" onclick="unExcel('${c.id}')">${ic("excel",17)} ${c.dans_excel?"Passer à Excel quand même":"Passer à Excel"}</button>
         <button class="btn btn-gray btn-sm press" style="flex:0 0 auto" onclick="remettre('${c.id}')">Pas livrée</button></div>`}</div>`; }).join("")}` : ""}
     ${cerclesLivrees()}`;
 }
@@ -2075,6 +2075,14 @@ const versLigne = (client, v) => { const typ = v.type || "B7", pal = parseInt(v.
     pv: parseFloat(String(v.pv).replace(",", ".")), ville: v.ville || "Casa", chantier: v.chantier || "", client_final: v.client_final || "", decharge: !!v.decharge}; };
 
 async function classer(id, row){
+  const c = S.a_excel.find(x => x.id === id) || S.attente.find(x => x.id === id), L = c ? (c.livraison || c) : {};
+  const v = S.livrees.find(x => x.row === row) || toutesVentes().find(x => x.row === row);
+  const ok = await dialogue({titre: "Ne pas ajouter à l'Excel ?", danger: true, ok: "Oui, c'est la même", annuler: "Non",
+    texte: `Ta livraison : ${dcourt(L.date)} · ${num(L.palettes)} pal. · ${L.chantier || ""} ${L.client_final ? "(" + L.client_final + ")" : ""}
+Ligne ${row} de ton Excel : ${v ? `${dcourt(v.date)} · ${num(v.palettes)} pal. · ${v.chantier || ""} ${v.client_final ? "(" + v.client_final + ")" : ""}` : "?"}
+
+Si ce sont deux livraisons différentes, réponds Non et touche « Passer à Excel ».`});
+  if(!ok) return;
   try{ await api("/api/classer", {id, row}); await load(); toast("Classée : déjà dans ton Excel"); } catch(e){ toast(e.message, false); }
 }
 async function reessayer(id){ try{ await api("/api/reessayer", {id}); await load(); toast("Renvoyé au PC"); } catch(e){ toast(e.message, false); } }

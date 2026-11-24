@@ -131,7 +131,7 @@ async function relierEnvoisRetrouves() {
   const liens = [];
   for (const c of cmds) {
     if (c.statut !== "livree" || !c.excel_demande || c.excel_row) continue;
-    const L = c.livraison, m = dansExcel(v0, prises, c.client, L.palettes, L.client_final, L.chantier, L.date, -3, 3);
+    const L = c.livraison, m = dansExcel(v0, prises, c.client, L.palettes, L.client_final, L.chantier, L.date, 0, 0);   // le PC écrit la date exacte
     if (m) { liens.push([c.id, m.row]); prises.add(m.row); }
   }
   if (liens.length) await majAppli(d => liens.forEach(([id, row]) => { const c = d.commandes.find(x => x.id === id); if (c) { c.excel_row = row; delete c.excel_demande; } }));

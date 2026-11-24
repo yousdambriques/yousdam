@@ -152,7 +152,7 @@ function etatComplet() {
   attente.forEach(c => c.dans_excel = dansExcel(v0, prises, c.client, c.palettes, c.client_final, c.chantier, c.date, 0, 14));
   const aExcel = cmds.filter(c => c.statut === "livree" && !ligneExcelDe(c)).map(c => ({...c, en_file: !!c.excel_demande,
     erreur: (CACHE.fait.erreurs || {})[c.id] || null,
-    dans_excel: c.excel_demande ? null : dansExcel(v0, prises, c.client, c.livraison.palettes, c.livraison.client_final, c.livraison.chantier, c.livraison.date, -3, 3)}));
+    dans_excel: c.excel_demande ? null : dansExcel(v0, prises, c.client, c.livraison.palettes, c.livraison.client_final, c.livraison.chantier, c.livraison.date, 0, 0)}));   // même jour seulement
   const prospects = CACHE.prospects.map(p => ({...p, ...((A.prospects || {})[p.feuille + "|" + p.nom] || {})}));
   const livrees = ventes.slice().sort((x, y) => y.date.localeCompare(x.date) || (y.row || 1e9) - (x.row || 1e9)).slice(0, 60);
   const noms = [...new Set(v0.map(x => x.client))].sort((x, y) => x.toLowerCase().localeCompare(y.toLowerCase()));

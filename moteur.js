@@ -115,7 +115,7 @@ function prixDefaut(ventes, client, typ, ville, tarifs) {
 }
 function doublon(ventes, client, palettes, client_final, jour) {
   const ck = cle(client), cf = cle(client_final);
-  const x = ventes.find(x => x.ck === ck && x.palettes === +palettes && (!cf || cle(x.client_final) === cf) && Math.abs(ecartJours(x.date, jour)) <= 10);
+  const x = ventes.find(x => x.ck === ck && x.palettes === +palettes && (!cf || cle(x.client_final) === cf) && ecartJours(x.date, jour) === 0);   // même jour seulement (livraisons fréquentes au même chantier)
   return x ? {date: x.date, row: x.row, chantier: x.chantier, client_final: x.client_final} : null;
 }
 function dansExcel(ventes, prises, client, palettes, client_final, chantier, jour, avant, apres) {
