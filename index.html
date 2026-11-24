@@ -1011,10 +1011,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.4"></script>
-<script src="moteur.js?v=5.4"></script>
-<script src="app.js?v=5.4"></script>
-<script src="local.js?v=5.4"></script>
+<script src="config.js?v=5.5"></script>
+<script src="moteur.js?v=5.5"></script>
+<script src="app.js?v=5.5"></script>
+<script src="local.js?v=5.5"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1031,7 +1031,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.4";
+const VERSION = "5.5";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1530,9 +1530,10 @@ const NIVEAUX = [[0, "Apprenti", "#9AA0A6"], [5000, "Débrouillard", "#8C6A4F"],
   [20000, "Grossiste", "#8E99A8"], [25000, "Négociant", "#2E9B57"], [30000, "Bâtisseur", "#D4A017"], [40000, "Big Boss", "#8455D6"], [50000, "Légende", "#4F7CFF"]];
 const niveauDe = v => { let n = 0; NIVEAUX.forEach((x, i) => { if(v >= x[0]) n = i; }); return n; };
 function toutesVentes(){ try{ return ventesCompletes().ventes; }catch(e){ return S.livrees || []; } }
+const ventesExcel = () => toutesVentes().filter(v => !v.virtuelle);
 function joursOuvres(cleMois){ const [y, m] = cleMois.split("-").map(Number); let n = 0; for(let d = 1; d <= new Date(y, m, 0).getDate(); d++) if(new Date(y, m - 1, d).getDay() !== 0) n++; return n; }
 function progression(){
-  const V = toutesVentes(), obj = S.analyse.objectif || 30000, auj = today(), mk = auj.slice(0, 7);
+  const V = ventesExcel(), obj = S.analyse.objectif || 30000, auj = today(), mk = auj.slice(0, 7);
   const parJour = {}; V.forEach(v => { parJour[v.date] = (parJour[v.date] || 0) + (v.benef || 0); });
   const cible = Math.round(obj / joursOuvres(mk));
   const jour = d => { const x = new Date(d + "T12:00:00"); return {d, dim: x.getDay() === 0, benef: parJour[d] || 0, ok: (parJour[d] || 0) >= Math.round(obj / joursOuvres(d.slice(0, 7)))}; };
@@ -1653,7 +1654,7 @@ function spark(vals, color){
 /* fil d'activité : dernières livraisons et derniers règlements, avec l'initiale du client */
 function filRecent(){
   const L = S.livrees.slice(0, 6).map(v => ({d: v.date, nom: v.client, t: `${num(v.palettes)} pal. ${esc(v.type || "")} livrées`,
-    s: esc(v.client_final || v.chantier || v.ville || ""), m: `+${dh(v.benef)}`, cls: "up"}));
+    s: esc(v.client_final || v.chantier || v.ville || "") + (v.virtuelle ? " · pas encore dans l'Excel" : ""), m: `+${dh(v.benef)}`, cls: v.virtuelle ? "" : "up"}));
   const R = S.reglements.filter(r => r.echeance && r.echeance <= today()).sort((a, b) => b.echeance.localeCompare(a.echeance)).slice(0, 4)
     .map(r => ({d: r.echeance, nom: r.client, t: `${/^chq/i.test(r.ref) ? "Chèque" : "Effet"} ${/impay/i.test(r.remarque) ? "impayé" : "encaissé"}`,
       s: esc(joliPeriode(r.periode)), m: dh(r.montant), cls: /impay/i.test(r.remarque) ? "down" : ""}));
@@ -1760,14 +1761,15 @@ function cerclesLivrees(){
   if(!mois.length) return `<div class="group"><div class="empty">Aucune livraison dans ton Excel.</div></div>`;
   if(!LVM || !parMois.has(LVM)) LVM = mois[0];
   const L = parMois.get(LVM).slice().sort((x, y) => y.date.localeCompare(x.date));
-  const ben = L.reduce((s, v) => s + v.benef, 0), pal = L.reduce((s, v) => s + v.palettes, 0), pc = Math.min(1, ben / obj);
-  const parC = new Map(); L.forEach(v => { const k = cleNom(v.client); const o = parC.get(k) || {nom: v.client, b: 0, n: 0, p: 0}; o.b += v.benef; o.n++; o.p += v.palettes; parC.set(k, o); });
+  const LX = L.filter(v => !v.virtuelle), attente = L.length - LX.length;   // totaux = Excel ; le reste est marqué « Pas encore dans l'Excel »
+  const ben = LX.reduce((s, v) => s + v.benef, 0), pal = LX.reduce((s, v) => s + v.palettes, 0), pc = Math.min(1, ben / obj);
+  const parC = new Map(); LX.forEach(v => { const k = cleNom(v.client); const o = parC.get(k) || {nom: v.client, b: 0, n: 0, p: 0}; o.b += v.benef; o.n++; o.p += v.palettes; parC.set(k, o); });
   const cs = [...parC.values()].sort((x, y) => y.b - x.b), max = cs[0] ? cs[0].b : 1;
   const jours = []; L.forEach(v => { const g = jours.at(-1); if(g && g.d === v.date) g.v.push(v); else jours.push({d: v.date, v: [v]}); });
   return `<div class="lm-mois">${mois.map(k => `<button class="${k === LVM ? "on" : ""}" onclick="choisirMoisLiv('${k}')">${MC[+k.slice(5) - 1].replace(".", "")}<small>${k.slice(2, 4)}</small></button>`).join("")}</div>
     <div class="lm-corps">
       <div class="lm-tot"><small>${moisLong(LVM)}</small><b><span data-count="${Math.round(ben)}">${num(ben)}</span> <em>DH</em></b>
-        <div class="lm-sub">${L.length} livraison${L.length > 1 ? "s" : ""} · ${num(pal)} palettes${LVM === today().slice(0, 7) ? ` · défi ${Math.round(pc * 100)} %` : ""}</div>
+        <div class="lm-sub">${LX.length} livraison${LX.length > 1 ? "s" : ""} · ${num(pal)} palettes${LVM === today().slice(0, 7) ? ` · défi ${Math.round(pc * 100)} %` : ""}${attente ? ` · ${attente} pas encore dans l'Excel` : ""}</div>
         <i class="lm-obj"><i style="width:${(pc * 100).toFixed(1)}%;background:${pc >= 1 ? "var(--green)" : pc >= .7 ? "var(--orange)" : "var(--brick)"}"></i></i></div>
       <div class="lm-t">Clients du mois</div>
       <div class="lm-cl">${cs.map((o, k) => `<button class="lm-c press" style="--t:${teinte(o.nom)};--i:${k}" onclick="ouvrirClientMois('${esc(cleNom(o.nom))}')">
@@ -1775,7 +1777,7 @@ function cerclesLivrees(){
         <i class="lm-bar"><i style="width:${Math.max(4, o.b / max * 100).toFixed(1)}%"></i></i>
         <small>${o.n} livraison${o.n > 1 ? "s" : ""} · ${num(o.p)} pal. · voir sa situation</small></div><span class="chev">${ic("chev", 15)}</span></button>`).join("")}</div>
       <div class="lm-t">Livraisons</div>
-      <div class="tl">${jours.map((g, gi) => `<div class="tl-j"><span>${jourLabel(g.d)}</span><b>+${dh(g.v.reduce((s, v) => s + v.benef, 0))}</b></div>
+      <div class="tl">${jours.map((g, gi) => `<div class="tl-j"><span>${jourLabel(g.d)}</span><b>+${dh(g.v.filter(v => !v.virtuelle).reduce((s, v) => s + v.benef, 0))}</b></div>
         <div class="tl-c" style="--i:${Math.min(gi, 8)}">${g.v.map(v => `<div class="lv tl-n">${avatar(v.client)}
           <div class="lv-c"><div class="lv-dest">${esc(v.chantier || v.ville || "—")}${v.client_final ? ` <span>· ${esc(v.client_final)}</span>` : ""}</div>
             <div class="lv-m">${esc(nomPropre(v.client))} · <b class="${v.type === "B7" ? "t7" : "t10"}">${num(v.palettes)} pal. ${esc(v.type)}</b>${v.ville && v.chantier ? ` · ${esc(v.ville)}` : ""}</div></div>

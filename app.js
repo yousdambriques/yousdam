@@ -131,7 +131,7 @@ const trouver = (d, id) => { const c = d.commandes.find(x => x.id === id); if (!
 
 /* ---------- état complet pour l'interface (même forme que /api/etat sur PC) ---------- */
 function ligneExcelDe(c) { return c.excel_row || (CACHE.fait.faits[c.id] || {}).row || null; }
-/* les livraisons envoyées à Excel mais pas encore écrites par le PC comptent déjà dans les chiffres */
+/* livraisons envoyées à Excel mais pas encore écrites : affichées dans les listes, jamais comptées dans les chiffres */
 function ventesCompletes() {
   const {ventes: v0, villes} = CACHE.classeur, cmds = CACHE.appli.commandes;
   const brut = {}; v0.forEach(v => { if (!(v.ck in brut)) brut[v.ck] = v.brut; });
@@ -147,7 +147,7 @@ function etatComplet() {
   const A = CACHE.appli, cmds = A.commandes;
   const {ventes, brut} = ventesCompletes();
   const attente = cmds.filter(c => c.statut === "attente").map(c => ({...c}));
-  const a = analyse(ventes, attente, regs, solde, A.objectif || 30000);
+  const a = analyse(v0, attente, regs, solde, A.objectif || 30000);   // chiffres = Excel uniquement
   const prises = new Set(cmds.map(ligneExcelDe).filter(Boolean));
   attente.forEach(c => c.dans_excel = dansExcel(v0, prises, c.client, c.palettes, c.client_final, c.chantier, c.date, 0, 14));
   const aExcel = cmds.filter(c => c.statut === "livree" && !ligneExcelDe(c)).map(c => ({...c, en_file: !!c.excel_demande,
@@ -161,10 +161,10 @@ function etatComplet() {
   const auj = new Date().toISOString().slice(0, 10), virt = ventes.filter(v => v.virtuelle);
   const echus = regs.filter(r => r.echeance && r.echeance <= auj).reduce((s, r) => s + r.montant, 0);
   const avenir = regs.filter(r => r.echeance && r.echeance > auj).sort((x, y) => x.echeance.localeCompare(y.echeance));
-  const courant = solde.courant - solde.encaisse + echus - virt.reduce((s, v) => s + v.tu, 0);
+  const courant = solde.courant - solde.encaisse + echus;
   const usine = {courant, initial: solde.initial, avenir: avenir.reduce((s, r) => s + r.montant, 0), apres: courant + avenir.reduce((s, r) => s + r.montant, 0),
     prochaine: avenir[0] || null, en_attente_excel: virt.length};
-  const esp = CACHE.classeur.especes || [], benefTotal = (CACHE.classeur.sommeO || 0) + virt.reduce((s, v) => s + v.benef, 0);
+  const esp = CACHE.classeur.especes || [], benefTotal = CACHE.classeur.sommeO || 0;
   const tire = esp.reduce((s, e) => s + e.montant, 0);
   const especes = {liste: esp, tire, benef_total: benefTotal, reste: benefTotal - tire};
   const m = CACHE.maj ? new Date(CACHE.maj) : new Date();
@@ -214,7 +214,7 @@ async function routeur(path, body) {
     case "/api/maj": { const i = await STOCK.infos(CHEMINS.excel), a = await STOCK.infos(F_APPLI), f = await STOCK.infos(F_FAIT);
       return {ts: i && i.etag, app: (a && a.etag) + "|" + (f && f.etag)}; }
     case "/api/prix": return prixDefaut(CACHE.classeur.ventes, q.client || "", q.type || "B7", q.ville || "Casa", CACHE.appli.tarifs || TARIFS_DEFAUT);
-    case "/api/situation": return {lignes: situation(ventesCompletes().ventes, q.client || "")};
+    case "/api/situation": return {lignes: situation(CACHE.classeur.ventes, q.client || "")};
     case "/api/lire_message": return {commandes: lireMessageWA(b.texte || "")};
     case "/api/verifier_livraison": return {doublon: doublon(CACHE.classeur.ventes, b.client, b.palettes, b.client_final || "", (b.date || aujourdhui()).slice(0, 10))};
     case "/api/commande": {
