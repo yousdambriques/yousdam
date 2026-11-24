@@ -1011,10 +1011,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.2"></script>
-<script src="moteur.js?v=5.2"></script>
-<script src="app.js?v=5.2"></script>
-<script src="local.js?v=5.2"></script>
+<script src="config.js?v=5.3"></script>
+<script src="moteur.js?v=5.3"></script>
+<script src="app.js?v=5.3"></script>
+<script src="local.js?v=5.3"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1031,7 +1031,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.2";
+const VERSION = "5.3";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1206,10 +1206,11 @@ async function envoyerAuPC(silencieux){
     await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
     await load(); toast(`Envoyé au PC : ${e.nb} ligne${e.nb>1?"s":""} pour ton Excel`); return;
   }
-  if(typeof NATIF !== "undefined" && NATIF && NATIF.enregistrer){
+  if(typeof NATIF !== "undefined" && NATIF && NATIF.envoyerOneDrive){
     const texte = await e.fichier.text();
-    const ok = await new Promise(r => { window.onEnvoiEnregistre = r; NATIF.enregistrer(e.fichier.name, texte); });
-    if(!ok){ toast("Pas enregistré. Touche « Envoyer au PC » pour réessayer.", false); return; }
+    NATIF.envoyerOneDrive(e.fichier.name, texte);
+    const ok = await dialogue({titre: "Chargé dans OneDrive ?", texte: "Dans OneDrive, choisis le dossier YOUSDAM-appli puis touche « Charger ». Ton PC écrira la ligne dans l'Excel.", ok: "Oui, c'est chargé", annuler: "Pas encore"});
+    if(!ok){ toast("Pas envoyé. Touche « Envoyer au PC » pour réessayer.", false); return; }
     await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
     await load(); toast(`Envoyé au PC : ${e.nb} ligne${e.nb>1?"s":""} pour ton Excel`); return;
   }
@@ -2062,7 +2063,7 @@ function cellulesExcel(o){
 }
 function apercuExcel(nouvelles){
   return new Promise(res0 => {
-    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && (NATIF.aDossier() || NATIF.enregistrer)) setTimeout(() => envoyerAuPC(true), 1200); };
+    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && (NATIF.aDossier() || NATIF.envoyerOneDrive)) setTimeout(() => envoyerAuPC(true), 1200); };
     const vraies = S.livrees.filter(v => !v.virtuelle && v.row).sort((a,b) => b.row - a.row);
     const avant = vraies.slice(0, 1);
     const enAttente = S.livrees.filter(v => v.virtuelle).length;      // déjà envoyées, pas encore écrites
