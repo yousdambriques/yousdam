@@ -786,7 +786,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "2.6";
+const VERSION = "2.7";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1834,7 +1834,7 @@ function ouvrirThemes(){
       ${NOUVELLE ? `<button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>` : `<button class="btn btn-gray btn-sm press" onclick="verifierMaj().then(()=>{ouvrirThemes(); if(!NOUVELLE) toast('Tu as la dernière version')})">Vérifier</button>`}</div></div>
     <div class="group"><button class="item" onclick="ouvrirDonnees()"><div class="body"><div class="ttl">Mes données</div><div class="meta">Excel, photos des règlements, prospection</div></div><span class="chev">${ic("chev",16)}</span></button></div>
     <div class="flabel">Synchronisation automatique</div>
-    <div class="group"><div class="item" style="flex-wrap:wrap"><div class="body" style="min-width:100%"><div class="ttl">Lien OneDrive de « donnees-yousdam.chiffre »</div>
+    <div class="group"><div class="item" style="flex-wrap:wrap"><div class="body" style="min-width:100%"><div class="ttl">Lien OneDrive de « synchro-yousdam.chiffre »</div>
       <div class="meta">${localStorage.getItem("sync_cle") ? "Clé présente sur ce téléphone." : "Importe une fois « donnees-yousdam » pour donner la clé."} ${localStorage.getItem("sync_vu") ? "Dernière synchro : " + esc(dcourt(localStorage.getItem("sync_vu"))) + " à " + esc(new Date(localStorage.getItem("sync_vu")).toTimeString().slice(0,5)) : ""}</div></div>
       <input id="syncLien" placeholder="https://1drv.ms/…" value="${esc(localStorage.getItem("sync_lien") || "")}" style="flex:1;min-width:0;margin-top:10px;padding:11px 12px;border-radius:12px;border:0;background:var(--fill);font:inherit;font-size:14px">
       <button class="btn btn-fill btn-sm press" style="margin:10px 0 0 8px" onclick="localStorage.setItem('sync_lien', $('#syncLien').value.trim()); sync(true)">Tester</button></div></div>

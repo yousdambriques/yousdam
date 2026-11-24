@@ -78,7 +78,7 @@ class StockLocal {
   }
 }
 
-/* synchronisation automatique : lien de partage OneDrive vers « donnees-yousdam.chiffre »
+/* synchronisation automatique : lien de partage OneDrive vers « synchro-yousdam.chiffre »
    (AES-GCM 256, la clé vient du fichier lisible importé une fois ; le lien seul ne permet pas de lire les données) */
 const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/=+$/, "").replace(/\//g, "_").replace(/\+/g, "-");
 async function synchroniser() {
@@ -90,7 +90,7 @@ async function synchroniser() {
   catch (e) { throw new Error("Pas de connexion à OneDrive. Vérifie internet et réessaie."); }
   if (!rep.ok) throw new Error(rep.status === 404 || rep.status === 403 ? "Le lien OneDrive ne marche plus. Recrée-le et colle-le dans Réglages." : "OneDrive ne répond pas (" + rep.status + ").");
   const b = new Uint8Array(await rep.arrayBuffer());
-  if (String.fromCharCode(...b.slice(0, 4)) !== "YSD1") throw new Error("Ce lien ne pointe pas vers « donnees-yousdam.chiffre ».");
+  if (String.fromCharCode(...b.slice(0, 4)) !== "YSD1") throw new Error("Ce lien ne pointe pas vers « synchro-yousdam.chiffre ».");
   const k = await crypto.subtle.importKey("raw", Uint8Array.from(atob(cle), c => c.charCodeAt(0)), "AES-GCM", false, ["decrypt"]);
   let clair;
   try { clair = await crypto.subtle.decrypt({name: "AES-GCM", iv: b.slice(4, 16), additionalData: b.slice(0, 4)}, k, b.slice(16)); }
