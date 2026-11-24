@@ -215,7 +215,9 @@ function analyse(ventes, attente, regs, solde, objectif, today) {
 }
 
 /* ---------- lecture d'un message WhatsApp ---------- */
-const UNITES = {solo: 24, remorque: 48, semi: 48, camion: 48};
+const UNITES = {solo: 24, remorque: 48, semi: 48, camion: 48, plateau: 48};
+// plateau : 44, 48 ou 52 palettes ; avec grue : 44 ou 48 seulement
+const CHOIX_PLATEAU = [44, 48, 52], CHOIX_GRUE = [44, 48];
 const VILLES_WA = [["jadida", "Jadida"], ["azemmour", "Azemour"], ["azemour", "Azemour"], ["mohammedia", "Mohamadia"], ["mohamadia", "Mohamadia"], ["mohammadia", "Mohamadia"],
   ["mansouria", "Mohamadia"], ["marrakech", "Marrakech"], ["kech", "Marrakech"], ["benguerir", "Benguerir"], ["bouznika", "Bouznika"], ["settat", "Settat"],
   ["khouribga", "Khouribga"], ["berrechid", "Berrechid"], ["mediouna", "Mediouna"], ["soualem", "Had Soualem"], ["temara", "Temara"], ["rabat", "Rabat"],
@@ -224,8 +226,12 @@ const sansAccent = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase(
 function villeDe(chantier) { const p = sansAccent(chantier || ""); for (const [k, v] of VILLES_WA) if (new RegExp(`\\b${k}\\b`).test(p)) return v; return "Casa"; }
 function lireBloc(txt) {
   const p = sansAccent(txt), o = {palettes: null, unite: "", a_confirmer: false, type: "B7", chantier: "", client_final: "", contact: "", brut: txt.trim()};
-  let m = p.match(/(\d+)\s*(solos?|remorques?|semis?|camions?)\b/);
-  if (m) { const u = m[2].replace(/s$/, ""); o.unite = u; o.palettes = +m[1] * UNITES[u]; o.a_confirmer = u !== "solo"; }
+  const p1 = p.replace(/\b(?:un|une)\s+(?=(?:solo|remorque|semi|camion|plateau))/g, "1 ");
+  let m = p1.match(/(\d+)\s*(solos?|remorques?|semis?|camions?|plateaux|plateaus?)\b/);
+  if (m) { const u = m[2].replace(/(x|s)$/, ""); o.unite = u; o.palettes = +m[1] * UNITES[u]; o.a_confirmer = u !== "solo"; }
+  else if (/\bplateau/.test(p)) { o.unite = "plateau"; o.palettes = 48; o.a_confirmer = true; }
+  o.grue = /\bgrue\b/.test(p);
+  if (o.unite !== "solo" && o.a_confirmer) o.choix = o.grue ? CHOIX_GRUE : CHOIX_PLATEAU;
   else if ((m = p.match(/(\d+)\s*pal/))) o.palettes = +m[1];
   if ((m = p.match(/\b(?:brs?|briques?|b)\s*\.?\s*(7|10|12|15|50)\b/))) o.type = {7: "B7", 10: "B10", 12: "B12", 15: "B12", 50: "B50"}[m[1]];
   if ((m = txt.match(/chantier\s*:?\s*([^\n(]*)(?:\(([^)]*)\))?/i))) { o.chantier = m[1].replace(/^[\s:-]+|[\s:-]+$/g, ""); o.client_final = (m[2] || "").trim(); }
@@ -236,7 +242,7 @@ function lireBloc(txt) {
 }
 function lireMessageWA(message) {
   const txt = message.replace(/[‎‏‪-‮⁦-⁩\xa0]/g, " ");
-  return txt.split(/(?=merci de (?:me |nous )?livrer)/i).filter(b => /livrer|chantier|solo|remorque/i.test(b)).map(lireBloc).filter(c => c.palettes || c.chantier);
+  return txt.split(/(?=merci de (?:me |nous )?livrer)/i).filter(b => /livrer|chantier|solo|remorque|plateau/i.test(b)).map(lireBloc).filter(c => c.palettes || c.chantier);
 }
 
 /* ---------- vérification rapide (window.testMoteur()) ---------- */
@@ -244,6 +250,10 @@ function testMoteur() {
   const [a, b] = lireMessageWA("Bonjour\nMerci de me livrer\n1SOLO de  brs 7\nChantier quartier nord  (Y )\nContact :0600000000\n\nMerci de me livrer\n1 remorque brs 7\nChantier :  el jadida  (X )\nContact ‪+212 600 00 00 00‬");
   console.assert(a.palettes === 24 && a.type === "B7" && a.chantier === "Quartier nord" && a.client_final === "Y" && a.ville === "Casa" && a.quantite === 6144 && !a.a_confirmer, "wa 1", a);
   console.assert(b.palettes === 48 && b.ville === "Jadida" && b.a_confirmer && b.contact.startsWith("+212"), "wa 2", b);
+  const [c] = lireMessageWA("Merci de me livrer un plateau avec grue brs 7\nChantier : bouskoura (Z)");
+  console.assert(c.palettes === 48 && c.grue && c.choix.join() === "44,48", "wa plateau grue", c);
+  const [e] = lireMessageWA("Merci de me livrer 1 plateau brs 10\nChantier : had soualem (Z)");
+  console.assert(e.palettes === 48 && !e.grue && e.choix.join() === "44,48,52" && e.type === "B10", "wa plateau", e);
   const V = Array.from({length: 40}, (_, i) => ({row: i, date: ajouteJours("2026-11-24", -3 * i), client: "A", ck: "a", palettes: 24, type: "B7", qte: 6144, pu: 2.00, tu: 0, pv: 2.10,
     ca: 12902.4, ville: "Casa", chantier: "x", client_final: "y", decharge: "Non", mdech: 0, benef: 614.4, paiement: "Payé"}));
   const A = analyse(V, [], [], {}, 30000, "2026-11-24");

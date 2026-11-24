@@ -763,6 +763,8 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 .du .sub{display:flex;gap:18px;margin-top:12px;font-size:14px;color:var(--sec)}
 .du .sub b{color:var(--label)}
 @media (prefers-reduced-motion:reduce){.rise,.fade{animation:fade .2s ease both!important}.wall i::before{animation:none!important}.press:active{transform:none}.sheet,.tabs .ind,.seg .thumb,.toast,.dlg{transition:opacity .2s ease!important}}
+html.natif .tabs,html.natif .top,html.natif .busy div{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:color-mix(in srgb,var(--card) 96%,transparent)!important}
+html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -786,7 +788,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.0";
+const VERSION = "3.1";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -950,8 +952,15 @@ function ouvrirDonnees(){
     <div class="donnee"><div class="ic">${ic("phone",22)}</div><div class="tx"><b>Prospection</b><span>${S.prospects.length ? S.prospects.length + " prospects" : "pas encore ajoutée"}</span></div>
       <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" hidden onchange="importer('prosp', this)"></label></div>`);
 }
-async function envoyerAuPC(){
-  const e = fichierEnvoi(); if(!e) return toast("Rien à envoyer", false);
+async function envoyerAuPC(silencieux){
+  const e = fichierEnvoi(); if(!e) return silencieux ? null : toast("Rien à envoyer", false);
+  if(typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()){
+    const err = NATIF.deposer(e.fichier.name, await e.fichier.text());
+    if(err){ if(!silencieux) toast(err, false); return; }
+    await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
+    await load(); toast(`Envoyé au PC : ${e.nb} ligne${e.nb>1?"s":""} pour ton Excel`); return;
+  }
+  if(silencieux) return;
   try{
     if(await partagerNatif(e.fichier)) {}
     else if(navigator.canShare && navigator.canShare({files:[e.fichier]})) await navigator.share({files:[e.fichier], title:e.fichier.name});
@@ -1000,9 +1009,9 @@ function boutonMaj(cls, style, lib){
 }
 /* APK : relier une fois le fichier « donnees-yousdam » de l'app OneDrive, puis tout se met à jour en tirant vers le bas */
 async function relierOneDrive(){
-  if(!(await dialogue({titre: "Relier ton OneDrive", texte: "OneDrive va s'ouvrir : va dans YOUSDAM-appli et choisis « donnees-yousdam » (le fichier avec les flèches < >). Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
+  if(!(await dialogue({titre: "Relier ton OneDrive", texte: "OneDrive va s'ouvrir : ouvre le dossier YOUSDAM-appli, puis touche « Utiliser ce dossier » en bas, et « Autoriser ». Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
   window.onOneDriveChoisi = async ok => { if(!ok) return toast("Aucun fichier choisi", false); toast("OneDrive relié : " + NATIF.nomOneDrive()); await sync(true); if($("#sheet").classList.contains("on") && $("#sheetTitle").textContent !== "Mes données") ouvrirThemes(); };
-  NATIF.choisirOneDrive();
+  NATIF.choisirDossierOneDrive();
 }
 /* partage (WhatsApp…) : par Android dans l'APK, sinon par le navigateur */
 async function partagerNatif(fichier){
@@ -1010,6 +1019,7 @@ async function partagerNatif(fichier){
   const b = new Uint8Array(await fichier.arrayBuffer()); let s = ""; for(let i = 0; i < b.length; i += 32768) s += String.fromCharCode(...b.subarray(i, i + 32768));
   NATIF.partager(btoa(s), fichier.name, fichier.type || "application/octet-stream"); return true;
 }
+if(typeof YousdamNatif !== "undefined") document.documentElement.classList.add("natif");
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
 function shell(over, title, body, action){
@@ -1037,6 +1047,7 @@ async function sync(bruyant){
   if(bruyant) busy(true, "Lecture dans OneDrive…");
   try{
     const r = await synchroniser(); await load();
+    if(typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()) envoyerAuPC(true);   // lignes confirmées pas encore parties
     if(bruyant) toast(r.nouveau ? `Données à jour${r.photos ? ` · ${r.photos} nouvelle${r.photos > 1 ? "s" : ""} photo${r.photos > 1 ? "s" : ""}` : ""}` : "Déjà à jour");
   }catch(e){ await load(); if(bruyant) toast(e.message, false); }
   finally{ busy(false); SYNC_EN_COURS = false; }
@@ -1330,15 +1341,15 @@ addEventListener("popstate", () => {
 const optClients = sel => S.clients_noms.map(n=>`<option ${n.trim().toLowerCase()===String(sel||"").trim().toLowerCase()?"selected":""}>${esc(n)}</option>`).join("");
 const optVilles = sel => { const v = [...new Set(S.villes.map(x=>x.ville).concat(["Marrakech","Benguerir","Beni Mellal","Kenitra","Tetouan","Azemour"]))]; if(sel && !v.includes(sel)) v.unshift(sel); return v.map(n=>`<option ${n===sel?"selected":""}>${esc(n)}</option>`).join(""); };
 const optType = sel => ["B7","B10"].map(t=>`<option ${t===sel?"selected":""}>${t}</option>`).join("");
-const optPal = sel => { const o = [24,44,48,52]; if(sel && !o.includes(+sel)) o.push(+sel); return o.map(p=>`<option value="${p}" ${+p===+sel?"selected":""}>${p} palettes</option>`).join(""); };
+const optPal = (sel, choix) => { const o = choix ? [...choix] : [24,44,48,52]; if(sel && !o.includes(+sel)) o.push(+sel); return o.map(p=>`<option value="${p}" ${+p===+sel?"selected":""}>${p} palettes</option>`).join(""); };
 
 /* Formulaire d'une commande. Interrupteur « Déjà livrée » : ajoute prix + bénéfice, et le bouton Passer à Excel. */
 function cmdForm(c, i){
   return `<div class="cf" data-i="${i}"><input type="hidden" name="brut" value="${esc(c.brut||"")}">
     ${i>0?`<div class="flabel">Commande ${i+1}</div>`:""}
     <div class="form">
-      ${c.a_confirmer?`<div class="f warn">${ic("warn",16)} Remorque : vérifie 44, 48 ou 52 palettes avec l'usine</div>`:""}
-      <div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes||24)}</select></div>
+      ${c.a_confirmer?`<div class="f warn">${ic("warn",16)} ${c.grue ? "Plateau avec grue : 44 ou 48 palettes" : (c.unite === "plateau" ? "Plateau" : "Remorque") + " : vérifie 44, 48 ou 52 palettes avec l'usine"}</div>`:""}
+      <div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes||24, c.choix)}</select></div>
       <div class="f"><label>Format</label><select name="type">${optType(c.type||"B7")}</select></div>
       <div class="f"><label>Chantier</label><input name="chantier" value="${esc(c.chantier||"")}" placeholder="Quartier"></div>
       <div class="f"><label>Ville</label><select name="ville">${optVilles(c.ville||"Casa")}</select></div>
@@ -1501,7 +1512,8 @@ function cellulesExcel(o){
     <td>${esc(o.ville)}</td><td>${esc(o.chantier||"")}</td><td>${esc(o.client_final||"")}</td><td>${md?"Oui":"Non"}</td><td class="xn">${md}</td><td class="xn">${ng(tt - tu)}</td><td class="xpay">${esc(o.paiement||"En cours")}</td>`;
 }
 function apercuExcel(nouvelles){
-  return new Promise(res => {
+  return new Promise(res0 => {
+    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()) setTimeout(() => envoyerAuPC(true), 1200); };
     const vraies = S.livrees.filter(v => !v.virtuelle && v.row).sort((a,b) => b.row - a.row);
     const avant = vraies.slice(0, 1);
     const enAttente = S.livrees.filter(v => v.virtuelle).length;      // déjà envoyées, pas encore écrites
