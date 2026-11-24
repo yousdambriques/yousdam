@@ -82,7 +82,24 @@ class StockLocal {
 /* synchronisation automatique : lien de partage OneDrive vers « synchro-yousdam.chiffre »
    (AES-GCM 256, la clé vient du fichier lisible importé une fois ; le lien seul ne permet pas de lire les données) */
 const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/=+$/, "").replace(/\//g, "_").replace(/\+/g, "-");
+const NATIF = typeof YousdamNatif !== "undefined" ? YousdamNatif : null;
+async function synchroniserOneDrive() {
+  let rep;
+  try { rep = await fetch(NATIF.urlDonnees() + "?t=" + Date.now(), {cache: "no-store"}); }
+  catch (e) { throw new Error("Impossible de lire le fichier dans OneDrive. Vérifie internet et réessaie."); }
+  if (rep.status === 403) throw new Error("OneDrive a retiré l'autorisation. Réglages > Fichier OneDrive > Choisir.");
+  if (!rep.ok) throw new Error("Choisis d'abord « donnees-yousdam » dans OneDrive (Réglages).");
+  const texte = await rep.text();
+  let d; try { d = JSON.parse(texte); } catch (e) { throw new Error("Le fichier choisi n'est pas « donnees-yousdam ». Rechoisis-le dans Réglages."); }
+  if (d.type !== "yousdam-donnees") throw new Error("Le fichier choisi n'est pas « donnees-yousdam ». Rechoisis-le dans Réglages.");
+  if (d.cree && d.cree === localStorage.getItem("sync_date")) return {nouveau: false, cree: d.cree};
+  const avant = new Set(JSON.parse(localStorage.getItem("photos") || "[]"));
+  await STOCK.importerDonnees(new File([texte], "donnees-yousdam.json"));
+  localStorage.setItem("sync_vu", new Date().toISOString());
+  return {nouveau: true, cree: d.cree, photos: JSON.parse(localStorage.getItem("photos") || "[]").filter(n => !avant.has(n)).length};
+}
 async function synchroniser() {
+  if (NATIF && NATIF.aOneDrive()) return synchroniserOneDrive();
   const lien = (localStorage.getItem("sync_lien") || "").trim(), cle = localStorage.getItem("sync_cle");
   if (!lien) throw new Error("Colle d'abord le lien de partage dans Réglages > Synchronisation.");
   if (!cle) throw new Error("Importe une fois « donnees-yousdam » pour donner la clé à ce téléphone.");
