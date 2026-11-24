@@ -226,10 +226,12 @@ const sansAccent = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase(
 function villeDe(chantier) { const p = sansAccent(chantier || ""); for (const [k, v] of VILLES_WA) if (new RegExp(`\\b${k}\\b`).test(p)) return v; return "Casa"; }
 function lireBloc(txt) {
   const p = sansAccent(txt), o = {palettes: null, unite: "", a_confirmer: false, type: "B7", chantier: "", client_final: "", contact: "", brut: txt.trim()};
-  const p1 = p.replace(/\b(?:un|une)\s+(?=(?:solo|remorque|semi|camion|plateau))/g, "1 ");
+  // « grand voyage » = remorque = plateau = semi = camion (même camion : 44, 48 ou 52 palettes, 48 par défaut)
+  const p0 = p.replace(/\bgrands?\s+voyages?\b/g, "remorque");
+  const p1 = p0.replace(/\b(?:un|une)\s+(?=(?:solo|remorque|semi|camion|plateau))/g, "1 ");
   let m = p1.match(/(\d+)\s*(solos?|remorques?|semis?|camions?|plateaux|plateaus?)\b/);
   if (m) { const u = m[2].replace(/(x|s)$/, ""); o.unite = u; o.palettes = +m[1] * UNITES[u]; o.a_confirmer = u !== "solo"; }
-  else if (/\bplateau/.test(p)) { o.unite = "plateau"; o.palettes = 48; o.a_confirmer = true; }
+  else if (/\b(?:plateau|remorque|semi|camion)/.test(p0)) { o.unite = "plateau"; o.palettes = 48; o.a_confirmer = true; }
   o.grue = /\bgrue\b/.test(p);
   if (o.unite !== "solo" && o.a_confirmer) o.choix = o.grue ? CHOIX_GRUE : CHOIX_PLATEAU;
   else if ((m = p.match(/(\d+)\s*pal/))) o.palettes = +m[1];
@@ -242,7 +244,7 @@ function lireBloc(txt) {
 }
 function lireMessageWA(message) {
   const txt = message.replace(/[‎‏‪-‮⁦-⁩\xa0]/g, " ");
-  return txt.split(/(?=merci de (?:me |nous )?livrer)/i).filter(b => /livrer|chantier|solo|remorque|plateau/i.test(b)).map(lireBloc).filter(c => c.palettes || c.chantier);
+  return txt.split(/(?=merci de (?:me |nous )?livrer)/i).filter(b => /livrer|chantier|solo|remorque|plateau|voyage/i.test(b)).map(lireBloc).filter(c => c.palettes || c.chantier);
 }
 
 /* ---------- vérification rapide (window.testMoteur()) ---------- */
@@ -254,6 +256,8 @@ function testMoteur() {
   console.assert(c.palettes === 48 && c.grue && c.choix.join() === "44,48", "wa plateau grue", c);
   const [e] = lireMessageWA("Merci de me livrer 1 plateau brs 10\nChantier : had soualem (Z)");
   console.assert(e.palettes === 48 && !e.grue && e.choix.join() === "44,48,52" && e.type === "B10", "wa plateau", e);
+  const [f] = lireMessageWA("Merci de me livrer un grand voyage brs 7 avec grue\nChantier : tit mellil (Y)");
+  console.assert(f.palettes === 48 && f.grue && f.choix.join() === "44,48", "wa grand voyage", f);
   const V = Array.from({length: 40}, (_, i) => ({row: i, date: ajouteJours("2026-11-24", -3 * i), client: "A", ck: "a", palettes: 24, type: "B7", qte: 6144, pu: 2.00, tu: 0, pv: 2.10,
     ca: 12902.4, ville: "Casa", chantier: "x", client_final: "y", decharge: "Non", mdech: 0, benef: 614.4, paiement: "Payé"}));
   const A = analyse(V, [], [], {}, 30000, "2026-11-24");

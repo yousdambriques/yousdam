@@ -384,7 +384,26 @@ button.item:active{background:var(--fill)}
 .fab-m i{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--fill);color:var(--brick)}.fab-m i.wa{background:#25D366;color:#fff}
 .fab-m b{display:block;font-size:15.5px}.fab-m small{font-size:12.5px;color:var(--sec)}
 @media (min-width:900px){.fab{bottom:32px;right:32px}.fab-m{bottom:104px;right:32px}}
-.lv-sum{display:block;width:100%;border:0;font:inherit;text-align:left;color:var(--label);background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:14px 16px;margin:4px 0 6px;cursor:pointer}
+.pal-pop{position:fixed;z-index:60;display:flex;align-items:center;gap:6px;padding:8px 8px 8px 14px;border-radius:18px;background:var(--card);box-shadow:var(--shadow-lg);
+  opacity:0;transform:translateY(-6px) scale(.95);transform-origin:100% 0;transition:opacity .18s,transform .3s cubic-bezier(.34,1.4,.64,1)}
+.pal-pop.on{opacity:1;transform:none}
+.pal-pop span{font-size:13px;color:var(--sec);margin-right:4px}
+.pal-pop button{min-width:48px;padding:9px 0;border:0;border-radius:12px;font:inherit;font-size:17px;font-weight:700;background:var(--fill);color:var(--label);cursor:pointer}
+.pal-pop button.on{background:var(--brick);color:#fff}
+.lv-sum{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:6px 16px 14px;margin:4px 0 6px}
+.lv-t{width:100%;border:0;background:none;font:inherit;color:var(--label);text-align:left;padding:10px 0 2px;cursor:pointer}
+.lv-t i{transition:transform .3s var(--ease-out)}.lv-sum.ouv .lv-t i{transform:rotate(90deg)}
+.lv-p{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ease-out)}.lv-sum.ouv .lv-p{grid-template-rows:1fr}
+.lv-p > div{overflow:hidden}
+.lv-seg{margin:12px 0 4px}
+.lv-cl{display:flex;gap:14px;overflow-x:auto;padding:12px 2px 8px;scrollbar-width:none}.lv-cl::-webkit-scrollbar{display:none}
+.lv-cl button{flex:none;position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;font:inherit;color:var(--sec);cursor:pointer;width:58px}
+.lv-cl .av,.lv-tous{width:52px;height:52px;font-size:20px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 2.5px transparent;transition:box-shadow .25s var(--ease-out),transform .25s cubic-bezier(.34,1.4,.64,1)}
+.lv-tous{background:var(--fill);color:var(--label)}
+.lv-cl button.on .av,.lv-cl button.on .lv-tous{box-shadow:0 0 0 2.5px var(--card),0 0 0 5px var(--brick);transform:scale(1.04)}
+.lv-cl button.on small{color:var(--label);font-weight:700}
+.lv-cl small{font-size:12px;max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lv-cl em{position:absolute;top:-2px;right:0;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--brick);color:#fff;font-style:normal;font-size:11px;font-weight:700;display:grid;place-items:center;border:2px solid var(--card)}
 .lv-t{display:flex;align-items:center;gap:10px;font-size:15px}.lv-t .av{width:26px;height:26px;font-size:12px}.lv-t span{flex:1}.lv-t i{color:var(--sec)}
 .lv-k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
 .lv-k b{display:block;font-size:21px;letter-spacing:-.03em;font-variant-numeric:tabular-nums}.lv-k b.up{color:var(--green)}.lv-k span{font-size:12.5px;color:var(--sec)}
@@ -831,7 +850,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.6";
+const VERSION = "3.7";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1109,6 +1128,27 @@ function filtresLivrees(){
     <div class="group">${[`<button class="item" onclick="FLC='';render();closeSheet()"><div class="body"><div class="ttl">Tous les clients</div></div>${!FLC ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`,
       ...clients.map(c => `<button class="item" onclick="FLC='${esc(cleNom(c))}';render();closeSheet()">${avatar(c)}<div class="body"><div class="ttl nom">${esc(nomPropre(c))}</div><div class="meta">${nb(c)} livraison${nb(c) > 1 ? "s" : ""}</div></div>${FLC === cleNom(c) ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`)].join("")}</div>`);
 }
+/* corriger les palettes d'une commande à livrer : un toucher sur le bloc « pal. » */
+function changerPal(id, el){
+  const c = S.attente.find(x => x.id === id); if(!c) return;
+  document.querySelector(".pal-pop")?.remove();
+  const choix = c.grue ? [44, 48] : [24, 44, 48, 52];
+  const pop = document.createElement("div"); pop.className = "pal-pop";
+  pop.innerHTML = `<span>Palettes</span>${choix.map(n => `<button class="press${n === +c.palettes ? " on" : ""}" data-n="${n}">${n}</button>`).join("")}`;
+  document.body.appendChild(pop);
+  const r = el.getBoundingClientRect(); pop.style.top = (r.bottom + 8) + "px"; pop.style.right = Math.max(12, innerWidth - r.right) + "px";
+  requestAnimationFrame(() => pop.classList.add("on")); vibre();
+  const fermer = () => { pop.classList.remove("on"); setTimeout(() => pop.remove(), 200); removeEventListener("click", dehors, true); };
+  const dehors = e => { if(!e.target.closest(".pal-pop")) fermer(); };
+  setTimeout(() => addEventListener("click", dehors, true), 0);
+  pop.addEventListener("click", async e => {
+    const b = e.target.closest("[data-n]"); if(!b) return;
+    const n = +b.dataset.n; fermer();
+    if(n === +c.palettes) return;
+    await majAppli(d => { const x = d.commandes.find(y => y.id === id); if(x){ x.palettes = n; x.qte = n * (PAR[x.type] || 256); } });
+    await load(); toast(`${n} palettes enregistrées`);
+  });
+}
 function menuAjout(b){
   if(document.querySelector(".fab-m")) return fermerMenuAjout();
   b.classList.add("ouvert"); vibre();
@@ -1123,6 +1163,34 @@ function fermerMenuAjout(){
   removeEventListener("click", fermerSiDehors, true);
   document.querySelector(".fab")?.classList.remove("ouvert");
   const m = document.querySelector(".fab-m"); if(m){ m.classList.remove("on"); setTimeout(() => m.remove(), 220); }
+}
+/* geste retour : on part du bord gauche, la page suit le doigt, au-delà du tiers on revient en arrière */
+(function(){
+  let x0 = null, y0 = 0, dx = 0, actif = false;
+  const vue = () => document.querySelector(".sheet.on") || document.querySelector(".app");
+  addEventListener("touchstart", e => { const t = e.touches[0]; x0 = (t.clientX < 26 && S) ? t.clientX : null; y0 = t.clientY; dx = 0; actif = false; }, {passive: true});
+  addEventListener("touchmove", e => {
+    if(x0 === null) return; const t = e.touches[0]; dx = Math.max(0, t.clientX - x0);
+    if(!actif){ if(Math.abs(t.clientY - y0) > 30 && dx < 20){ x0 = null; return; } if(dx < 12) return; actif = true; }
+    const v = vue(); if(!v) return;
+    v.style.transition = "none"; v.style.transform = `translateX(${dx * .9}px)`; v.style.boxShadow = "-10px 0 30px rgba(0,0,0,.12)";
+  }, {passive: true});
+  addEventListener("touchend", () => {
+    if(x0 === null || !actif){ x0 = null; return; } x0 = null;
+    const v = vue(); if(!v) return; const ok = dx > innerWidth * .3;
+    v.style.transition = "transform .3s cubic-bezier(.23,1,.32,1)";
+    if(ok){ v.style.transform = `translateX(${innerWidth}px)`; vibre();
+      setTimeout(() => { v.style.transition = "none"; v.style.transform = ""; v.style.boxShadow = ""; retour(); }, 220); }
+    else { v.style.transform = ""; setTimeout(() => v.style.boxShadow = "", 300); }
+  });
+})();
+/* revenir en arrière dans l'appli (même logique que la flèche du téléphone) */
+function retour(){
+  const dlg = document.querySelector(".dlg-bg [data-r='0'], .xl-bg [data-r='0']");
+  if(dlg) return dlg.click();
+  if($("#viewer").classList.contains("on")) return closeViewer();
+  if($("#sheet").classList.contains("on")) return closeSheet();
+  if(S && (PREV.length || TAB !== "accueil")) return go(PREV.pop() || "accueil", true);
 }
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
@@ -1314,7 +1382,7 @@ function vCommandes(){
     body = att.length ? `<div class="note" style="margin:-2px 4px 12px;text-align:left">Glisse une commande → pour la livrer, ← pour l'annuler.</div><div class="orders">` + att.map(c => `<div class="swipe" data-id="${c.id}"><div class="sw-bg"><span>${ic("check",20)} Livrée</span><span>Annuler ${ic("x",18)}</span></div><div class="order">
       <div class="l1">${avatar(c.client)}
         <div style="flex:1;min-width:0"><div class="who">${esc(c.chantier || c.ville || nomPropre(c.client))}</div><div class="what">${esc(nomPropre(c.client))}${c.client_final ? " · " + esc(c.client_final) : ""} · <span class="badge ${ageCls(c.date)}">${depuis(c.date)}</span></div></div>
-        <div class="qty c-orange"><b>${num(c.palettes)}</b><span>pal. ${esc(c.type)}</span></div></div>
+        <button class="qty c-orange press" style="border:0;font:inherit;cursor:pointer" onclick="changerPal('${c.id}', this)" aria-label="Changer le nombre de palettes"><b>${num(c.palettes)}</b><span>pal. ${esc(c.type)} ✎</span></button></div>
       <div class="where">${c.chantier?`<div><span>Chantier</span><b>${esc(c.chantier)}</b></div>`:""}<div><span>Ville</span><b>${esc(c.ville||"Casa")}</b></div>
         ${c.client_final?`<div><span>Client final</span><b>${esc(c.client_final)}</b></div>`:""}${c.contact?`<div><span>Contact</span><b>${esc(c.contact)}</b></div>`:""}</div>
       ${c.dans_excel ? `<div class="alert" style="background:var(--green-soft);color:var(--label);margin:12px 0 0">Déjà livrée dans ton Excel le <b>${dcourt(c.dans_excel.date)}</b> (ligne ${c.dans_excel.row}${c.dans_excel.client_final?", "+esc(c.dans_excel.client_final):""}).
@@ -1354,9 +1422,15 @@ function vLivrees(){
       const pal = L.reduce((s, v) => s + v.palettes, 0), ben = L.reduce((s, v) => s + v.benef, 0);
       const jours = []; L.forEach(v => { const g = jours.at(-1); if(g && g.d === v.date) g.v.push(v); else jours.push({d: v.date, v: [v]}); });
       const per = {mois: MOIS[+mk.slice(5) - 1], prec: MOIS[+mp.slice(5) - 1], tout: "60 dernières"}[FLP];
-      return `<button class="lv-sum press" onclick="filtresLivrees()">
-        <div class="lv-t">${FLC ? avatar(clients.find(c => cleNom(c) === FLC) || FLC) : ""}<span><b>${esc(per.replace(/^./, x => x.toUpperCase()))}</b> · ${FLC ? esc(nomPropre(clients.find(c => cleNom(c) === FLC) || FLC)) : "tous les clients"}</span><i>${ic("chev",15)}</i></div>
-        <div class="lv-k"><div><b>${L.length}</b><span>livraison${L.length > 1 ? "s" : ""}</span></div><div><b>${num(pal)}</b><span>palettes</span></div><div><b class="up">+${num(ben)}</b><span>DH</span></div></div></button>
+      const nbC = c => L0.filter(v => cleNom(v.client) === cleNom(c) && (FLP === "tout" || v.date.startsWith(FLP === "mois" ? mk : mp))).length;
+      return `<div class="lv-sum${LVOUV ? " ouv" : ""}">
+        <button class="lv-t press" onclick="LVOUV=!LVOUV;this.parentElement.classList.toggle('ouv',LVOUV);vibre()">${FLC ? avatar(clients.find(c => cleNom(c) === FLC) || FLC) : ""}<span><b>${esc(per.replace(/^./, x => x.toUpperCase()))}</b> · ${FLC ? esc(nomPropre(clients.find(c => cleNom(c) === FLC) || FLC)) : "tous les clients"}</span><i>${ic("chev",15)}</i></button>
+        <div class="lv-p"><div>
+          <div class="seg lv-seg">${[["mois", MOIS[+mk.slice(5) - 1]], ["prec", MOIS[+mp.slice(5) - 1]], ["tout", "Tout"]].map(([k, l]) => `<button class="${FLP === k ? "on" : ""}" onclick="FLP='${k}';render()">${l.replace(/^./, x => x.toUpperCase())}</button>`).join("")}</div>
+          <div class="lv-cl"><button class="${!FLC ? "on" : ""}" onclick="FLC='';render()"><span class="lv-tous">${ic("people",20)}</span><small>Tous</small></button>
+            ${clients.filter(c => nbC(c) || FLC === cleNom(c)).map(c => `<button class="${FLC === cleNom(c) ? "on" : ""}" onclick="FLC=FLC==='${esc(cleNom(c))}'?'':'${esc(cleNom(c))}';render()">${avatar(c)}<small>${esc(nomPropre(c).split(" ")[0])}</small><em>${nbC(c)}</em></button>`).join("")}</div>
+        </div></div>
+        <div class="lv-k"><div><b>${L.length}</b><span>livraison${L.length > 1 ? "s" : ""}</span></div><div><b>${num(pal)}</b><span>palettes</span></div><div><b class="up">+${num(ben)}</b><span>DH</span></div></div></div>
       ${jours.map(g => `<div class="daylab"><span>${jourLabel(g.d)}</span><span>+${dh(g.v.reduce((s,v)=>s+v.benef,0))}</span></div>
       <div class="lv-l">${g.v.map((v, k) => `<div class="lv" style="--i:${k}">
         ${avatar(v.client)}
@@ -1689,7 +1763,7 @@ async function toutExcel(){
 }
 
 /* ============ RÈGLEMENTS ============ */
-let FRC = "", FRM = "", FLC = "", FLP = "mois";   // filtres de la page Règlements : client, mois
+let FRC = "", FRM = "", FLC = "", FLP = "mois", LVOUV = false;   // filtres de la page Règlements : client, mois
 const cleNom = s => String(s||"").trim().toLowerCase().split(/\s+/).join(" ");
 function vReglements(){
   const U = S.usine || {courant: S.analyse.solde.courant, avenir: 0, apres: S.analyse.solde.courant, initial: S.analyse.solde.initial};
