@@ -279,6 +279,19 @@ button.item:active{background:var(--fill)}
 .f select{direction:rtl}.f select option{direction:ltr}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
+.rg-mois{display:flex;justify-content:space-between;align-items:baseline;margin:26px 6px 10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.rg-mois span:last-child{font-size:14.5px;font-weight:600;color:var(--sec);font-variant-numeric:tabular-nums}
+.rg{display:flex;gap:13px;align-items:flex-start;width:100%;padding:15px 16px;border:0;background:none;font:inherit;color:inherit;text-align:left}
+.rg + .rg{border-top:.5px solid var(--sep)}
+.rg .chip{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;margin:1px 0 0;background:var(--fill);color:var(--label)}
+.rg-c{flex:1;min-width:0}
+.rg-l1{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.rg-l1 b{font-size:16px;font-weight:650;letter-spacing:-.01em;overflow-wrap:anywhere}
+.rg-l1 .rg-m{flex:none;font-variant-numeric:tabular-nums}
+.rg-t{font-size:14px;color:var(--sec);margin-top:3px}
+.rg-p{font-size:14px;margin-top:6px;line-height:1.35}
+.rg-e{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px;font-size:13.5px;color:var(--sec)}
+@media (hover:hover){button.rg:hover,label.rg:hover{background:var(--fill)}}
 .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px}
 .choix button{border:0;font:inherit;font-size:15px;font-weight:600;padding:10px 15px;border-radius:14px;background:var(--card);color:var(--k);box-shadow:var(--shadow);cursor:pointer;
   transition:background .18s var(--ease-out),color .18s var(--ease-out),transform .1s}
@@ -662,7 +675,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "1.9";
+const VERSION = "2.0";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1329,19 +1342,43 @@ function vReglements(){
         <div style="flex:1"><b>${manquent} photo${manquent>1?"s":""} pas encore sur ce téléphone</b><div class="muted" style="font-size:13.5px;margin-top:2px">Le plus simple : « Mettre à jour » avec <b>donnees-yousdam</b> (OneDrive → YOUSDAM-appli), elles arrivent toutes seules.</div></div>
         <label class="btn btn-fill btn-sm press" style="cursor:pointer;flex:none">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>` : ""; })()}
     <div class="seg" style="margin-top:26px"><button class="${SEGR==="tous"?"on":""}" onclick="SEGR='tous';render()">Tous</button><button class="${SEGR==="avenir"?"on":""}" onclick="SEGR='avenir';render()">À venir</button><button class="${SEGR==="impayes"?"on":""}" onclick="SEGR='impayes';render()">Impayés</button></div>
-    <div class="group">${liste.map(regItem).join("") || `<div class="empty"><div class="chip c-green">${ic("check")}</div>Rien ici.</div>`}</div>
+    ${groupesReg(liste) || `<div class="group"><div class="empty"><div class="chip c-green">${ic("check")}</div>Rien ici.</div></div>`}
     `);
 }
+/* « AOUT SEPT + UNE COMMANDE OCT » -> « Août septembre + une commande octobre » (affichage seulement) */
+const MOTS_MOIS = {janv:"janvier",jan:"janvier",fev:"février",fevr:"février",fevrier:"février",avr:"avril",juil:"juillet",aout:"août",sep:"septembre",sept:"septembre",oct:"octobre",nov:"novembre",dec:"décembre",decembre:"décembre"};
+function joliPeriode(s){
+  s = String(s || "").trim(); if(!s || s === "-") return "";
+  s = s.toLowerCase().replace(/\b([a-zéû]+)\.?/g, (m, w) => MOTS_MOIS[w] || m).replace(/([a-zéû])\s*\/\s*([a-zéû])/g, "$1 et $2");
+  return s[0].toUpperCase() + s.slice(1);
+}
+const dateLongue = s => { const d = pd(s); return d ? `${d.getDate()} ${MC[d.getMonth()]} ${d.getFullYear()}` : ""; };
+function groupesReg(L){
+  const tri = [...L].sort((a, b) => String(b.echeance || "").localeCompare(String(a.echeance || "")));
+  const g = new Map();
+  tri.forEach(r => { const k = r.echeance ? String(r.echeance).slice(0, 7) : ""; if(!g.has(k)) g.set(k, []); g.get(k).push(r); });
+  return [...g].map(([k, rs]) => `<div class="rg-mois"><span>${k ? moisLong(k) : "Sans échéance"}</span><span>${dh(rs.reduce((s, r) => s + r.montant, 0))}</span></div>
+    <div class="group">${rs.map(regItem).join("")}</div>`).join("");
+}
 function regItem(r){
-  const st = /impay/i.test(r.remarque) ? `<span class="badge c-red">${esc(r.remarque)}</span>` : /encaiss/i.test(r.remarque) ? `<span class="badge c-green">Encaissé</span>` : `<span class="badge c-orange">${r.echeance ? dans(r.echeance) : "À venir"}</span>`;
-  const typ = /^chq/i.test(r.ref) ? "Chèque" : /^eff/i.test(r.ref) ? "Effet" : "Règlement";
+  const imp = /impay/i.test(r.remarque), enc = /encaiss/i.test(r.remarque);
+  const st = imp ? `<span class="badge c-red">${esc(r.remarque.replace(/^impay[ée]+/i, "Impayé").replace(/(\d{2}\/\d{2}\/\d{4})/, "le $1"))}</span>`
+    : enc ? `<span class="badge c-green">Encaissé</span>` : `<span class="badge c-orange">${r.echeance ? dans(r.echeance) : "À venir"}</span>`;
+  const p = String(r.ref || "").split("/"), typ = /^chq/i.test(r.ref) ? "Chèque" : /^eff/i.test(r.ref) ? "Effet" : "Règlement";
+  const origine = [p[2], p[3] && nomPropre(p[3])].filter(Boolean).join(" · ");
   const manque = r.photo && STOCK.aPhoto && !STOCK.aPhoto(r.photo);
-  const tag = !r.photo ? `div class="item"` : manque
-    ? `label class="item" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
-    : `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"`;
+  const tag = !r.photo ? `div class="rg"` : manque
+    ? `label class="rg press" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
+    : `button class="rg press" onclick="voir('${encodeURIComponent(r.photo)}')"`;
+  const per = joliPeriode(r.periode);
   return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}" style="${manque?"opacity:.45":""}">${ic(r.photo?"photo":"money",19)}</div>
-    <div class="body"><div class="ttl">${esc(nomPropre(r.client))}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div>${manque ? `<div class="meta" style="color:var(--link);font-weight:600">Toucher pour importer la photo « ${esc(r.photo)} »</div>` : ""}<div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
-    <div class="end">${dh(r.montant)}<small>${esc(r.periode)}</small></div></${tag.split(" ")[0].split(">")[0]}>`;
+    <div class="rg-c">
+      <div class="rg-l1"><b>${esc(nomPropre(r.client))}</b><b class="rg-m">${dh(r.montant)}</b></div>
+      <div class="rg-t">${typ}${origine ? " " + esc(origine) : ""}</div>
+      ${per ? `<div class="rg-p"><span class="muted">Période payée :</span> ${esc(per)}</div>` : ""}
+      <div class="rg-e">${st}${r.echeance ? `<span>Échéance ${esc(dateLongue(r.echeance))}</span>` : ""}</div>
+      ${manque ? `<div class="rg-t" style="color:var(--link);font-weight:600">Toucher pour ajouter la photo</div>` : ""}
+    </div></${tag.split(" ")[0]}>`;
 }
 async function voir(f){
   $("#viewer").classList.add("on"); $("#viewerImg").removeAttribute("src");
