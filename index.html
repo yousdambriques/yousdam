@@ -600,10 +600,10 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"></script>
 <script src="config.js"></script>
 <script src="moteur.js"></script>
 <script src="app.js"></script>
+<script src="local.js"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -683,6 +683,11 @@ async function load(){ try{ S = await api("/api/etat"); render(); } catch(e){ if
 
 /* ============ verrou ============ */
 async function boot(){
+  if(!window.YOUSDAM_CONFIG || YOUSDAM_CONFIG.mode === "local"){
+    STOCK = new StockLocal(); CHEMINS.excel = "excel.xlsx";
+    if(!(await STOCK.infos(CHEMINS.excel))) return ecranImport();
+    const s0 = await api("/api/session"); if(s0.connecte) return load(); return lock(!s0.pin_defini);
+  }
   if(!(window.YOUSDAM_CONFIG && (YOUSDAM_CONFIG.mode === "test" || /^[0-9a-f-]{36}$/i.test(YOUSDAM_CONFIG.clientId||"")))){
     $("#root").innerHTML = `<div class="lock"><img src="icon-192.png" alt=""><h1>YOUSDAM</h1><div class="muted" style="text-align:center;max-width:300px;margin-top:8px">L'appli est presque prête : il manque l'inscription Microsoft. Une fois faite, cette page affichera « Se connecter avec Microsoft ».</div></div>`;
     return;
@@ -702,6 +707,44 @@ async function choisirFichier(){
     $("#fx").innerHTML = l.length ? `<div class="group">${l.map(n => `<button class="item" onclick="fixerFichier('${esc(n).replace(/'/g,"&#39;")}')"><div class="body"><div class="ttl">${esc(n)}</div></div><span class="chev">${ic("chev",16)}</span></button>`).join("")}</div>`
       : `<div class="alert" style="background:var(--orange-soft)">Aucun fichier Excel à la racine de ton OneDrive.</div>`;
   }catch(e){ $("#fx").innerHTML = `<div class="alert" style="background:var(--red-soft)">${esc(e.message)}</div>`; }
+}
+function ecranImport(){
+  $("#root").innerHTML = `<div class="lock"><img src="icon-192.png" alt=""><h1>Bienvenue</h1>
+    <div class="muted" style="text-align:center;max-width:310px;margin-top:6px">Importe ton fichier Excel de suivi. Il reste sur ce téléphone, rien n'est envoyé sur internet.</div>
+    <div class="card" style="margin-top:22px;max-width:330px;font-size:14.5px;line-height:1.5">
+      <b>Sur iPhone</b> : touche le bouton, puis <b>Parcourir</b> → <b>OneDrive</b> → ton fichier.<br>
+      <b>Sur Samsung</b> : touche le bouton, puis le menu ☰ → <b>OneDrive</b> → ton fichier.</div>
+    <label class="btn btn-fill press" style="margin-top:20px;min-width:260px;cursor:pointer">Choisir mon fichier Excel
+      <input type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label>
+    <div class="muted" id="impMsg" style="margin-top:12px;font-size:14px"></div></div>`;
+}
+async function importer(type, input){
+  const f = input.files && input.files[0]; if(!f) return;
+  try{
+    busy(true, "Lecture du fichier…");
+    await STOCK.importer(type, f);
+    busy(false);
+    if(type === "excel" && !S){ boot(); return; }
+    await load(); toast(type === "excel" ? "Excel mis à jour" : "Prospection importée");
+    if($("#sheet").classList.contains("on")) ouvrirThemes();
+  }catch(e){ busy(false); const m = $("#impMsg"); if(m) m.textContent = "Ce fichier ne convient pas : " + e.message; else toast(e.message, false); }
+  input.value = "";
+}
+async function importerPhotos(input){
+  if(!input.files || !input.files.length) return;
+  busy(true, "Import des photos…");
+  try{ const n = await STOCK.importerPhotos(input.files); toast(`${n} photo${n>1?"s":""} importée${n>1?"s":""}`); if($("#sheet").classList.contains("on")) ouvrirThemes(); }
+  catch(e){ toast(e.message, false); } finally{ busy(false); input.value = ""; }
+}
+async function envoyerAuPC(){
+  const e = fichierEnvoi(); if(!e) return toast("Rien à envoyer", false);
+  try{
+    if(navigator.canShare && navigator.canShare({files:[e.fichier]})) await navigator.share({files:[e.fichier], title:e.fichier.name});
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(e.fichier); a.download = e.fichier.name; a.click(); }
+  }catch(err){ if(err.name === "AbortError") return; toast(err.message, false); return; }
+  if(!(await dialogue({titre:"Fichier enregistré ?", texte:`As-tu bien enregistré « ${e.fichier.name} » dans OneDrive, dossier YOUSDAM-appli ? Ton PC l'écrira dans l'Excel dès qu'il sera allumé.`, ok:"Oui, enregistré", annuler:"Pas encore"}))) return;
+  await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
+  await load(); toast(`${e.nb} livraison${e.nb>1?"s":""} envoyée${e.nb>1?"s":""} au PC`);
 }
 function fixerFichier(n){ localStorage.setItem("fichier_excel", n); CHEMINS.excel = n; boot(); }
 function ecranMicrosoft(){
@@ -840,7 +883,8 @@ function vAccueil(){
     <text x="${(i*bw+bw/2).toFixed(1)}" y="${H-4}" font-size="8.5" font-weight="600" text-anchor="middle" fill="currentColor" opacity=".45">${MC[+m.mois.split("-")[1]-1].replace(".","").slice(0,1).toUpperCase()}</text>`).join("");
   const an = M.filter(m => m.mois.startsWith(String(d.getFullYear()))).reduce((s,m)=>s+m.benef,0);
   const actions = `<div style="display:flex;gap:10px"><button class="round press" onclick="ouvrirThemes()" aria-label="Réglages"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button></div>`;
-  return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync"><i style="${S.hors_ligne?"background:var(--orange);box-shadow:0 0 0 3px var(--orange-soft)":""}"></i>${S.hors_ligne ? "Hors ligne : dernières données enregistrées" : `Excel OneDrive du ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}, mise à jour automatique`}</div><div class="board">
+  return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync"><i></i>Excel importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}
+      <label class="press" style="margin-left:auto;color:var(--link);font-weight:600;cursor:pointer">Mettre à jour<input type="file" accept=".xlsx" hidden onchange="importer('excel', this)"></label></div><div class="board">
     <div class="b-hero"><div class="hero press" onclick="editObjectif()">
       <div class="row1"><div><div class="lab">Bénéfice de ${MOIS[d.getMonth()]}</div><div class="big"><span data-count="${Math.round(mc.benef)}">${num(mc.benef)}</span> <small>DH</small></div>
         <div style="font-size:14.5px;opacity:.88">${mc.livraisons} livraisons, ${num(mc.palettes)} palettes</div></div>
@@ -910,6 +954,7 @@ function vLivrees(){
   const jours = []; S.livrees.slice(0,30).forEach(v => { const g = jours.at(-1); if(g && g.d===v.date) g.v.push(v); else jours.push({d:v.date, v:[v]}); });
   return `
     ${ax.length ? `<div class="sec"><h2 style="font-size:18px">Pas encore dans Excel</h2>${ax.filter(c=>!c.en_file).length>1?`<button onclick="toutExcel()">Tout passer</button>`:""}</div>
+      ${ax.some(c=>c.en_file && !c.excel_envoye) ? `<button class="btn btn-fill btn-w press" style="margin-bottom:14px" onclick="envoyerAuPC()">${ic("excel",18)} Envoyer au PC (${ax.filter(c=>c.en_file && !c.excel_envoye).length})</button>` : ""}
       ${ax.map(c => { const L = c.livraison; return `<div class="order"><div class="l1"><div class="qty c-green"><b>${num(L.palettes)}</b><span>pal.</span></div>
         <div style="flex:1;min-width:0"><div class="who">${esc(L.client_final || L.chantier || c.client)}</div><div class="what">${esc(c.client)} · ${esc(L.type)} · ${dcourt(L.date)}</div></div>
         <div class="end" style="font-weight:800;color:var(--green)">+${dh(benefL(L))}</div></div>
@@ -917,7 +962,7 @@ function vLivrees(){
           <button class="btn btn-green btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">C'est la même : relier sans ajouter</button></div>` : ""}
         ${c.erreur ? `<div class="alert" style="background:var(--red-soft);color:var(--label);margin:12px 0 0"><b>Le PC n'a pas pu l'écrire :</b> ${esc(c.erreur.msg||"")}
           <button class="btn btn-gray btn-sm press" style="margin-top:10px;width:100%" onclick="reessayer('${c.id}')">Réessayer</button></div>` : ""}
-        ${c.en_file && !c.erreur ? `<div class="alert" style="background:var(--fill);color:var(--label);margin:12px 0 0">En file d'attente : s'écrit dans ton Excel dès que ton PC est allumé. Elle compte déjà dans tes chiffres.</div>` : `
+        ${c.en_file && !c.erreur ? `<div class="alert" style="background:var(--fill);color:var(--label);margin:12px 0 0">${c.excel_envoye ? `Envoyée au PC le ${dcourt(c.excel_envoye)}. Elle sera marquée « faite » quand tu mettras à jour l'Excel.` : "Prête à partir : touche « Envoyer au PC » en haut de la liste."} Elle compte déjà dans tes chiffres.</div>` : `
         <div class="acts"><button class="btn ${c.dans_excel?"btn-gray":"btn-fill"} btn-sm press" onclick="unExcel('${c.id}')">${ic("excel",17)} ${c.dans_excel?"Ajouter quand même":"Passer à Excel"}</button>
         <button class="btn btn-gray btn-sm press" style="flex:0 0 auto" onclick="remettre('${c.id}')">Pas livrée</button></div>`}</div>`; }).join("")}` : ""}
     ${jours.map(g => `<div class="daylab"><span>${jourLabel(g.d)}</span><span>+${dh(g.v.reduce((s,v)=>s+v.benef,0))}</span></div>
@@ -1040,7 +1085,7 @@ async function enregistrer(excel){
     const r = await api("/api/commande", {client, commandes:cmds, excel});
     closeSheet(); await load();
     SEGC = cmds.some(c=>c.livree) ? "livrees" : "attente"; TAB = "commandes"; render();
-    toast(excel && r.lignes.length ? "Envoyé : s'écrit dans Excel dès que ton PC est allumé" : cmds.length>1 ? `${cmds.length} commandes enregistrées` : "Commande enregistrée");
+    toast(excel && r.lignes.length ? "Prête : touche « Envoyer au PC » (onglet Commandes, Livrées)" : cmds.length>1 ? `${cmds.length} commandes enregistrées` : "Commande enregistrée");
   } catch(e){ toast(e.message, false); await load(); }
   finally{ busy(false); }
 }
@@ -1087,7 +1132,7 @@ async function livrer(id, excel){
   if(!(await margeOk(v))) return;
   if(excel && !(await sansDoublon(c.client, [v]))) return;
   busy(true, "Enregistrement…");
-  try{ const r = await api("/api/livrer", {...v, id, excel}); closeSheet(); await load(); SEGC = "livrees"; render(); toast(excel ? "Envoyé : s'écrit dans Excel dès que ton PC est allumé" : "Livraison enregistrée"); }
+  try{ const r = await api("/api/livrer", {...v, id, excel}); closeSheet(); await load(); SEGC = "livrees"; render(); toast(excel ? "Prête : touche « Envoyer au PC » (onglet Commandes, Livrées)" : "Livraison enregistrée"); }
   catch(e){ toast(e.message, false); await load(); }
   finally{ busy(false); }
 }
@@ -1105,14 +1150,14 @@ async function unExcel(id){
   const c = S.a_excel.find(x=>x.id===id); if(!c) return;
   if(!(await sansDoublon(c.client, [c.livraison]))) return;
   busy(true, "Envoi…");
-  try{ await api("/api/excel", {id}); await load(); toast("Envoyé : s'écrit dans Excel dès que ton PC est allumé"); }
+  try{ await api("/api/excel", {id}); await load(); toast("Prête : touche « Envoyer au PC » (onglet Commandes, Livrées)"); }
   catch(e){ toast(e.message, false); } finally{ busy(false); }
 }
 async function toutExcel(){
   const L = S.a_excel.filter(c => !c.en_file); if(!await confirmer(`Passer ${L.length} livraisons dans ton Excel (onglet PRINCIPAL) ?`)) return;
   let ok = 0; busy(true, "Envoi…");
   try{ for(const c of L){ await api("/api/excel", {id:c.id}); ok++; } } catch(e){ toast(e.message, false); }
-  busy(false); await load(); if(ok) toast(`${ok} livraison${ok>1?"s":""} envoyée${ok>1?"s":""} : s'écri${ok>1?"vent":"t"} dans Excel dès que ton PC est allumé`);
+  busy(false); await load(); if(ok) toast(`${ok} livraison${ok>1?"s":""} prête${ok>1?"s":""} : touche « Envoyer au PC »`);
 }
 
 /* ============ RÈGLEMENTS ============ */
@@ -1134,7 +1179,7 @@ function vReglements(){
 function regItem(r){
   const st = /impay/i.test(r.remarque) ? `<span class="badge c-red">${esc(r.remarque)}</span>` : /encaiss/i.test(r.remarque) ? `<span class="badge c-green">Encaissé</span>` : `<span class="badge c-orange">${r.echeance ? dans(r.echeance) : "À venir"}</span>`;
   const typ = /^chq/i.test(r.ref) ? "Chèque" : /^eff/i.test(r.ref) ? "Effet" : "Règlement";
-  const tag = r.photo ? `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"` : `div class="item"`;
+  const tag = r.photo ? `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"` : `div class="item"`;  // photo importée : s'ouvre ; sinon message
   return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}">${ic(r.photo?"photo":"money",19)}</div>
     <div class="body"><div class="ttl">${esc(r.client)}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div><div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
     <div class="end">${dh(r.montant)}<small>${esc(r.periode)}</small></div></${tag.split(" ")[0]}>`;
@@ -1309,11 +1354,17 @@ function ouvrirThemes(){
   const ligne = z => `<div class="f"><label style="width:auto;flex:1">${z==="Casa"?"Casablanca":z==="Tetouan"?"Tétouan":z==="Kenitra"?"Kénitra":z}</label>
     ${["B7","B10"].map(t => `<input inputmode="decimal" data-z="${z}" data-t="${t}" style="flex:0 0 72px;text-align:center;background:var(--fill);border-radius:9px;padding:8px 4px;margin:6px 0 6px 8px;color:var(--label)" value="${T[z]?.[t] != null ? Number(T[z][t]).toFixed(2) : ""}" placeholder="—">`).join("")}</div>`;
   sheet("Réglages", `
-    <div class="flabel" style="margin-top:4px">Compte</div>
-    <div class="group"><div class="item"><div class="body"><div class="ttl">Microsoft</div><div class="meta">${esc(S.compte||"")}</div></div>
-      <button class="btn btn-gray btn-sm press" onclick="STOCK.deconnexion()">Se déconnecter</button></div>
-      <div class="item"><div class="body"><div class="ttl">Fichier Excel</div><div class="meta">${esc(S.fichier||"")}</div></div>
-      <button class="btn btn-gray btn-sm press" onclick="localStorage.removeItem('fichier_excel');CHEMINS.excel='';closeSheet();choisirFichier()">Changer</button></div></div>
+    <div class="flabel" style="margin-top:4px">Mes fichiers (gardés sur ce téléphone)</div>
+    <div class="group">
+      <div class="item"><div class="body"><div class="ttl">Excel de suivi</div><div class="meta">importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</div></div>
+        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Mettre à jour<input type="file" accept=".xlsx" hidden onchange="importer('excel', this)"></label></div>
+      <div class="item"><div class="body"><div class="ttl">Photos des règlements</div><div class="meta">${S.reglements.filter(r=>r.photo && STOCK.aPhoto && STOCK.aPhoto(r.photo)).length} sur ${S.reglements.filter(r=>r.photo).length} importées · dossier REGLEMENTS</div></div>
+        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Importer<input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this)"></label></div>
+      <div class="item"><div class="body"><div class="ttl">Prospection</div><div class="meta">${S.prospects.length ? S.prospects.length + " prospects" : "pas encore importée"} · YOUSDAM-appli</div></div>
+        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Importer<input type="file" accept=".xlsx" hidden onchange="importer('prosp', this)"></label></div>
+      <div class="item"><div class="body"><div class="ttl">Ton prénom</div><div class="meta">${esc(S.prenom || "pas renseigné")}</div></div>
+        <button class="btn btn-gray btn-sm press" onclick="(async()=>{const p=await demander('Ton prénom :', S.prenom||''); if(p!==null){localStorage.setItem('prenom',p.trim()); await load(); ouvrirThemes();}})()">Modifier</button></div>
+    </div>
     <div class="flabel" style="margin-top:4px">Thème</div>
     <div class="pal">${PALETTES.map(([k,n,dsc]) => `<button class="pc press ${k===(localStorage.getItem("palette")||"bordeaux")?"on":""}" data-palette="${k}" onclick="choisirPalette('${k}')">
       <span class="pv" style="background:var(--pattern),var(--bg-grad),var(--bg)"><i style="background:var(--hero)"></i><u style="background:var(--card)"></u><s style="background:var(--brick)"></s></span>

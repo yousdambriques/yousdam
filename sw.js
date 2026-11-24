@@ -1,7 +1,7 @@
 /* Appli installable + hors ligne : garde une copie du code. Les données (OneDrive) ne sont jamais mises en cache ici. */
-const V = "yousdam-v1";
-const CODE = ["./", "index.html", "moteur.js", "app.js", "config.js", "manifest.json", "icon-192.png", "icon-512.png",
-  "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js", "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/lib/msal-browser.min.js"];
+const V = "yousdam-v2";
+const CODE = ["./", "index.html", "moteur.js", "app.js", "local.js", "config.js", "manifest.json", "icon-192.png", "icon-512.png",
+  "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CODE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", e => {

@@ -197,7 +197,7 @@ async function routeur(path, body) {
       sessionStorage.setItem("ok", "1"); return {ok: true};
     }
     case "/api/etat":
-      try { await chargerDonnees(); CACHE.horsLigne = false; }
+      try { await chargerDonnees(); CACHE.horsLigne = false; if (typeof StockLocal !== "undefined" && STOCK instanceof StockLocal) await relierEnvoisRetrouves(); }
       catch (e) { if (!navigator.onLine && chargerHorsLigne()) {} else if (!CACHE.classeur) throw e; }
       return etatComplet();
     case "/api/maj": { const i = await STOCK.infos(CHEMINS.excel), a = await STOCK.infos(F_APPLI), f = await STOCK.infos(F_FAIT);
