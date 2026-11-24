@@ -803,7 +803,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.3";
+const VERSION = "3.4";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1024,7 +1024,7 @@ function lock(nouveau){
 /* bouton « Mettre à jour » : va chercher directement dans OneDrive si le lien est réglé, sinon ouvre le sélecteur (fichiers .json seulement) */
 function boutonMaj(cls, style, lib){
   if(typeof NATIF !== "undefined" && NATIF)
-    return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();${NATIF.aOneDrive() ? "sync(true)" : "relierOneDrive()"}">${lib}</button>`;
+    return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();${NATIF.aOneDrive() ? "majOneDrive()" : "relierOneDrive()"}">${lib}</button>`;
   if(localStorage.getItem("sync_lien") && localStorage.getItem("sync_cle"))
     return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();sync(true)">${lib}</button>`;
   return `<label class="${cls}" style="${style}" onclick="event.stopPropagation()">${lib}<input type="file" hidden onchange="importer('excel', this)"></label>`;
@@ -1033,6 +1033,11 @@ function boutonMaj(cls, style, lib){
 async function relierOneDrive(){
   if(!(await dialogue({titre: "Relier ton OneDrive", texte: "Touche ☰ en haut à gauche, puis OneDrive > YOUSDAM-appli, et choisis « donnees-yousdam » (le fichier avec les flèches < >). Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
   window.onOneDriveChoisi = async ok => { if(!ok) return toast("Aucun fichier choisi", false); toast("OneDrive relié : " + NATIF.nomOneDrive()); await sync(true); if($("#sheet").classList.contains("on") && $("#sheetTitle").textContent !== "Mes données") ouvrirThemes(); };
+  NATIF.choisirOneDrive();
+}
+/* APK : OneDrive ne donne la dernière version que quand on choisit le fichier : on ouvre OneDrive, une touche sur donnees-yousdam */
+function majOneDrive(){
+  window.onOneDriveChoisi = ok => { if(ok) sync(true); };
   NATIF.choisirOneDrive();
 }
 /* partage (WhatsApp…) : par Android dans l'APK, sinon par le navigateur */
@@ -1082,7 +1087,7 @@ function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"});
   const faire = () => { render(false); window.scrollTo(0,0); };
   if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){ document.documentElement.dataset.sens = sens; document.startViewTransition(faire); }
   else { render(true); window.scrollTo(0,0); } }
-async function refresh(){ await sync(true); }
+async function refresh(){ if(typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) return majOneDrive(); await sync(true); }
 /* va chercher les nouvelles données dans OneDrive (copie chiffrée), sinon recharge ce qui est sur le téléphone */
 let SYNC_EN_COURS = false;
 async function sync(bruyant){
@@ -1334,7 +1339,9 @@ function vLivrees(){
     if(y0 === null) return; y0 = null; const p = ind(), ok = dy >= 90;
     p.style.transition = "transform .35s cubic-bezier(.23,1,.32,1), opacity .25s"; p.classList.remove("pret");
     if(!ok){ p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)"; return; }
-    p.classList.add("tourne"); vibre(); verifierMaj(); await sync(true);
+    p.classList.add("tourne"); vibre(); verifierMaj();
+    if(typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()){ p.classList.remove("tourne"); p.style.opacity = 0; majOneDrive(); return; }
+    await sync(true);
     p.classList.remove("tourne"); p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)";
   });
 })();

@@ -1,5 +1,5 @@
 /* Appli installable + hors ligne : garde une copie du code. Les données (OneDrive) ne sont jamais mises en cache ici. */
-const V = "yousdam-v23";
+const V = "yousdam-v24";
 const CODE = ["./", "index.html", "moteur.js", "app.js", "local.js", "config.js", "manifest.json", "icon-192.png", "icon-512.png",
   "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CODE)).then(() => self.skipWaiting())); });
