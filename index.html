@@ -1000,10 +1000,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js"></script>
-<script src="moteur.js"></script>
-<script src="app.js"></script>
-<script src="local.js"></script>
+<script src="config.js?v=5.1"></script>
+<script src="moteur.js?v=5.1"></script>
+<script src="app.js?v=5.1"></script>
+<script src="local.js?v=5.1"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1020,7 +1020,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.0";
+const VERSION = "5.1";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{

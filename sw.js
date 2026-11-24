@@ -1,5 +1,5 @@
 /* Appli installable + hors ligne : garde une copie du code. Les données (OneDrive) ne sont jamais mises en cache ici. */
-const V = "yousdam-v40";
+const V = "yousdam-v41";
 const CODE = ["./", "index.html", "moteur.js", "app.js", "local.js", "config.js", "manifest.json", "icon-192.png", "icon-512.png",
   "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(CODE)).then(() => self.skipWaiting())); });
@@ -9,5 +9,5 @@ self.addEventListener("fetch", e => {
   if (u.pathname.endsWith("version.json") || u.pathname.includes("/__natif/")) return;   // toujours la vraie version en ligne
   if (e.request.method !== "GET" || u.hostname.endsWith("microsoft.com") || u.hostname.endsWith("microsoftonline.com") || u.hostname.includes("live.com") || u.hostname.includes("sharepoint")) return;
   // le code : d'abord le réseau (toujours la dernière version), sinon la copie
-  e.respondWith(fetch(e.request).then(r => { const c = r.clone(); caches.open(V).then(x => x.put(e.request, c)); return r; }).catch(() => caches.match(e.request)));
+  e.respondWith(fetch(e.request, {cache: "no-cache"}).then(r => { const c = r.clone(); caches.open(V).then(x => x.put(e.request, c)); return r; }).catch(() => caches.match(e.request)));
 });
