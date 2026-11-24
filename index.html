@@ -390,6 +390,18 @@ button.item:active{background:var(--fill)}
 .pal-pop span{font-size:13px;color:var(--sec);margin-right:4px}
 .pal-pop button{min-width:48px;padding:9px 0;border:0;border-radius:12px;font:inherit;font-size:17px;font-weight:700;background:var(--fill);color:var(--label);cursor:pointer}
 .pal-pop button.on{background:var(--brick);color:#fff}
+.view:has(.sw-t) .head h1{display:none}
+.view:has(.sw-t) .head{margin-bottom:4px}
+.sw-t{position:relative;display:flex;align-items:flex-end;gap:16px;margin:0 2px 22px;padding-bottom:10px}
+.sw-t button{border:0;background:none;font:inherit;padding:0;cursor:pointer;font-size:21px;font-weight:750;letter-spacing:-.03em;line-height:1.05;color:var(--ink-bg,var(--label));
+  opacity:.38;transition:font-size .38s cubic-bezier(.34,1.25,.64,1),opacity .3s var(--ease-out);white-space:nowrap}
+.sw-t button.on{font-size:32px;letter-spacing:-.04em;opacity:1}
+.sw-t sup{display:inline-grid;place-items:center;min-width:.7em;height:.7em;padding:0 .2em;margin-left:.18em;border-radius:.35em;background:var(--brick);color:#fff;font-size:.45em;font-weight:700;letter-spacing:0;vertical-align:super}
+.sw-dot{position:absolute;bottom:0;left:2px;width:8px;height:8px;border-radius:50%;background:var(--brick);transition:transform .45s cubic-bezier(.34,1.3,.64,1)}
+.sw-t[data-on=livrees] .sw-dot{transform:translateX(var(--dx,150px))}
+.view.bascule > *:not(.head):not(.sw-t){animation:bascule .38s var(--ease-out) both}
+@keyframes bascule{from{opacity:0;transform:translateX(var(--sx,26px))}}
+@media (prefers-reduced-motion:reduce){.sw-t button,.sw-dot{transition:none}.view.bascule > *{animation:none!important}}
 .lv-sum{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:6px 16px 14px;margin:4px 0 6px}
 .lv-t{width:100%;border:0;background:none;font:inherit;color:var(--label);text-align:left;padding:10px 0 2px;cursor:pointer}
 .lv-t i{transition:transform .3s var(--ease-out)}.lv-sum.ouv .lv-t i{transform:rotate(90deg)}
@@ -852,7 +864,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.8";
+const VERSION = "3.9";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1130,6 +1142,15 @@ function filtresLivrees(){
     <div class="group">${[`<button class="item" onclick="FLC='';render();closeSheet()"><div class="body"><div class="ttl">Tous les clients</div></div>${!FLC ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`,
       ...clients.map(c => `<button class="item" onclick="FLC='${esc(cleNom(c))}';render();closeSheet()">${avatar(c)}<div class="body"><div class="ttl nom">${esc(nomPropre(c))}</div><div class="meta">${nb(c)} livraison${nb(c) > 1 ? "s" : ""}</div></div>${FLC === cleNom(c) ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`)].join("")}</div>`);
 }
+function placerPoint(){ const t = document.querySelector(".sw-t"); if(!t) return; const b = t.querySelectorAll("button")[1]; t.style.setProperty("--dx", (b.offsetLeft - 2) + "px"); }
+/* « À livrer » / « Livrées » : le titre bascule, puis le contenu glisse dans le bon sens */
+function basculer(seg){
+  if(SEGC === seg) return; const sens = seg === "livrees" ? 1 : -1; SEGC = seg; vibre();
+  const t = document.querySelector(".sw-t");
+  if(t){ placerPoint(); t.dataset.on = seg; t.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", (i === 0) === (seg === "attente"))); }
+  setTimeout(placerPoint, 400);
+  setTimeout(() => { render(); const v = document.querySelector(".view"); if(v){ v.style.setProperty("--sx", sens * 26 + "px"); v.classList.add("bascule"); } }, 170);
+}
 /* corriger les palettes d'une commande à livrer : un toucher sur le bloc « pal. » */
 function changerPal(id, el){
   const c = S.attente.find(x => x.id === id); if(!c) return;
@@ -1248,6 +1269,7 @@ function render(anim){
     document.querySelectorAll(".wall").forEach(w => w.classList.add("pose"));
   }
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
+  placerPoint();
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
 }
 /* indicateur qui glisse d'un élément à l'autre (part de sa dernière position) */
@@ -1395,8 +1417,8 @@ function vCommandes(){
   } else body = vLivrees();
   return shell("Suivi des livraisons", "Commandes", `
     <button class="fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",26)}</button>
-    <div class="seg"><button class="${SEGC==="attente"?"on":""}" onclick="SEGC='attente';render()">À livrer${att.length?` · ${att.length}`:""}</button>
-      <button class="${SEGC==="livrees"?"on":""}" onclick="SEGC='livrees';render()">Livrées</button></div>${body}`);
+    <div class="sw-t" data-on="${SEGC}"><button class="${SEGC==="attente"?"on":""}" onclick="basculer('attente')">À livrer${att.length?`<sup>${att.length}</sup>`:""}</button>
+      <button class="${SEGC==="livrees"?"on":""}" onclick="basculer('livrees')">Livrées</button><i class="sw-dot"></i></div>${body}`);
 }
 function jourLabel(s){ const n = ecart(s), d = pd(s); if(n===0) return "Aujourd'hui"; if(n===1) return "Hier"; return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`; }
 function vLivrees(){
