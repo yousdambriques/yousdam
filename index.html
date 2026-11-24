@@ -679,6 +679,8 @@ svg.choisi .bar.on{opacity:1!important;transform:scaleX(1.12)}
   padding:9px;border-radius:14px;background:var(--card);box-shadow:var(--shadow-lg);pointer-events:none}
 .ptr i{height:8px;border-radius:2px;background:var(--brick);opacity:.35;transition:opacity .2s}
 .ptr i:last-child{grid-column:1/-1;width:50%;justify-self:center}
+.ptr b{grid-column:1/-1;font-size:10.5px;font-weight:700;color:var(--sec);text-align:center;margin-top:2px;white-space:nowrap}
+.ptr.charge i{opacity:.7}.ptr.pret b{color:var(--brick)}
 .ptr.pret i,.ptr.tourne i{opacity:1}
 .ptr.tourne i{animation:ptrb .7s var(--ease-out) infinite alternate}.ptr.tourne i:nth-child(2){animation-delay:.12s}.ptr.tourne i:nth-child(3){animation-delay:.24s}
 @keyframes ptrb{to{opacity:.3;transform:translateY(-3px)}}
@@ -850,7 +852,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.7";
+const VERSION = "3.8";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1466,21 +1468,33 @@ function vLivrees(){
   };
   addEventListener("pointerup", fin); addEventListener("pointercancel", fin);
 })();
-/* tirer vers le bas en haut de page : actualiser (une brique se pose) */
+/* tirer vers le bas en haut de page : actualiser. Geste volontaire : page déjà en haut et immobile,
+   tirer loin (résistance), puis tenir un instant — l'indicateur devient plein, alors seulement relâcher déclenche. */
 (function(){
-  let y0 = null, dy = 0;
-  const ind = () => document.getElementById("ptr") || document.body.appendChild(Object.assign(document.createElement("div"), {id: "ptr", className: "ptr", innerHTML: "<i></i><i></i><i></i>"}));
-  addEventListener("touchstart", e => { y0 = (scrollY <= 0 && S && !document.querySelector(".sheet.on,.dlg-bg,.xl-bg,#viewer.on")) ? e.touches[0].clientY : null; dy = 0; }, {passive: true});
+  const SEUIL = 170, TENIR = 380;
+  let y0 = null, dy = 0, pret = false, minuteur = null, dernierDefil = 0;
+  addEventListener("scroll", () => { dernierDefil = Date.now(); }, {passive: true});
+  const ind = () => document.getElementById("ptr") || document.body.appendChild(Object.assign(document.createElement("div"), {id: "ptr", className: "ptr", innerHTML: "<i></i><i></i><i></i><b>Tiens…</b>"}));
+  const raz = p => { clearTimeout(minuteur); minuteur = null; pret = false; p.classList.remove("pret", "charge"); p.querySelector("b").textContent = "Tiens…"; };
+  addEventListener("touchstart", e => {
+    const libre = scrollY <= 0 && Date.now() - dernierDefil > 450 && S && !document.querySelector(".sheet.on,.dlg-bg,.xl-bg,#viewer.on,.fab-m");
+    y0 = libre ? e.touches[0].clientY : null; dy = 0; pret = false;
+  }, {passive: true});
   addEventListener("touchmove", e => {
-    if(y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); const p = ind(), k = Math.min(1, dy / 90);
-    p.style.transition = "none"; p.style.opacity = k; p.style.transform = `translate(-50%, ${Math.min(dy, 120) * .6}px) scale(${.7 + .3 * k})`;
-    p.classList.toggle("pret", k >= 1);
+    if(y0 === null) return;
+    if(scrollY > 0){ y0 = null; return; }
+    const brut = Math.max(0, e.touches[0].clientY - y0); dy = brut * .55;           // résistance : il faut tirer franchement
+    const p = ind(), k = Math.min(1, dy / SEUIL);
+    p.style.transition = "none"; p.style.opacity = Math.min(1, k * 1.4); p.style.transform = `translate(-50%, ${Math.min(dy, 150) * .6}px) scale(${.7 + .3 * k})`;
+    p.style.setProperty("--k", k);
+    if(k >= 1 && !minuteur && !pret){ p.classList.add("charge"); minuteur = setTimeout(() => { pret = true; minuteur = null; p.classList.add("pret"); p.querySelector("b").textContent = "Relâche"; vibre(); }, TENIR); }
+    if(k < 1 && (minuteur || pret)) raz(p);
   }, {passive: true});
   addEventListener("touchend", async () => {
-    if(y0 === null) return; y0 = null; const p = ind(), ok = dy >= 90;
-    p.style.transition = "transform .35s cubic-bezier(.23,1,.32,1), opacity .25s"; p.classList.remove("pret");
+    if(y0 === null) return; y0 = null; const p = ind(), ok = pret; raz(p);
+    p.style.transition = "transform .35s cubic-bezier(.23,1,.32,1), opacity .25s";
     if(!ok){ p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)"; return; }
-    p.classList.add("tourne"); vibre(); verifierMaj();
+    p.classList.add("tourne"); verifierMaj();
     if(typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()){ p.classList.remove("tourne"); p.style.opacity = 0; majOneDrive(); return; }
     await sync(true);
     p.classList.remove("tourne"); p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)";
