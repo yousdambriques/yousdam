@@ -58,7 +58,9 @@ class StockLocal {
     await BASE.ecrire("excel", xl);
     await BASE.ecrire("excel_meta", {nom: d.excel_nom || "Excel", importe: d.cree || new Date().toISOString()});
     if (d.prospection) { const p = versBuf(d.prospection); await BASE.ecrire("prosp", p); await BASE.ecrire("prosp_meta", {nom: "Prospection", importe: d.cree}); }
-    localStorage.setItem("couleurs", JSON.stringify(d.couleurs || {}));   // couleurs des clients dans l'Excel (aperçu)
+    localStorage.setItem("couleurs", JSON.stringify(d.couleurs || {}));
+    if (d.sync && d.sync.cle) localStorage.setItem("sync_cle", d.sync.cle);   // clé pour déchiffrer la copie partagée
+    localStorage.setItem("sync_date", d.cree || "");   // couleurs des clients dans l'Excel (aperçu)
     const noms = [];
     for (const [nom, ph] of Object.entries(d.photos || {})) { await BASE.ecrire("photo:" + nom, new Blob([versBuf(ph.b64)], {type: ph.type})); noms.push(nom); }
     const l = new Set(JSON.parse(localStorage.getItem("photos") || "[]")); noms.forEach(n => l.add(n));
@@ -74,6 +76,33 @@ class StockLocal {
     await BASE.ecrire(type, buf);
     await BASE.ecrire(type + "_meta", {nom: fichier.name, importe: new Date().toISOString()});
   }
+}
+
+/* synchronisation automatique : lien de partage OneDrive vers « donnees-yousdam.chiffre »
+   (AES-GCM 256, la clé vient du fichier lisible importé une fois ; le lien seul ne permet pas de lire les données) */
+const b64url = s => btoa(unescape(encodeURIComponent(s))).replace(/=+$/, "").replace(/\//g, "_").replace(/\+/g, "-");
+async function synchroniser() {
+  const lien = (localStorage.getItem("sync_lien") || "").trim(), cle = localStorage.getItem("sync_cle");
+  if (!lien) throw new Error("Colle d'abord le lien de partage dans Réglages > Synchronisation.");
+  if (!cle) throw new Error("Importe une fois « donnees-yousdam » pour donner la clé à ce téléphone.");
+  let rep;
+  try { rep = await fetch(`https://api.onedrive.com/v1.0/shares/u!${b64url(lien)}/root/content`, {cache: "no-store"}); }
+  catch (e) { throw new Error("Pas de connexion à OneDrive. Vérifie internet et réessaie."); }
+  if (!rep.ok) throw new Error(rep.status === 404 || rep.status === 403 ? "Le lien OneDrive ne marche plus. Recrée-le et colle-le dans Réglages." : "OneDrive ne répond pas (" + rep.status + ").");
+  const b = new Uint8Array(await rep.arrayBuffer());
+  if (String.fromCharCode(...b.slice(0, 4)) !== "YSD1") throw new Error("Ce lien ne pointe pas vers « donnees-yousdam.chiffre ».");
+  const k = await crypto.subtle.importKey("raw", Uint8Array.from(atob(cle), c => c.charCodeAt(0)), "AES-GCM", false, ["decrypt"]);
+  let clair;
+  try { clair = await crypto.subtle.decrypt({name: "AES-GCM", iv: b.slice(4, 16), additionalData: b.slice(0, 4)}, k, b.slice(16)); }
+  catch (e) { throw new Error("La clé ne correspond pas. Réimporte « donnees-yousdam » une fois."); }
+  const texte = await new Response(new Blob([clair]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  const d = JSON.parse(texte);
+  if (d.cree && d.cree === localStorage.getItem("sync_date")) return {nouveau: false, cree: d.cree};
+  const avant = new Set(JSON.parse(localStorage.getItem("photos") || "[]"));
+  await STOCK.importerDonnees(new File([texte], "donnees-yousdam.json"));
+  const apres = JSON.parse(localStorage.getItem("photos") || "[]");
+  localStorage.setItem("sync_vu", new Date().toISOString());
+  return {nouveau: true, cree: d.cree, photos: apres.filter(n => !avant.has(n)).length};
 }
 
 /* l'appli locale n'a pas d'agent qui lui répond : une livraison envoyée au PC est considérée comme écrite

@@ -786,7 +786,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "2.4";
+const VERSION = "2.5";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1004,7 +1004,20 @@ function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"});
   const faire = () => { render(false); window.scrollTo(0,0); };
   if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){ document.documentElement.dataset.sens = sens; document.startViewTransition(faire); }
   else { render(true); window.scrollTo(0,0); } }
-async function refresh(){ busy(true,"Actualisation"); await load(); busy(false); toast("À jour"); }
+async function refresh(){ await sync(true); }
+/* va chercher les nouvelles données dans OneDrive (copie chiffrée), sinon recharge ce qui est sur le téléphone */
+let SYNC_EN_COURS = false;
+async function sync(bruyant){
+  if(SYNC_EN_COURS) return; SYNC_EN_COURS = true;
+  if(typeof synchroniser !== "function" || !localStorage.getItem("sync_lien")){ await load(); SYNC_EN_COURS = false; if(bruyant) toast(localStorage.getItem("sync_lien") ? "À jour" : "Ajoute le lien OneDrive dans Réglages pour tout mettre à jour", !!localStorage.getItem("sync_lien")); return; }
+  if(bruyant) busy(true, "Recherche dans OneDrive…");
+  try{
+    const r = await synchroniser(); await load();
+    if(bruyant) toast(r.nouveau ? `Données à jour${r.photos ? ` · ${r.photos} nouvelle${r.photos > 1 ? "s" : ""} photo${r.photos > 1 ? "s" : ""}` : ""}` : "Déjà à jour");
+  }catch(e){ await load(); if(bruyant) toast(e.message, false); }
+  finally{ busy(false); SYNC_EN_COURS = false; }
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden && S && localStorage.getItem("sync_lien") && Date.now() - Date.parse(localStorage.getItem("sync_vu") || 0) > 10 * 60 * 1000) sync(false); });
 let PREMIER = true;
 function render(anim){
   if(!S) return;
@@ -1241,7 +1254,7 @@ function vLivrees(){
     if(y0 === null) return; y0 = null; const p = ind(), ok = dy >= 90;
     p.style.transition = "transform .35s cubic-bezier(.23,1,.32,1), opacity .25s"; p.classList.remove("pret");
     if(!ok){ p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)"; return; }
-    p.classList.add("tourne"); vibre(); verifierMaj(); await load(); toast("À jour");
+    p.classList.add("tourne"); vibre(); verifierMaj(); await sync(true);
     p.classList.remove("tourne"); p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)";
   });
 })();
@@ -1812,6 +1825,11 @@ function ouvrirThemes(){
     <div class="group"><div class="item"><div class="body"><div class="ttl">Version ${VERSION}</div><div class="meta">${NOUVELLE ? "Nouvelle version " + esc(NOUVELLE.version) + " disponible" : "À jour"}</div></div>
       ${NOUVELLE ? `<button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>` : `<button class="btn btn-gray btn-sm press" onclick="verifierMaj().then(()=>{ouvrirThemes(); if(!NOUVELLE) toast('Tu as la dernière version')})">Vérifier</button>`}</div></div>
     <div class="group"><button class="item" onclick="ouvrirDonnees()"><div class="body"><div class="ttl">Mes données</div><div class="meta">Excel, photos des règlements, prospection</div></div><span class="chev">${ic("chev",16)}</span></button></div>
+    <div class="flabel">Synchronisation automatique</div>
+    <div class="group"><div class="item" style="flex-wrap:wrap"><div class="body" style="min-width:100%"><div class="ttl">Lien OneDrive de « donnees-yousdam.chiffre »</div>
+      <div class="meta">${localStorage.getItem("sync_cle") ? "Clé présente sur ce téléphone." : "Importe une fois « donnees-yousdam » pour donner la clé."} ${localStorage.getItem("sync_vu") ? "Dernière synchro : " + esc(dcourt(localStorage.getItem("sync_vu"))) + " à " + esc(new Date(localStorage.getItem("sync_vu")).toTimeString().slice(0,5)) : ""}</div></div>
+      <input id="syncLien" placeholder="https://1drv.ms/…" value="${esc(localStorage.getItem("sync_lien") || "")}" style="flex:1;min-width:0;margin-top:10px;padding:11px 12px;border-radius:12px;border:0;background:var(--fill);font:inherit;font-size:14px">
+      <button class="btn btn-fill btn-sm press" style="margin:10px 0 0 8px" onclick="localStorage.setItem('sync_lien', $('#syncLien').value.trim()); sync(true)">Tester</button></div></div>
     <div class="flabel">Mes fichiers (gardés sur ce téléphone)</div>
     <div class="group">
       <div class="item"><div class="body"><div class="ttl">Excel de suivi</div><div class="meta">importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</div></div>
