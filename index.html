@@ -280,12 +280,17 @@ button.item:active{background:var(--fill)}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
 .av{position:relative;width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:17px;
-  background:color-mix(in srgb,var(--brick) 13%,var(--card));color:var(--brick);letter-spacing:-.01em}
+  background:color-mix(in srgb,var(--t,var(--brick)) 15%,var(--card));color:var(--t,var(--brick));letter-spacing:-.01em}
 .av-ph{position:absolute;right:-3px;bottom:-3px;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;background:var(--brick);color:#fff;border:2px solid var(--card)}
 .av-ph.off{background:var(--sec)}
+.quitpill{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translate(-50%,16px);opacity:0;z-index:90;pointer-events:none;
+  padding:11px 18px;border-radius:999px;background:var(--label);color:var(--card);font-weight:600;font-size:14.5px;white-space:nowrap;box-shadow:var(--shadow-lg);
+  transition:opacity .2s var(--ease-out),transform .3s var(--ease-out)}
+.quitpill.on{opacity:1;transform:translate(-50%,0)}
 .rg-mois{display:flex;justify-content:space-between;align-items:baseline;margin:26px 6px 10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
 .rg-mois span:last-child{font-size:14.5px;font-weight:600;color:var(--sec);font-variant-numeric:tabular-nums}
-.rg{display:flex;gap:13px;align-items:flex-start;width:100%;padding:15px 16px;border:0;background:none;font:inherit;color:inherit;text-align:left}
+.rg::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3.5px;border-radius:0 4px 4px 0;background:var(--b)}
+.rg{position:relative;display:flex;gap:13px;align-items:flex-start;width:100%;padding:15px 16px;border:0;background:none;font:inherit;color:inherit;text-align:left}
 .rg + .rg{border-top:.5px solid var(--sep)}
 .rg .chip{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;margin:1px 0 0;background:var(--fill);color:var(--label)}
 .rg-c{flex:1;min-width:0}
@@ -411,14 +416,14 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .lock{min-height:100dvh;background:radial-gradient(80% 50% at 50% 0%,rgba(240,120,80,.18),transparent 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px}
 .lock img{width:76px;height:76px;border-radius:20px;box-shadow:var(--hero-shadow)}
 .lock h1{font-size:26px;margin:18px 0 4px;letter-spacing:-.02em}
-.dots{display:flex;gap:18px;margin:30px 0 38px}
-.dots i{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--label);transition:background .15s}
-.dots i.f{background:var(--label)}
+.dots{display:flex;gap:14px;margin:26px 0 34px}
+.dots i{width:9px;height:9px;border-radius:50%;background:color-mix(in srgb,var(--label) 16%,transparent);transition:background .15s,transform .25s var(--ease-out)}
+.dots i.plein{background:var(--brick);transform:scale(1.18)}
 .dots.shake{animation:shake .4s}
 @keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
-.pad{display:grid;grid-template-columns:repeat(3,80px);gap:16px 26px}
-.pad button{width:80px;height:80px;border-radius:50%;border:0;background:#fff;box-shadow:var(--shadow);font-size:32px;font-weight:400;transition:background .15s}
-.pad button:active{background:var(--fill2)}
+.pad{display:grid;grid-template-columns:repeat(3,72px);gap:14px 26px}
+.pad button{width:72px;height:72px;border-radius:50%;border:0;background:#fff;box-shadow:var(--shadow);font-size:27px;font-weight:500;color:var(--label);font-variant-numeric:tabular-nums;transition:background .15s,transform .12s}
+.pad button:active{background:var(--fill2);transform:scale(.94)}
 .pad .t{background:none;font-size:16px;font-weight:600}
 .chart{width:100%;height:auto;display:block}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
@@ -527,10 +532,39 @@ table.xls tr.nv td.xrn{background:#d9ead3;color:#1e6b35}
 .rg2 .v{font-size:18px;font-weight:700;letter-spacing:-.03em;margin-top:3px}
 .rg2 .s{font-size:12px;color:var(--sec);margin-top:1px}
 .mini-chart{width:100%;height:auto;display:block}
+.swipe{position:relative;margin-bottom:16px;border-radius:var(--r)}
+.swipe .order{margin-bottom:0;position:relative;touch-action:pan-y;will-change:transform}
+.sw-bg{position:absolute;inset:0;border-radius:var(--r);display:flex;justify-content:space-between;align-items:center;padding:0 22px;color:#fff;font-weight:700;font-size:15px;
+  background:var(--green);transition:background .2s}
+.sw-bg span{display:flex;align-items:center;gap:6px;opacity:.75;transition:opacity .15s,transform .2s var(--ease-out)}
+.swipe:not(.gauche) .sw-bg span:last-child,.swipe.gauche .sw-bg span:first-child{visibility:hidden}
+.swipe.gauche .sw-bg{background:var(--red)}
+.swipe.pret .sw-bg span{opacity:1;transform:scale(1.08)}
+.ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 10px);z-index:40;opacity:0;transform:translate(-50%,0) scale(.7);display:grid;grid-template-columns:repeat(2,14px);gap:3px;
+  padding:9px;border-radius:14px;background:var(--card);box-shadow:var(--shadow-lg);pointer-events:none}
+.ptr i{height:8px;border-radius:2px;background:var(--brick);opacity:.35;transition:opacity .2s}
+.ptr i:last-child{grid-column:1/-1;width:50%;justify-self:center}
+.ptr.pret i,.ptr.tourne i{opacity:1}
+.ptr.tourne i{animation:ptrb .7s var(--ease-out) infinite alternate}.ptr.tourne i:nth-child(2){animation-delay:.12s}.ptr.tourne i:nth-child(3){animation-delay:.24s}
+@keyframes ptrb{to{opacity:.3;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.ptr.tourne i{animation:none}}
+.feed{display:flex;flex-direction:column}
+.fi{position:relative;display:flex;align-items:center;gap:12px;padding:9px 0}
+.fi:not(:last-child)::before{content:"";position:absolute;left:19px;top:47px;bottom:-11px;width:2px;border-radius:1px;background:var(--fill2)}
+.fi .av{width:40px;height:40px;font-size:16px}
+.fb{flex:1;min-width:0;font-size:14.5px;line-height:1.3}.fb b{font-weight:650}
+.fb span{display:block;font-size:12.5px;color:var(--sec);margin-top:2px}
+.fm{font-weight:700;font-size:14.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fm.up{color:var(--green)}.fm.down{color:var(--red)}
+@media (max-width:899px){
+  .b-kpi .dash{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;margin:0 -18px;padding:4px 18px 10px;scrollbar-width:none;overscroll-behavior-x:contain}
+  .b-kpi .dash::-webkit-scrollbar{display:none}
+  .b-kpi .kpi{flex:0 0 42%;scroll-snap-align:start;scroll-margin-left:18px}
+}
 @media (min-width:900px){
   .board{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px;align-items:start}
   .b-hero{grid-column:span 5}.b-kpi{grid-column:span 7}.b-chart{grid-column:span 7}.b-cli{grid-column:span 5}
-  .b-reg{grid-column:span 5}.b-todo{grid-column:span 7}
+  .b-reg{grid-column:span 5}.b-todo{grid-column:span 7}.b-feed{grid-column:1/-1;order:10}
   .b-kpi .dash{grid-template-columns:1fr 1fr;height:100%}
 }
 .head .over,.daylab,.note,.flabel,.stot .l,.stot .s{color:var(--ink-bg-sec)}
@@ -544,7 +578,7 @@ table.xls tr.nv td.xrn{background:#d9ead3;color:#1e6b35}
 .sheet .bar b{color:var(--ink-bg)}
 .sheet .grab i{background:var(--ink-bg-sec)}
 .lock h1,.lock .muted{color:var(--ink-bg)}
-.dots i{border-color:var(--ink-bg)!important}.dots i.f{background:var(--ink-bg)!important}
+.dots i:not(.plein){background:color-mix(in srgb,var(--ink-bg) 18%,transparent)!important}.dots i.f{background:var(--ink-bg)!important}
 .btn-fill{color:var(--on-accent)!important}
 .tabs button.on{color:var(--tab-on)!important}
 .round{color:var(--label)}
@@ -679,7 +713,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "2.1";
+const VERSION = "2.2";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -863,7 +897,7 @@ function lock(nouveau){
   const sous = () => msg || (nouveau ? "4 chiffres pour protéger tes chiffres" : "Entre ton code");
   const draw = (shake) => {
     $("#root").innerHTML = `<div class="lock"><img src="icon-192.png" alt=""><h1>${titre()}</h1><div class="muted">${esc(sous())}</div>
-      <div class="dots ${shake?"shake":""}">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"f":""}"></i>`).join("")}</div>
+      <div class="dots ${shake?"shake":""}">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"plein":""}"></i>`).join("")}</div>
       <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}<span></span><button data-k="0">0</button><button class="t" data-k="del">Effacer</button></div></div>`;
     document.querySelectorAll(".pad button").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); key(b.dataset.k); }));
   };
@@ -973,6 +1007,16 @@ function spark(vals, color){
   return `<svg class="spk" viewBox="0 0 ${w} ${hh}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}L${w},${hh}L0,${hh}Z" style="fill:${color}" opacity=".10"/>
     <path d="${d}" fill="none" style="stroke:${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
 }
+/* fil d'activité : dernières livraisons et derniers règlements, avec l'initiale du client */
+function filRecent(){
+  const L = S.livrees.slice(0, 6).map(v => ({d: v.date, nom: v.client, t: `${num(v.palettes)} pal. ${esc(v.type || "")} livrées`,
+    s: esc(v.client_final || v.chantier || v.ville || ""), m: `+${dh(v.benef)}`, cls: "up"}));
+  const R = S.reglements.filter(r => r.echeance && r.echeance <= today()).sort((a, b) => b.echeance.localeCompare(a.echeance)).slice(0, 4)
+    .map(r => ({d: r.echeance, nom: r.client, t: `${/^chq/i.test(r.ref) ? "Chèque" : "Effet"} ${/impay/i.test(r.remarque) ? "impayé" : "encaissé"}`,
+      s: esc(joliPeriode(r.periode)), m: dh(r.montant), cls: /impay/i.test(r.remarque) ? "down" : ""}));
+  return [...L, ...R].sort((a, b) => String(b.d).localeCompare(String(a.d))).slice(0, 6).map(x => `<div class="fi">${avatar(x.nom)}
+    <div class="fb"><div><b>${esc(nomPropre(x.nom))}</b> · ${x.t}</div><span>${x.s ? x.s + " · " : ""}${depuis(x.d)}</span></div><div class="fm ${x.cls}">${x.m}</div></div>`).join("");
+}
 function vAccueil(){
   const A = S.analyse, mc = A.mois_courant, d = new Date();
   const p = Math.min(1, mc.benef/(A.objectif||1)), C = 2*Math.PI*38;
@@ -1010,6 +1054,7 @@ function vAccueil(){
         <span class="dl muted">sur ${num(A.solde.initial)} d'avance</span>
         <span class="bar"><i style="width:${Math.max(2, Math.min(100, A.solde.courant/(A.solde.initial||1)*100))}%;background:${A.solde.courant >= 0 ? "var(--green)" : "var(--red)"}"></i></span></button>
     </div></div>
+    <div class="b-feed panel"><div class="ph"><b>Récemment</b><button onclick="SEGC='livrees';go('commandes')">Tout voir</button></div><div class="feed">${filRecent()}</div></div>
     <div class="b-chart panel"><div class="ph"><b>Bénéfice par mois</b><span>${dh(an)} en ${d.getFullYear()}</span></div>
       <svg class="mini-chart" viewBox="0 0 ${W} ${H}" style="color:var(--label)"><line x1="0" x2="${W}" y1="${y(A.objectif).toFixed(1)}" y2="${y(A.objectif).toFixed(1)}" stroke="var(--label)" stroke-opacity=".35" stroke-dasharray="4 5" stroke-width="1.2"/>${bars}</svg>${legende}</div>
     <div class="b-cli panel"><div class="ph"><b>Clients</b><button onclick="go('clients')">Tout voir</button></div>
@@ -1036,7 +1081,7 @@ function vCommandes(){
   const att = S.attente.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||""));
   let body;
   if(SEGC==="attente"){
-    body = att.length ? `<div class="orders">` + att.map(c => `<div class="order">
+    body = att.length ? `<div class="note" style="margin:-2px 4px 12px;text-align:left">Glisse une commande → pour la livrer, ← pour l'annuler.</div><div class="orders">` + att.map(c => `<div class="swipe" data-id="${c.id}"><div class="sw-bg"><span>${ic("check",20)} Livrée</span><span>Annuler ${ic("x",18)}</span></div><div class="order">
       <div class="l1"><div class="qty c-orange"><b>${num(c.palettes)}</b><span>pal.</span></div>
         <div style="flex:1;min-width:0"><div class="who">${esc(nomPropre(c.client))}</div><div class="what">${esc(c.type)} · ${num(c.qte)} briques · <span class="badge ${ageCls(c.date)}">${depuis(c.date)}</span></div></div>
         ${contactBtns(c.contact)}</div>
@@ -1045,7 +1090,7 @@ function vCommandes(){
       ${c.dans_excel ? `<div class="alert" style="background:var(--green-soft);color:var(--label);margin:12px 0 0">Déjà livrée dans ton Excel le <b>${dcourt(c.dans_excel.date)}</b> (ligne ${c.dans_excel.row}${c.dans_excel.client_final?", "+esc(c.dans_excel.client_final):""}).
         <button class="btn btn-green btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">Oui, c'est elle : classer</button></div>` : ""}
       <div class="acts"><button class="btn btn-green btn-sm press" onclick="ouvrirLivrer('${c.id}')">${ic("check",18)} Livrée</button>
-        <button class="btn btn-gray btn-sm press" style="flex:0 0 auto" onclick="annuler('${c.id}')">Annuler</button></div></div>`).join("") + `</div>`
+        <button class="btn btn-gray btn-sm press" style="flex:0 0 auto" onclick="annuler('${c.id}')">Annuler</button></div></div></div>`).join("") + `</div>`
       : `<div class="group"><div class="empty"><div class="chip c-orange">${ic("box")}</div><b style="color:var(--label)">Aucune commande en attente</b><br>Colle un message WhatsApp pour en ajouter une.</div></div>`;
   } else body = vLivrees();
   return shell("Suivi des livraisons", "Commandes", `
@@ -1079,6 +1124,50 @@ function vLivrees(){
     <div class="note" style="margin-top:20px">30 dernières livraisons de ton Excel</div>`;
 }
 
+/* glisser une commande : → Livrée, ← Annuler (la carte suit le doigt, revient avec un ressort sinon) */
+(function(){
+  let el = null, sw = null, x0 = 0, y0 = 0, dx = 0, sens = null;
+  addEventListener("pointerdown", e => {
+    const o = e.target.closest(".swipe .order"); if(!o || e.target.closest("button,a,input,label,select")) return;
+    el = o; sw = o.parentElement; x0 = e.clientX; y0 = e.clientY; dx = 0; sens = null;
+  }, {passive: true});
+  addEventListener("pointermove", e => {
+    if(!el) return;
+    const mx = e.clientX - x0, my = e.clientY - y0;
+    if(!sens){ if(Math.abs(mx) < 10 && Math.abs(my) < 10) return; sens = Math.abs(mx) > Math.abs(my) ? "x" : "y"; if(sens === "x") el.setPointerCapture?.(e.pointerId); }
+    if(sens !== "x") return;
+    dx = mx; el.style.transition = "none"; el.style.transform = `translate3d(${dx}px,0,0)`;
+    sw.classList.toggle("gauche", dx < 0); sw.classList.toggle("pret", Math.abs(dx) > el.offsetWidth * .32);
+  }, {passive: true});
+  const fin = () => {
+    if(!el) return;
+    const o = el, s = sw, w = o.offsetWidth, ok = sens === "x" && Math.abs(dx) > w * .32, id = s.dataset.id, d = dx;
+    el = null;
+    o.style.transition = "transform .35s cubic-bezier(.23,1,.32,1)"; o.style.transform = "";
+    s.classList.remove("pret");
+    if(ok){ vibre(); setTimeout(() => d > 0 ? ouvrirLivrer(id) : annuler(id), 120); }
+  };
+  addEventListener("pointerup", fin); addEventListener("pointercancel", fin);
+})();
+/* tirer vers le bas en haut de page : actualiser (une brique se pose) */
+(function(){
+  let y0 = null, dy = 0;
+  const ind = () => document.getElementById("ptr") || document.body.appendChild(Object.assign(document.createElement("div"), {id: "ptr", className: "ptr", innerHTML: "<i></i><i></i><i></i>"}));
+  addEventListener("touchstart", e => { y0 = (scrollY <= 0 && S && !document.querySelector(".sheet.on,.dlg-bg,.xl-bg,#viewer.on")) ? e.touches[0].clientY : null; dy = 0; }, {passive: true});
+  addEventListener("touchmove", e => {
+    if(y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); const p = ind(), k = Math.min(1, dy / 90);
+    p.style.transition = "none"; p.style.opacity = k; p.style.transform = `translate(-50%, ${Math.min(dy, 120) * .6}px) scale(${.7 + .3 * k})`;
+    p.classList.toggle("pret", k >= 1);
+  }, {passive: true});
+  addEventListener("touchend", async () => {
+    if(y0 === null) return; y0 = null; const p = ind(), ok = dy >= 90;
+    p.style.transition = "transform .35s cubic-bezier(.23,1,.32,1), opacity .25s"; p.classList.remove("pret");
+    if(!ok){ p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)"; return; }
+    p.classList.add("tourne"); vibre(); verifierMaj(); await load(); toast("À jour");
+    p.classList.remove("tourne"); p.style.opacity = 0; p.style.transform = "translate(-50%,0) scale(.7)";
+  });
+})();
+
 /* ============ FEUILLE (sheet) avec glisser pour fermer ============ */
 function sheet(title, html){
   $("#sheetTitle").textContent = title; $("#sheetBody").innerHTML = html; $("#sheetBody").scrollTop = 0;
@@ -1087,17 +1176,29 @@ function sheet(title, html){
 }
 function closeSheet(){ const s = $("#sheet"); s.style.transform = ""; s.classList.remove("on","drag"); $("#scrim").classList.remove("on"); document.body.style.overflow = ""; }
 $("#scrim").onclick = closeSheet;
-/* flèche retour du téléphone : ferme ce qui est ouvert, sinon revient à l'onglet d'avant, et ne quitte l'appli que depuis l'accueil */
-history.pushState({yousdam: 1}, "");
+/* flèche retour du téléphone : ferme ce qui est ouvert, sinon revient à l'onglet d'avant ;
+   depuis l'accueil, demande un 2e appui (« Appuie encore sur ← pour quitter »).
+   Chrome ignore les étapes enregistrées sans toucher l'écran : on en prépare 3 à chaque toucher. */
+const PAS_MAX = 3;
+const pas = () => (history.state && history.state.yousdam) || 0;
+let SAUT = false;
+function armerRetour(){ for(let n = pas() + 1; n <= PAS_MAX; n++) history.pushState({yousdam: n}, ""); }
+addEventListener("pointerup", armerRetour, true); addEventListener("keydown", armerRetour, true);
+function quitterPill(){
+  let b = document.getElementById("quitPill");
+  if(!b){ b = document.createElement("div"); b.id = "quitPill"; b.className = "quitpill"; b.textContent = "Appuie encore sur ← pour quitter"; document.body.appendChild(b); }
+  requestAnimationFrame(() => b.classList.add("on")); clearTimeout(b._t); b._t = setTimeout(() => b.classList.remove("on"), 2200);
+}
 addEventListener("popstate", () => {
-  const garder = () => history.pushState({yousdam: 1}, "");
-  if($("#busy").classList.contains("on")) return garder();
+  if(SAUT){ SAUT = false; return; }
+  if($("#busy").classList.contains("on")) return;
   const dlg = document.querySelector(".dlg-bg [data-r='0'], .xl-bg [data-r='0']");
-  if(dlg){ dlg.click(); return garder(); }
-  if($("#viewer").classList.contains("on")){ closeViewer(); return garder(); }
-  if($("#sheet").classList.contains("on")){ closeSheet(); return garder(); }
-  if(S && (PREV.length || TAB !== "accueil")){ go(PREV.pop() || "accueil", true); return garder(); }
-  history.back();   // déjà sur l'accueil, rien d'ouvert : on quitte
+  if(dlg) return dlg.click();
+  if($("#viewer").classList.contains("on")) return closeViewer();
+  if($("#sheet").classList.contains("on")) return closeSheet();
+  if(S && (PREV.length || TAB !== "accueil")) return go(PREV.pop() || "accueil", true);
+  quitterPill();                                    // déjà sur l'accueil : le prochain ← quitte
+  if(pas() > 0){ SAUT = true; history.go(-pas()); }
 });
 (function(){
   let y0 = 0, dy = 0, hist = [];
@@ -1357,6 +1458,9 @@ function joliPeriode(s){
   return s[0].toUpperCase() + s.slice(1);
 }
 const dateLongue = s => { const d = pd(s); return d ? `${d.getDate()} ${MC[d.getMonth()]} ${d.getFullYear()}` : ""; };
+const BANQUES = {CAM: ["Crédit Agricole", "#2E9B57"], BMCI: ["BMCI", "#14928C"], BMCE: ["BMCE", "#2F6FD0"], CDM: ["CDM", "#3B4F8F"],
+  BP: ["Banque Populaire", "#D9822B"], ATTWFBNK: ["Attijariwafa", "#E0A100"], SHMBNK: ["SHM", "#8455D6"], CIH: ["CIH", "#C8365A"], SGMB: ["Société Générale", "#C8365A"]};
+const banque = ref => { const p = String(ref || "").toUpperCase().split("/"); const k = p.find(x => BANQUES[x]); return k ? BANQUES[k] : null; };
 function groupesReg(L){
   const tri = [...L].sort((a, b) => String(b.echeance || "").localeCompare(String(a.echeance || "")));
   const g = new Map();
@@ -1369,13 +1473,14 @@ function regItem(r){
   const st = imp ? `<span class="badge c-red">${esc(r.remarque.replace(/^impay[ée]+/i, "Impayé").replace(/(\d{2}\/\d{2}\/\d{4})/, "le $1"))}</span>`
     : enc ? `<span class="badge c-green">Encaissé</span>` : `<span class="badge c-orange">${r.echeance ? dans(r.echeance) : "À venir"}</span>`;
   const p = String(r.ref || "").split("/"), typ = /^chq/i.test(r.ref) ? "Chèque" : /^eff/i.test(r.ref) ? "Effet" : "Règlement";
-  const origine = [p[2], p[3] && nomPropre(p[3])].filter(Boolean).join(" · ");
+  const bq = banque(r.ref), tireur = p.slice(2).find(x => x && !BANQUES[String(x).toUpperCase()] && !/^\d+$/.test(x));
+  const origine = [bq ? bq[0] : p[2], tireur && nomPropre(tireur)].filter(Boolean).join(" · ");
   const manque = r.photo && STOCK.aPhoto && !STOCK.aPhoto(r.photo);
   const tag = !r.photo ? `div class="rg"` : manque
     ? `label class="rg press" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
     : `button class="rg press" onclick="voir('${encodeURIComponent(r.photo)}')"`;
   const per = joliPeriode(r.periode);
-  return `<${tag}>${avatar(r.client, r.photo ? `<i class="av-ph${manque ? " off" : ""}">${ic("photo", 11)}</i>` : "")}
+  return `<${tag.replace('class="rg', `style="--b:${bq ? bq[1] : "var(--fill2)"}" class="rg`)}>${avatar(r.client, r.photo ? `<i class="av-ph${manque ? " off" : ""}">${ic("photo", 11)}</i>` : "")}
     <div class="rg-c">
       <div class="rg-l1"><b>${esc(nomPropre(r.client))}</b><b class="rg-m">${dh(r.montant)}</b></div>
       <div class="rg-t">${typ}${origine ? " " + esc(origine) : ""}</div>
@@ -1391,10 +1496,16 @@ async function voir(f){
 function closeViewer(){ $("#viewer").classList.remove("on"); $("#viewerImg").src = ""; }
 
 /* ============ CLIENTS ============ */
+const TEINTES = ["#2F7FD8", "#2E9B57", "#E07A1F", "#8455D6", "#14928C", "#D2467E", "#B8860B", "#5B6B82"];
+function teinte(nom){
+  const k = String(nom||"").trim().toLowerCase().split(/\s+/).join(" ");
+  let i = (S && S.analyse ? S.analyse.clients : []).findIndex(c => String(c.nom).trim().toLowerCase().split(/\s+/).join(" ") === k);
+  if(i < 0) i = [...k].reduce((s, c) => s + c.charCodeAt(0), 0);
+  return TEINTES[i % TEINTES.length];
+}
 function avatar(nom, extra){
-  const k = String(nom||"").trim().toLowerCase().split(/\s+/).join(" "), c = couleurClient(k);
   const l = (nomPropre(nom).match(/\p{L}/u) || ["?"])[0];
-  return `<div class="av"${c !== "#fff" ? ` style="background:${c};color:#1c1c1e"` : ""}>${l}${extra || ""}</div>`;
+  return `<div class="av" style="--t:${teinte(nom)}">${l}${extra || ""}</div>`;
 }
 const nomPropre = s => String(s).trim().toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
 function vClients(){
