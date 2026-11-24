@@ -786,7 +786,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "2.5";
+const VERSION = "2.6";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -907,12 +907,14 @@ function ecranImport(){
       Choisis le fichier <b>donnees-yousdam</b> dans <b>OneDrive → YOUSDAM-appli</b> : il contient ton Excel <b>et toutes les photos des règlements</b>, préparés par ton PC.<br><br>
       <b>iPhone</b> : Parcourir → OneDrive → YOUSDAM-appli.<br><b>Samsung</b> : menu ☰ → OneDrive → YOUSDAM-appli.</div>
     <label class="btn btn-fill press" style="margin-top:20px;min-width:260px;cursor:pointer">Choisir mes données
-      <input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label>
+      <input type="file" hidden onchange="importer('excel', this)"></label>
     <div class="muted" style="margin-top:10px;font-size:13px;text-align:center;max-width:300px">Tu peux aussi choisir directement ton fichier Excel (sans les photos).</div>
     <div class="muted" id="impMsg" style="margin-top:12px;font-size:14px"></div></div>`;
 }
 async function importer(type, input){
   const f = input.files && input.files[0]; if(!f) return;
+  input.value = "";
+  if(!/\.(json|xlsx)$/i.test(f.name)) return toast(type === "prosp" ? "Choisis ton fichier de prospection (.xlsx)" : "Choisis « donnees-yousdam » dans OneDrive > YOUSDAM-appli", false);
   try{
     busy(true, "Lecture du fichier…");
     await STOCK.importer(type, f);
@@ -940,13 +942,13 @@ function ouvrirDonnees(){
   sheet("Mes données", `
     <div class="muted" style="margin:0 4px 14px;font-size:14.5px">Tout reste sur ce téléphone.</div>
     <div class="donnee reco"><div class="ic">${ic("refresh",22)}</div><div class="tx"><b>Tout mettre à jour</b><span>Excel, photos et prospection d'un coup</span></div>
-      <label class="btn btn-fill btn-sm press" style="cursor:pointer;flex:none">Choisir<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
+      ${boutonMaj("btn btn-fill btn-sm press", "cursor:pointer;flex:none", "Choisir")}</div>
     <div class="donnee"><div class="ic">${ic("excel",22)}</div><div class="tx"><b>Fichier Excel</b><span>${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</span></div>
-      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
+      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" hidden onchange="importer('excel', this)"></label></div>
     <div class="donnee"><div class="ic">${ic("photo",22)}</div><div class="tx"><b>Photos des règlements</b><span>${ok} sur ${avec.length}</span></div>
       <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this)"></label></div>
     <div class="donnee"><div class="ic">${ic("phone",22)}</div><div class="tx"><b>Prospection</b><span>${S.prospects.length ? S.prospects.length + " prospects" : "pas encore ajoutée"}</span></div>
-      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" accept=".xlsx" hidden onchange="importer('prosp', this)"></label></div>`);
+      <label class="btn btn-gray btn-sm press" style="cursor:pointer;flex:none">Ajouter<input type="file" hidden onchange="importer('prosp', this)"></label></div>`);
 }
 async function envoyerAuPC(){
   const e = fichierEnvoi(); if(!e) return toast("Rien à envoyer", false);
@@ -987,6 +989,12 @@ function lock(nouveau){
   draw();
 }
 
+/* bouton « Mettre à jour » : va chercher directement dans OneDrive si le lien est réglé, sinon ouvre le sélecteur (fichiers .json seulement) */
+function boutonMaj(cls, style, lib){
+  if(localStorage.getItem("sync_lien") && localStorage.getItem("sync_cle"))
+    return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();sync(true)">${lib}</button>`;
+  return `<label class="${cls}" style="${style}" onclick="event.stopPropagation()">${lib}<input type="file" hidden onchange="importer('excel', this)"></label>`;
+}
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
 function shell(over, title, body, action){
@@ -1125,7 +1133,7 @@ function vAccueil(){
   const an = M.filter(m => m.mois.startsWith(String(d.getFullYear()))).reduce((s,m)=>s+m.benef,0);
   const actions = `<div style="display:flex;gap:10px"><button class="round press" onclick="ouvrirThemes()" aria-label="Réglages"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button></div>`;
   return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync" onclick="if(!event.target.closest('label')) ouvrirDonnees()" style="cursor:pointer"><i></i>Données du ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}
-      <label class="press" style="margin-left:auto;color:var(--link);font-weight:600;cursor:pointer">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div><div class="board">
+      ${boutonMaj("press", "margin-left:auto;color:var(--link);font-weight:600;cursor:pointer;border:0;background:none;font:inherit;font-weight:600;padding:0", "Mettre \u00e0 jour")}</div><div class="board">
     <div class="b-hero"><div class="hero press" onclick="editObjectif()">
       <div class="row1"><div><div class="lab">Bénéfice de ${MOIS[d.getMonth()]}</div><div class="big"><span data-count="${Math.round(mc.benef)}">${num(mc.benef)}</span> <small>DH</small></div>
         <div style="font-size:14.5px;opacity:.88">${mc.livraisons} livraisons, ${num(mc.palettes)} palettes</div></div>
@@ -1558,7 +1566,7 @@ function vReglements(){
     ${(() => { const avec = R.filter(r => r.photo), manquent = avec.filter(r => STOCK.aPhoto && !STOCK.aPhoto(r.photo)).length;
       return manquent ? `<div class="alert" style="background:var(--card);box-shadow:var(--shadow);margin-top:14px;display:flex;align-items:center;gap:12px">
         <div style="flex:1"><b>${manquent} photo${manquent>1?"s":""} pas encore sur ce téléphone</b></div>
-        <label class="btn btn-fill btn-sm press" style="cursor:pointer;flex:none">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>` : ""; })()}
+        ${boutonMaj("btn btn-fill btn-sm press", "cursor:pointer;flex:none", "Mettre \u00e0 jour")}</div>` : ""; })()}
     ${groupesReg(L) || `<div class="group" style="margin-top:18px"><div class="empty"><div class="chip c-green">${ic("check")}</div>Aucun règlement pour ce choix.</div></div>`}
     `);
 }
@@ -1833,11 +1841,11 @@ function ouvrirThemes(){
     <div class="flabel">Mes fichiers (gardés sur ce téléphone)</div>
     <div class="group">
       <div class="item"><div class="body"><div class="ttl">Excel de suivi</div><div class="meta">importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</div></div>
-        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
+        ${boutonMaj("btn btn-gray btn-sm press", "cursor:pointer", "Mettre \u00e0 jour")}</div>
       <div class="item"><div class="body"><div class="ttl">Photos des règlements</div><div class="meta">${S.reglements.filter(r=>r.photo && STOCK.aPhoto && STOCK.aPhoto(r.photo)).length} sur ${S.reglements.filter(r=>r.photo).length} importées · dossier REGLEMENTS</div></div>
         <label class="btn btn-gray btn-sm press" style="cursor:pointer">Importer<input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this)"></label></div>
       <div class="item"><div class="body"><div class="ttl">Prospection</div><div class="meta">${S.prospects.length ? S.prospects.length + " prospects" : "pas encore importée"} · YOUSDAM-appli</div></div>
-        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Importer<input type="file" accept=".xlsx" hidden onchange="importer('prosp', this)"></label></div>
+        <label class="btn btn-gray btn-sm press" style="cursor:pointer">Importer<input type="file" hidden onchange="importer('prosp', this)"></label></div>
       <div class="item"><div class="body"><div class="ttl">Ton prénom</div><div class="meta">${esc(S.prenom || "pas renseigné")}</div></div>
         <button class="btn btn-gray btn-sm press" onclick="(async()=>{const p=await demander('Ton prénom :', S.prenom||''); if(p!==null){localStorage.setItem('prenom',p.trim()); await load(); ouvrirThemes();}})()">Modifier</button></div>
     </div>
