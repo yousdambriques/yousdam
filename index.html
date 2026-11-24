@@ -544,6 +544,20 @@ button.item:active{background:var(--fill)}
 .lm-bar{display:block;height:6px;border-radius:3px;background:var(--fill);margin:7px 0 6px;overflow:hidden}.lm-bar > i{display:block;height:100%;border-radius:3px;background:var(--t);animation:barin .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms + 120ms)}
 .lm-c1 small{font-size:12.5px;color:var(--sec)}.lm-c .chev{color:var(--sec)}
 @media (prefers-reduced-motion:reduce){.lm-corps.entre,.lm-c,.lm-bar > i{animation:none}}
+.doc{background:#fff;color:#111;border-radius:20px;box-shadow:var(--shadow);padding:16px 14px 10px;margin-top:6px}
+.doc-h{display:flex;justify-content:space-between;align-items:flex-end;padding:0 4px 12px;border-bottom:2px solid #111}
+.doc-h b{display:block;font-size:20px;letter-spacing:-.02em}.doc-h span{font-size:13px;color:#555}.doc-h em{font-style:normal;font-size:12.5px;color:#555;font-weight:600}
+.doc-t{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+.doc-t th{text-align:left;font-size:11.5px;font-weight:700;color:#666;padding:8px 4px;border-bottom:1px solid #ddd}
+.doc-t td{padding:9px 4px;border-bottom:1px solid #eee;vertical-align:top;color:#111}
+.doc-t td small{display:block;font-size:11.5px;color:#666;margin-top:1px}.doc-t td small.grue{color:#c62828;font-weight:600}
+.doc-t .n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.doc-t td:first-child{font-weight:700;white-space:nowrap}
+.doc-t tfoot td{border-bottom:0;border-top:2px solid #111;font-weight:800;font-size:15px;padding-top:11px}.doc-t tfoot span{font-size:11px;color:#666}
+.doc-t .vide{text-align:center;color:#666;padding:20px}
+.apercu{position:relative;display:block;width:100%;border:0;padding:0;border-radius:18px;overflow:hidden;background:#fff;box-shadow:var(--shadow);cursor:pointer}
+.apercu img{display:block;width:100%;min-height:80px}
+.apercu span{position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff}
 .lv-sum{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:6px 16px 14px;margin:4px 0 6px}
 .lv-t{width:100%;border:0;background:none;font:inherit;color:var(--label);text-align:left;padding:10px 0 2px;cursor:pointer}
 .lv-t i{transition:transform .3s var(--ease-out)}.lv-sum.ouv .lv-t i{transform:rotate(90deg)}
@@ -1006,7 +1020,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "4.8";
+const VERSION = "4.9";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -2251,20 +2265,23 @@ function dessinerSituation(){
       <b>${moisLong(SIT.mois)}</b>
       <button class="press" ${plusRecent?`onclick="SIT.mois='${plusRecent}';dessinerSituation()"`:"disabled"} aria-label="Mois suivant">${ic("chev",18)}</button>
     </div>
-    <div class="stot"><div class="l">Total du mois</div><div class="v">${mad(tot)}<small>MAD</small></div>
-      <div class="s">${L.length} livraison${L.length>1?"s":""} · ${num(pal)} palettes</div></div>
-    <div class="group">${L.map(l => { const [y,m,d] = l.date.split("-"); return `<div class="srow">
-        <div class="dd"><b>${d}</b><span>${MC[+m-1].replace(".","")}</span></div>
-        <div class="mm"><div>${esc(l.chantier || l.ville)}</div><p>${esc([l.client_final, `${num(l.palettes)} pal. ${l.type}`, /oui/i.test(l.decharge)?"grue":""].filter(Boolean).join(" · "))}</p></div>
-        <div class="am">${mad(l.ca)}</div></div>`; }).join("") || `<div class="empty">Aucune livraison ce mois-ci.</div>`}</div>
-    <button class="btn btn-fill btn-w press" style="margin-top:22px" onclick="imageSituation()">Envoyer la situation au client</button>
-    <div class="note">Crée l'image du tableau, prête pour WhatsApp.</div>`;
+    <div class="doc">
+      <div class="doc-h"><div><b>Situation</b><span>${esc(nomPropre(SIT.c.nom))} · ${moisLong(SIT.mois)}</span></div><em>${L.length} liv. · ${num(pal)} pal.</em></div>
+      <table class="doc-t"><thead><tr><th>Date</th><th>Destination</th><th class="n">Pal.</th><th class="n">Montant</th></tr></thead>
+        <tbody>${L.map(l => `<tr><td>${dfr(l.date).slice(0, 5)}</td><td>${esc(l.chantier || l.ville)}${l.client_final ? `<small>${esc(l.client_final)}</small>` : ""}${/oui/i.test(l.decharge) ? `<small class="grue">avec grue</small>` : ""}</td>
+          <td class="n">${num(l.palettes)}<small>${esc(l.type)}</small></td><td class="n">${mad(l.ca)}</td></tr>`).join("") || `<tr><td colspan="4" class="vide">Aucune livraison ce mois-ci.</td></tr>`}</tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="n">${num(pal)}</td><td class="n">${mad(tot)} <span>MAD</span></td></tr></tfoot></table>
+    </div>
+    ${L.length ? `<div class="flabel">Aperçu de la situation</div>
+    <button class="apercu press" onclick="voirSituation()"><img id="apercuSit" alt="Aperçu de la situation"><span>${ic("photo", 16)} Toucher pour agrandir</span></button>
+    <button class="btn btn-fill btn-w press" style="margin-top:16px" onclick="envoyerSituation('pdf')">${ic("wa", 19)} Envoyer au client en PDF</button>
+    <button class="btn btn-gray btn-w press" style="margin-top:10px" onclick="envoyerSituation('image')">Envoyer en image</button>` : ""}`;
+  if(L.length) canvasSituation().then(cv => { const im = document.getElementById("apercuSit"); if(im) im.src = cv.toDataURL("image/jpeg", .85); });
 }
 
-/* Image PNG du tableau, au style de ton tableau Excel */
-async function imageSituation(){
+/* Dessin du tableau de situation, au style de ton tableau Excel */
+async function canvasSituation(){
   const {c} = SIT, L = SIT.lignes.filter(l => l.date.startsWith(SIT.mois));
-  if(!L.length) return toast("Aucune livraison ce mois-ci", false);
   await document.fonts.ready;
   const F = '"Geist", -apple-system, "Segoe UI", sans-serif';
   const W = 1600, top = 194, rh = 70, H = top + 52 + L.length*rh + 120;
@@ -2304,14 +2321,44 @@ async function imageSituation(){
   g.fillText(num(pal), 298, yb+58);
   g.textAlign = "right"; g.fillStyle = "#6e6e73"; g.font = `600 18px ${F}`; g.fillText("MAD", W-103, yb+58);
   const mw = g.measureText("MAD").width; g.fillStyle = "#d1202f"; g.font = `800 36px ${F}`; g.fillText(mad(tot), W-103-mw-8, yb+60);
-  const blob = await new Promise(r => cv.toBlob(r, "image/png"));
-  const nom = `Situation ${nomPropre(c.nom)} ${moisLong(SIT.mois)}.png`;
-  const file = new File([blob], nom, {type:"image/png"});
+  return cv;
+}
+function voirSituation(){
+  const im = document.getElementById("apercuSit"); if(!im || !im.src) return;
+  $("#viewer").classList.add("on"); $("#viewerImg").src = im.src;
+}
+/* PDF d'une page avec l'image du tableau (JPEG), sans bibliothèque */
+function pdfDepuisCanvas(cv){
+  const jpg = atob(cv.toDataURL("image/jpeg", .92).split(",")[1]);
+  const W = 595, H = Math.round(595 * cv.height / cv.width);
+  const enc = new TextEncoder(), morceaux = [], offs = [];
+  let taille = 0; const ajoute = x => { const b = typeof x === "string" ? enc.encode(x) : x; morceaux.push(b); taille += b.length; };
+  const img = Uint8Array.from(jpg, ch => ch.charCodeAt(0)), contenu = `q ${W} 0 0 ${H} 0 0 cm /Im0 Do Q`;
+  ajoute("%PDF-1.4\n");
+  const obj = (n, s) => { offs[n] = taille; ajoute(`${n} 0 obj\n${s}\nendobj\n`); };
+  obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  offs[4] = taille; ajoute(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${img.length} >>\nstream\n`);
+  ajoute(img); ajoute("\nendstream\nendobj\n");
+  obj(5, `<< /Length ${contenu.length} >>\nstream\n${contenu}\nendstream`);
+  const xref = taille;
+  ajoute(`xref\n0 6\n0000000000 65535 f \n${[1, 2, 3, 4, 5].map(n => String(offs[n]).padStart(10, "0") + " 00000 n \n").join("")}trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(morceaux, {type: "application/pdf"});
+}
+async function envoyerSituation(format){
+  const {c} = SIT, L = SIT.lignes.filter(l => l.date.startsWith(SIT.mois));
+  if(!L.length) return toast("Aucune livraison ce mois-ci", false);
+  const cv = await canvasSituation(), base = `Situation ${nomPropre(c.nom)} ${moisLong(SIT.mois)}`;
+  const blob = format === "pdf" ? pdfDepuisCanvas(cv) : await new Promise(r => cv.toBlob(r, "image/png"));
+  const nom = base + (format === "pdf" ? ".pdf" : ".png");
+  const file = new File([blob], nom, {type: blob.type});
   if(await partagerNatif(file)) return;
   if(navigator.canShare && navigator.canShare({files:[file]})){ try{ await navigator.share({files:[file], title:nom}); return; } catch(e){ if(e.name==="AbortError") return; } }
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nom; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
-  toast("Image enregistrée dans tes téléchargements");
+  toast(format === "pdf" ? "PDF enregistré dans tes téléchargements" : "Image enregistrée dans tes téléchargements");
 }
+async function imageSituation(){ return envoyerSituation("image"); }
 
 /* ============ ANALYSE ============ */
 let FILTRE_A = null;
