@@ -213,10 +213,11 @@ button.item:active{background:var(--fill)}
 .item .chip.c-red{color:var(--red)}.item .chip.c-green{color:var(--green)}
 .item .chip.c-orange,.item .chip.c-blue,.item .chip.c-purple,.item .chip.c-brick,.item .chip.c-gray{background:var(--fill);color:var(--label)}
 .item .body{flex:1;min-width:0}
-.item .ttl{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item .ttl.nom{white-space:normal;overflow-wrap:anywhere;line-height:1.25}
+.item .ttl{font-weight:600;line-height:1.25;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .item .meta{font-size:14px;color:var(--sec);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item .end{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.end small{max-width:34vw;margin-left:auto;overflow:hidden;text-overflow:ellipsis}
+.item .body{min-width:96px}
 .item .end small{display:block;margin-top:3px;font-weight:500;color:var(--sec);font-size:13px}
 .chev{color:var(--ter);flex:none}
 .badge{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
@@ -656,7 +657,7 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "1.7";
+const VERSION = "1.8";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -866,7 +867,8 @@ function shell(over, title, body, action){
     </div></div>
     <nav class="tabs" id="tabs"><span class="ind" id="ind"></span><div class="brand"><img src="icon-192.png" alt="">YOUSDAM</div>${TABS.map(([k,l,i])=>`<button class="${TAB===k?"on":""}" onclick="go('${k}')" aria-label="${l}">${ic(i)}${l}${k==="commandes"&&n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>`;
 }
-function go(t){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"}); return; } TAB = t; localStorage.setItem("tab", t); render(true); window.scrollTo(0,0); }
+const PREV = [];   // onglets visités, pour la flèche retour
+function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"}); return; } if(!retour){ PREV.push(TAB); if(PREV.length > 20) PREV.shift(); } TAB = t; localStorage.setItem("tab", t); render(true); window.scrollTo(0,0); }
 async function refresh(){ busy(true,"Actualisation"); await load(); busy(false); toast("À jour"); }
 let PREMIER = true;
 function render(anim){
@@ -956,7 +958,7 @@ function vAccueil(){
   const prio = A.diag.find(x => x.niveau!=="fort");
   const todo = [];
   S.attente.slice().sort((a,b)=>(a.date||"").localeCompare(b.date||"")).slice(0,3).forEach(c => todo.push(
-    `<button class="item" onclick="SEGC='attente';go('commandes')"><div class="chip">${ic("truck",19)}</div><div class="body"><div class="ttl">Livrer ${esc(c.client)}, ${num(c.palettes)} pal.</div><div class="meta">${esc(c.chantier||c.client_final||c.type)}, ${depuis(c.date)}</div></div><span class="chev">${ic("chev",16)}</span></button>`));
+    `<button class="item" onclick="SEGC='attente';go('commandes')"><div class="chip">${ic("truck",19)}</div><div class="body"><div class="ttl">Livrer ${esc(nomPropre(c.client))}, ${num(c.palettes)} pal.</div><div class="meta">${esc(c.chantier||c.client_final||c.type)}, ${depuis(c.date)}</div></div><span class="chev">${ic("chev",16)}</span></button>`));
   if(S.a_excel.length) todo.push(`<button class="item" onclick="SEGC='livrees';go('commandes')"><div class="chip">${ic("excel",19)}</div><div class="body"><div class="ttl">${S.a_excel.length} livraison${S.a_excel.length>1?"s":""} à passer dans Excel</div></div><span class="chev">${ic("chev",16)}</span></button>`);
   topProspects(3).forEach(x => todo.push(prospectItem(x)));
   const mx = Math.max(A.objectif, ...M.map(m=>m.benef)) * 1.1, W = 340, H = 120, bw = W/M.length, y = v => H - 18 - (v/mx)*(H-26);
@@ -1013,7 +1015,7 @@ function vCommandes(){
   if(SEGC==="attente"){
     body = att.length ? `<div class="orders">` + att.map(c => `<div class="order">
       <div class="l1"><div class="qty c-orange"><b>${num(c.palettes)}</b><span>pal.</span></div>
-        <div style="flex:1;min-width:0"><div class="who">${esc(c.client)}</div><div class="what">${esc(c.type)} · ${num(c.qte)} briques · <span class="badge ${ageCls(c.date)}">${depuis(c.date)}</span></div></div>
+        <div style="flex:1;min-width:0"><div class="who">${esc(nomPropre(c.client))}</div><div class="what">${esc(c.type)} · ${num(c.qte)} briques · <span class="badge ${ageCls(c.date)}">${depuis(c.date)}</span></div></div>
         ${contactBtns(c.contact)}</div>
       <div class="where">${c.chantier?`<div><span>Chantier</span><b>${esc(c.chantier)}</b></div>`:""}<div><span>Ville</span><b>${esc(c.ville||"Casa")}</b></div>
         ${c.client_final?`<div><span>Client final</span><b>${esc(c.client_final)}</b></div>`:""}${c.contact?`<div><span>Contact</span><b>${esc(c.contact)}</b></div>`:""}</div>
@@ -1037,7 +1039,7 @@ function vLivrees(){
     ${ax.length ? `<div class="sec"><h2 style="font-size:18px">Pas encore dans Excel</h2>${ax.filter(c=>!c.en_file).length>1?`<button onclick="toutExcel()">Tout passer</button>`:""}</div>
       ${ax.some(c=>c.en_file && !c.excel_envoye) ? `<button class="btn btn-fill btn-w press" style="margin-bottom:14px" onclick="envoyerAuPC()">${ic("excel",18)} Envoyer au PC (${ax.filter(c=>c.en_file && !c.excel_envoye).length})</button>` : ""}
       ${ax.map(c => { const L = c.livraison; return `<div class="order"><div class="l1"><div class="qty c-green"><b>${num(L.palettes)}</b><span>pal.</span></div>
-        <div style="flex:1;min-width:0"><div class="who">${esc(L.client_final || L.chantier || c.client)}</div><div class="what">${esc(c.client)} · ${esc(L.type)} · ${dcourt(L.date)}</div></div>
+        <div style="flex:1;min-width:0"><div class="who">${esc(L.client_final || L.chantier || c.client)}</div><div class="what">${esc(nomPropre(c.client))} · ${esc(L.type)} · ${dcourt(L.date)}</div></div>
         <div class="end" style="font-weight:800;color:var(--green)">+${dh(benefL(L))}</div></div>
         ${c.dans_excel ? `<div class="alert" style="background:var(--orange-soft);color:var(--label);margin:12px 0 0">Tu l'as peut-être déjà saisie dans Excel le <b>${dcourt(c.dans_excel.date)}</b> (ligne ${c.dans_excel.row}).
           <button class="btn btn-green btn-sm press" style="margin-top:10px;width:100%" onclick="classer('${c.id}',${c.dans_excel.row})">C'est la même : relier sans ajouter</button></div>` : ""}
@@ -1049,7 +1051,7 @@ function vLivrees(){
     ${jours.map(g => `<div class="daylab"><span>${jourLabel(g.d)}</span><span>+${dh(g.v.reduce((s,v)=>s+v.benef,0))}</span></div>
       <div class="group">${g.v.map(v => `<div class="item">
         <div class="qty ${v.type==="B7"?"c-orange":"c-blue"}" style="width:46px;height:46px;border-radius:13px"><b style="font-size:16px">${num(v.palettes)}</b><span style="font-size:9.5px">pal.</span></div>
-        <div class="body"><div class="ttl">${esc(v.client_final || v.chantier || v.client)}</div><div class="meta">${esc(v.client)} · ${esc(v.type)} · ${esc([v.chantier, v.ville].filter(Boolean).join(", "))}</div></div>
+        <div class="body"><div class="ttl">${esc(v.client_final || v.chantier || nomPropre(v.client))}</div><div class="meta">${esc(v.client)} · ${esc(v.type)} · ${esc([v.chantier, v.ville].filter(Boolean).join(", "))}</div></div>
         <div class="end">+${dh(v.benef)}<small>${payBadge(v.paiement)}</small></div></div>`).join("")}</div>`).join("")}
     <div class="note" style="margin-top:20px">30 dernières livraisons de ton Excel</div>`;
 }
@@ -1062,6 +1064,18 @@ function sheet(title, html){
 }
 function closeSheet(){ const s = $("#sheet"); s.style.transform = ""; s.classList.remove("on","drag"); $("#scrim").classList.remove("on"); document.body.style.overflow = ""; }
 $("#scrim").onclick = closeSheet;
+/* flèche retour du téléphone : ferme ce qui est ouvert, sinon revient à l'onglet d'avant, et ne quitte l'appli que depuis l'accueil */
+history.pushState({yousdam: 1}, "");
+addEventListener("popstate", () => {
+  const garder = () => history.pushState({yousdam: 1}, "");
+  if($("#busy").classList.contains("on")) return garder();
+  const dlg = document.querySelector(".dlg-bg [data-r='0'], .xl-bg [data-r='0']");
+  if(dlg){ dlg.click(); return garder(); }
+  if($("#viewer").classList.contains("on")){ closeViewer(); return garder(); }
+  if($("#sheet").classList.contains("on")){ closeSheet(); return garder(); }
+  if(S && (PREV.length || TAB !== "accueil")){ go(PREV.pop() || "accueil", true); return garder(); }
+  history.back();   // déjà sur l'accueil, rien d'ouvert : on quitte
+});
 (function(){
   let y0 = 0, dy = 0, hist = [];
   const s = $("#sheet");
@@ -1311,7 +1325,7 @@ function regItem(r){
     ? `label class="item" style="cursor:pointer"><input type="file" accept="image/*,.pdf" multiple hidden onchange="importerPhotos(this, '${encodeURIComponent(r.photo)}')"`
     : `button class="item" onclick="voir('${encodeURIComponent(r.photo)}')"`;
   return `<${tag}><div class="chip ${r.photo?"c-blue":"c-gray"}" style="${manque?"opacity:.45":""}">${ic(r.photo?"photo":"money",19)}</div>
-    <div class="body"><div class="ttl">${esc(r.client)}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div>${manque ? `<div class="meta" style="color:var(--link);font-weight:600">Toucher pour importer la photo « ${esc(r.photo)} »</div>` : ""}<div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
+    <div class="body"><div class="ttl">${esc(nomPropre(r.client))}</div><div class="meta">${typ} · ${esc(r.ref.split("/").slice(2).join(" · ") || r.ref)}</div>${manque ? `<div class="meta" style="color:var(--link);font-weight:600">Toucher pour importer la photo « ${esc(r.photo)} »</div>` : ""}<div style="margin-top:6px">${st} <span class="muted" style="font-size:13px">éch. ${dcourt(r.echeance)}</span></div></div>
     <div class="end">${dh(r.montant)}<small>${esc(r.periode)}</small></div></${tag.split(" ")[0].split(">")[0]}>`;
 }
 async function voir(f){
