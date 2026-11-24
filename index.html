@@ -403,6 +403,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .mini{display:flex;align-items:flex-end;gap:4px;height:56px}
 .mini i{flex:1;border-radius:4px;background:var(--brick);min-height:3px}
 .hidden{display:none!important}
+.majban{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translate(-50%,30px);opacity:0;z-index:35;width:min(calc(100% - 24px),440px);
+  display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:18px;background:var(--card);box-shadow:var(--shadow-lg);transition:transform .35s var(--ease-out),opacity .25s}
+.majban.on{transform:translate(-50%,0);opacity:1}
+.majban div{flex:1;min-width:0}.majban b{display:block;font-size:15px}.majban span{display:block;font-size:13px;color:var(--sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (min-width:900px){.majban{bottom:24px;left:calc(50% + 140px)}}
 .sync{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-bg-sec);margin:-14px 2px 16px}
 .sync i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
 /* ---- survol souris (PC) et navigation clavier : même effet ---- */
@@ -619,6 +624,31 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 <div class="viewer" id="viewer"><img id="viewerImg" alt="Photo du règlement"><button onclick="closeViewer()" aria-label="Fermer">✕</button></div>
 
 <script>
+/* ============ version et mises à jour ============ */
+const VERSION = "1.5";
+let NOUVELLE = null;
+async function verifierMaj(){
+  try{
+    const v = await (await fetch("version.json?t=" + Date.now(), {cache:"no-store"})).json();
+    if(v.version && v.version !== VERSION){ NOUVELLE = v; afficherMaj(); }
+  }catch(e){}
+}
+function afficherMaj(){
+  if(!NOUVELLE || document.getElementById("majBan")) return;
+  const b = document.createElement("div"); b.id = "majBan"; b.className = "majban";
+  b.innerHTML = `<div><b>Mise à jour disponible</b><span>Version ${esc(NOUVELLE.version)}${NOUVELLE.nouveau ? " : " + esc(NOUVELLE.nouveau) : ""}</span></div><button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>`;
+  document.body.appendChild(b); requestAnimationFrame(() => b.classList.add("on"));
+}
+async function installerMaj(){
+  busy(true, "Mise à jour…");
+  try{ const r = await navigator.serviceWorker?.getRegistration(); if(r){ await r.update(); } }catch(e){}
+  try{ const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }catch(e){}
+  location.reload();
+}
+setTimeout(verifierMaj, 2500);
+setInterval(verifierMaj, 30 * 60 * 1000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) verifierMaj(); });
+
 /* ============ outils ============ */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1368,7 +1398,10 @@ function ouvrirThemes(){
   const ligne = z => `<div class="f"><label style="width:auto;flex:1">${z==="Casa"?"Casablanca":z==="Tetouan"?"Tétouan":z==="Kenitra"?"Kénitra":z}</label>
     ${["B7","B10"].map(t => `<input inputmode="decimal" data-z="${z}" data-t="${t}" style="flex:0 0 72px;text-align:center;background:var(--fill);border-radius:9px;padding:8px 4px;margin:6px 0 6px 8px;color:var(--label)" value="${T[z]?.[t] != null ? Number(T[z][t]).toFixed(2) : ""}" placeholder="—">`).join("")}</div>`;
   sheet("Réglages", `
-    <div class="flabel" style="margin-top:4px">Mes fichiers (gardés sur ce téléphone)</div>
+    <div class="flabel" style="margin-top:4px">Appli</div>
+    <div class="group"><div class="item"><div class="body"><div class="ttl">Version ${VERSION}</div><div class="meta">${NOUVELLE ? "Nouvelle version " + esc(NOUVELLE.version) + " disponible" : "À jour"}</div></div>
+      ${NOUVELLE ? `<button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>` : `<button class="btn btn-gray btn-sm press" onclick="verifierMaj().then(()=>{ouvrirThemes(); if(!NOUVELLE) toast('Tu as la dernière version')})">Vérifier</button>`}</div></div>
+    <div class="flabel">Mes fichiers (gardés sur ce téléphone)</div>
     <div class="group">
       <div class="item"><div class="body"><div class="ttl">Excel de suivi</div><div class="meta">importé le ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}</div></div>
         <label class="btn btn-gray btn-sm press" style="cursor:pointer">Mettre à jour<input type="file" accept=".json,.xlsx,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden onchange="importer('excel', this)"></label></div>
