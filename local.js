@@ -61,6 +61,7 @@ class StockLocal {
     localStorage.setItem("couleurs", JSON.stringify(d.couleurs || {}));
     if (d.sync && d.sync.cle) localStorage.setItem("sync_cle", d.sync.cle);   // clé pour déchiffrer la copie partagée
     if (d.sync && d.sync.lien) localStorage.setItem("sync_lien", d.sync.lien); // lien OneDrive de la copie chiffrée
+    if (d.sync && d.sync.pc && d.sync.pc.ip) { localStorage.setItem("pc_ip", d.sync.pc.ip); localStorage.setItem("pc_port", String(d.sync.pc.port || 8792)); }
     localStorage.setItem("sync_date", d.cree || "");   // couleurs des clients dans l'Excel (aperçu)
     const noms = [];
     for (const [nom, ph] of Object.entries(d.photos || {})) { await BASE.ecrire("photo:" + nom, new Blob([versBuf(ph.b64)], {type: ph.type})); noms.push(nom); }

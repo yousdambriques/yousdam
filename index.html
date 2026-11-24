@@ -1011,10 +1011,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.3"></script>
-<script src="moteur.js?v=5.3"></script>
-<script src="app.js?v=5.3"></script>
-<script src="local.js?v=5.3"></script>
+<script src="config.js?v=5.4"></script>
+<script src="moteur.js?v=5.4"></script>
+<script src="app.js?v=5.4"></script>
+<script src="local.js?v=5.4"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1031,7 +1031,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.3";
+const VERSION = "5.4";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1200,6 +1200,10 @@ function ouvrirDonnees(){
 }
 async function envoyerAuPC(silencieux){
   const e = fichierEnvoi(); if(!e) return silencieux ? null : toast("Rien à envoyer", false);
+  if(!silencieux && typeof NATIF !== "undefined" && NATIF && NATIF.envoyerPC && localStorage.getItem("pc_ip")){
+    if(await envoiWifi(false)) return;
+    if(!(await dialogue({titre: "PC pas joignable", texte: "Tu n'es pas sur le Wi-Fi du PC (ou il est éteint). La ligne partira toute seule à ton retour. Tu veux plutôt l'envoyer maintenant par OneDrive ?", ok: "Par OneDrive", annuler: "J'attends"}))) return;
+  }
   if(typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()){
     const err = NATIF.deposer(e.fichier.name, await e.fichier.text());
     if(err){ if(!silencieux) toast(err, false); return; }
@@ -1261,6 +1265,39 @@ function boutonMaj(cls, style, lib){
     return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();sync(true)">${lib}</button>`;
   return `<label class="${cls}" style="${style}" onclick="event.stopPropagation()">${lib}<input type="file" hidden onchange="importer('excel', this)"></label>`;
 }
+/* envoi direct au PC sur le Wi-Fi (APK) : signé avec la clé partagée ; le PC écrit tout de suite et répond la ligne */
+let WIFI_EN_COURS = false;
+async function envoiWifi(silencieux){
+  if(typeof NATIF === "undefined" || !NATIF || !NATIF.envoyerPC || WIFI_EN_COURS) return false;
+  const ip = localStorage.getItem("pc_ip"), port = localStorage.getItem("pc_port") || "8792", cle = localStorage.getItem("sync_cle");
+  const e = fichierEnvoi(); if(!e) return false;
+  if(!ip || !cle){ if(!silencieux) toast("Mets à jour tes données une fois (« Mettre à jour ») pour activer l'envoi Wi-Fi", false); return false; }
+  WIFI_EN_COURS = true;
+  try{
+    const corps = await e.fichier.text();
+    const k = await crypto.subtle.importKey("raw", Uint8Array.from(atob(cle), c => c.charCodeAt(0)), {name: "HMAC", hash: "SHA-256"}, false, ["sign"]);
+    const sig = [...new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(corps)))].map(b => b.toString(16).padStart(2, "0")).join("");
+    if(!silencieux) busy(true, "Envoi au PC…");
+    const rep = await new Promise(r => { window.onEnvoiPC = r; NATIF.envoyerPC(`http://${ip}:${port}/yousdam/envoi`, corps, sig); });
+    busy(false);
+    if(!rep){ if(!silencieux) toast("PC pas joignable : la ligne partira toute seule dès que tu seras sur son Wi-Fi", false); return false; }
+    const R = JSON.parse(rep), faits = R.faits || {}, erreurs = R.erreurs || {};
+    const ecrites = Object.entries(faits);
+    await majAppli(d => ecrites.forEach(([id, f]) => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_row = f.row; delete c.excel_demande; } }));
+    await load();
+    if(ecrites.length){
+      const txt = ecrites.map(([id, f]) => { const c = (CACHE.appli.commandes || []).find(x => x.id === id), L = c && c.livraison;
+        return c ? `${nomPropre(c.client)} · ${num(L.palettes)} pal. · ${L.chantier || ""} → ligne ${f.row}${f.doublon ? " (déjà là)" : ""}` : `ligne ${f.row}`; }).join("\n");
+      NATIF.notifier("Ajouté dans ton Excel", txt);
+      toast(`Ajouté dans ton Excel : ${ecrites.length} ligne${ecrites.length > 1 ? "s" : ""}`);
+    }
+    const errs = Object.values(erreurs);
+    if(errs.length) toast("Le PC a refusé : " + errs[0].msg, false);
+    return ecrites.length > 0;
+  }catch(err){ busy(false); if(!silencieux) toast("Envoi impossible : " + err.message, false); return false; }
+  finally{ WIFI_EN_COURS = false; }
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden && S) setTimeout(() => envoiWifi(true), 800); });
 /* APK : relier une fois le fichier « donnees-yousdam » de l'app OneDrive, puis tout se met à jour en tirant vers le bas */
 async function relierOneDrive(){
   if(!(await dialogue({titre: "Relier ton OneDrive", texte: "Touche ☰ en haut à gauche, puis OneDrive > YOUSDAM-appli, et choisis « donnees-yousdam » (le fichier avec les flèches < >). Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
@@ -1442,6 +1479,7 @@ function render(anim){
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
   placerPoint();
   setTimeout(natifMaj, 400);
+  if(!window.__wifiOuverture && S){ window.__wifiOuverture = true; setTimeout(() => envoiWifi(true), 1500); }
   const lmm = document.querySelector(".lm-mois .on"); if(lmm) lmm.parentElement.scrollLeft = lmm.offsetLeft - 24;
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
 }
@@ -2063,7 +2101,7 @@ function cellulesExcel(o){
 }
 function apercuExcel(nouvelles){
   return new Promise(res0 => {
-    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && (NATIF.aDossier() || NATIF.envoyerOneDrive)) setTimeout(() => envoyerAuPC(true), 1200); };
+    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && NATIF.envoyerPC) setTimeout(() => envoiWifi(false), 900); };
     const vraies = S.livrees.filter(v => !v.virtuelle && v.row).sort((a,b) => b.row - a.row);
     const avant = vraies.slice(0, 1);
     const enAttente = S.livrees.filter(v => v.virtuelle).length;      // déjà envoyées, pas encore écrites
