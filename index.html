@@ -523,6 +523,27 @@ button.item:active{background:var(--fill)}
 .cz-tete b{display:block;font-size:20px;letter-spacing:-.02em}.cz-tete span{font-size:13.5px;color:var(--sec)}.cz-tete em{font-style:normal;color:var(--green);font-weight:700}
 .cz-jour{width:48px;height:48px;flex:none;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--fill);line-height:1}
 .cz-jour b{font-size:17px}.cz-jour span{font-size:10px;color:var(--sec);font-weight:600}
+.lm-mois{display:flex;gap:6px;overflow-x:auto;margin:0 -18px 6px;padding:4px 18px 8px;scrollbar-width:none}.lm-mois::-webkit-scrollbar{display:none}
+.lm-mois button{flex:none;display:flex;align-items:baseline;gap:3px;border:0;font:inherit;font-size:15px;font-weight:700;padding:9px 14px;border-radius:999px;background:none;color:var(--sec);cursor:pointer;transition:background .25s var(--ease-out),color .25s}
+.lm-mois button small{font-size:11px;opacity:.7}
+.lm-mois button.on{background:var(--label);color:var(--card)}
+.lm-corps.sort{opacity:0;transform:translateX(calc(var(--sx) * -1));transition:opacity .14s,transform .14s}
+.lm-corps.entre{animation:lmin .32s var(--ease-out) both}
+@keyframes lmin{from{opacity:0;transform:translateX(var(--sx))}}
+.lm-tot{padding:6px 4px 2px}.lm-tot small{font-size:14px;font-weight:700;color:var(--sec)}
+.lm-tot b{display:block;font-size:46px;font-weight:750;letter-spacing:-.05em;line-height:1.05;margin-top:2px;font-variant-numeric:tabular-nums}.lm-tot b em{font-style:normal;font-size:20px;color:var(--sec);letter-spacing:0}
+.lm-sub{font-size:14px;color:var(--sec);margin-top:4px}
+.lm-obj{display:block;height:4px;border-radius:2px;background:var(--fill2);margin-top:12px;overflow:hidden}.lm-obj > i{display:block;height:100%;border-radius:2px;animation:barin .9s var(--ease-out) both .1s}
+.lm-t{font-size:13px;font-weight:700;color:var(--sec);text-transform:none;margin:24px 4px 10px}
+.lm-cl{display:flex;flex-direction:column;gap:8px}
+.lm-c{display:flex;align-items:center;gap:12px;width:100%;border:0;font:inherit;color:var(--label);text-align:left;background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:12px 14px;cursor:pointer;
+  animation:capin .3s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms)}
+.lm-c .av{width:44px;height:44px;font-size:17px}
+.lm-c1{flex:1;min-width:0}.lm-c1 > div{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.lm-c1 b{font-size:16px}.lm-c1 span{font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+.lm-bar{display:block;height:6px;border-radius:3px;background:var(--fill);margin:7px 0 6px;overflow:hidden}.lm-bar > i{display:block;height:100%;border-radius:3px;background:var(--t);animation:barin .7s var(--ease-out) both;animation-delay:calc(var(--i) * 45ms + 120ms)}
+.lm-c1 small{font-size:12.5px;color:var(--sec)}.lm-c .chev{color:var(--sec)}
+@media (prefers-reduced-motion:reduce){.lm-corps.entre,.lm-c,.lm-bar > i{animation:none}}
 .lv-sum{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:6px 16px 14px;margin:4px 0 6px}
 .lv-t{width:100%;border:0;background:none;font:inherit;color:var(--label);text-align:left;padding:10px 0 2px;cursor:pointer}
 .lv-t i{transition:transform .3s var(--ease-out)}.lv-sum.ouv .lv-t i{transform:rotate(90deg)}
@@ -985,7 +1006,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "4.6";
+const VERSION = "4.7";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1268,7 +1289,7 @@ function filtresLivrees(){
 function placerPoint(){ const t = document.querySelector(".sw-t"); if(!t) return; const b = t.querySelectorAll("button")[1]; t.style.setProperty("--dx", (b.offsetLeft - 2) + "px"); }
 /* « À livrer » / « Livrées » : le titre bascule, puis le contenu glisse dans le bon sens */
 function basculer(seg){
-  if(SEGC === seg) return; document.body.dataset.cz = "0"; LVC = null; const sens = seg === "livrees" ? 1 : -1; SEGC = seg; vibre();
+  if(SEGC === seg) return; const sens = seg === "livrees" ? 1 : -1; SEGC = seg; vibre();
   const t = document.querySelector(".sw-t");
   if(t){ placerPoint(); t.dataset.on = seg; t.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", (i === 0) === (seg === "attente"))); }
   setTimeout(placerPoint, 400);
@@ -1393,7 +1414,7 @@ function render(anim){
   }
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
   placerPoint();
-  const czm = document.querySelector(".cz-mois"); if(czm){ const on = czm.querySelector(`.cz-m[data-k="${LVM}"]`); if(on) czm.scrollLeft = on.offsetLeft - (czm.clientWidth - on.offsetWidth) / 2; cerclesActifs(czm); }
+  const lmm = document.querySelector(".lm-mois .on"); if(lmm) lmm.parentElement.scrollLeft = lmm.offsetLeft - 24;
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
 }
 /* indicateur qui glisse d'un élément à l'autre (part de sa dernière position) */
@@ -1633,56 +1654,48 @@ function vCommandes(){
       <button class="${SEGC==="livrees"?"on":""}" onclick="basculer('livrees')">Livrées</button><i class="sw-dot"></i></div>${body}`, `<div style="display:flex;gap:10px"><button class="round press" onclick="refresh()" aria-label="Mettre à jour">${ic("refresh",20)}</button><button class="round fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",24)}</button></div>`);
 }
 function jourLabel(s){ const n = ecart(s), d = pd(s); if(n===0) return "Aujourd'hui"; if(n===1) return "Hier"; return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`; }
-/* livraisons : un gros cercle par mois (on glisse d'un mois à l'autre), on entre dedans -> une bulle par client -> ses livraisons */
+/* livraisons : mois à glisser en haut, total du mois, classement des clients (toucher = sa situation du mois), puis les livraisons */
 let LVM = null, LVC = null;
 function cerclesLivrees(){
-  const V = toutesVentes(), obj = S.analyse.objectif || 30000, mk = today().slice(0, 7);
+  const V = toutesVentes(), obj = S.analyse.objectif || 30000;
   const parMois = new Map(); V.forEach(v => { const k = v.date.slice(0, 7); if(!parMois.has(k)) parMois.set(k, []); parMois.get(k).push(v); });
-  const mois = [...parMois.keys()].sort().slice(-12);
+  const mois = [...parMois.keys()].sort().slice(-12).reverse();
   if(!mois.length) return `<div class="group"><div class="empty">Aucune livraison dans ton Excel.</div></div>`;
-  if(!LVM || !parMois.has(LVM)) LVM = mois.at(-1);
-  const L = parMois.get(LVM), ben = L.reduce((s, v) => s + v.benef, 0), pal = L.reduce((s, v) => s + v.palettes, 0);
-  // niveau 2 : livraisons d'un client
-  if(LVC){
-    const LC = L.filter(v => cleNom(v.client) === LVC).sort((x, y) => y.date.localeCompare(x.date)), nom = LC[0] ? LC[0].client : LVC;
-    return `<div class="cz-nav"><button class="press" onclick="LVC=null;entrer()">${ic("chev", 16)}</button><span>${moisLong(LVM)}</span></div>
-      <div class="cz-tete">${avatar(nom)}<div><b>${esc(nomPropre(nom))}</b><span>${LC.length} livraison${LC.length > 1 ? "s" : ""} · ${num(LC.reduce((s, v) => s + v.palettes, 0))} pal. · <em>+${dh(LC.reduce((s, v) => s + v.benef, 0))}</em></span></div></div>
-      <div class="tl-c">${LC.map((v, k) => `<div class="lv tl-n" style="animation:capin .3s var(--ease-out) both ${k * 35}ms!important">
-        <div class="cz-jour"><b>${+v.date.slice(8)}</b><span>${MC[+v.date.slice(5, 7) - 1]}</span></div>
-        <div class="lv-c"><div class="lv-dest">${esc(v.chantier || v.ville || "—")}${v.client_final ? ` <span>· ${esc(v.client_final)}</span>` : ""}</div>
-          <div class="lv-m"><b class="${v.type === "B7" ? "t7" : "t10"}">${num(v.palettes)} pal. ${esc(v.type)}</b>${v.ville ? ` · ${esc(v.ville)}` : ""}</div></div>
-        <div class="lv-e"><b>+${dh(v.benef)}</b>${v.virtuelle ? `<span class="badge c-blue">Pas encore dans l'Excel</span>` : payBadge(v.paiement)}</div></div>`).join("")}</div>`;
-  }
-  // niveau 1 : bulles des clients du mois
-  if(LVM && document.body.dataset.cz === "1"){
-    const parC = new Map(); L.forEach(v => { const k = cleNom(v.client); const o = parC.get(k) || {nom: v.client, b: 0, n: 0}; o.b += v.benef; o.n++; parC.set(k, o); });
-    const cs = [...parC.entries()].sort((x, y) => y[1].b - x[1].b), max = cs[0] ? cs[0][1].b : 1;
-    return `<div class="cz-nav"><button class="press" onclick="document.body.dataset.cz='0';entrer()">${ic("chev", 16)}</button><span>${moisLong(LVM)}</span><b>+${dh(ben)}</b></div>
-      <div class="cz-bulles">${cs.map(([k, o], i) => { const t = Math.round(84 + 96 * Math.sqrt(o.b / max));
-        return `<button class="cz-b press" style="--t:${teinte(o.nom)};--s:${t}px;--i:${i}" onclick="LVC='${esc(k)}';entrer()"><b>${esc(nomPropre(o.nom).split(" ")[0])}</b><span>+${num(o.b)}</span><small>${o.n} liv.</small></button>`; }).join("")}</div>
-      <div class="note" style="text-align:center">Touche un client pour voir ses livraisons du mois.</div>`;
-  }
-  // niveau 0 : un gros cercle par mois, on glisse
-  return `<div class="cz-mois" onscroll="cerclesActifs(this)">${mois.map(k => { const Lk = parMois.get(k), bk = Lk.reduce((s, v) => s + v.benef, 0), pc = Math.min(1, bk / obj);
-      return `<button class="cz-m${k === LVM ? " on" : ""}" data-k="${k}" onclick="ouvrirMois('${k}', this)" style="--p:${pc.toFixed(3)};--rc:${pc >= 1 ? "var(--green)" : pc >= .7 ? "var(--orange)" : "var(--brick)"}">
-        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="47" class="r0"/><circle cx="50" cy="50" r="47" class="r1" pathLength="100"/></svg>
-        <small>${MOIS[+k.slice(5) - 1].replace(/^./, x => x.toUpperCase())} ${k.slice(0, 4)}</small><b>+${num(bk)}</b><span>DH · ${Lk.length} livraisons</span><em>${Math.round(pc * 100)} % de l'objectif</em></button>`; }).join("")}</div>
-    <div class="cz-aide">← glisse pour changer de mois · touche le cercle pour entrer →</div>`;
+  if(!LVM || !parMois.has(LVM)) LVM = mois[0];
+  const L = parMois.get(LVM).slice().sort((x, y) => y.date.localeCompare(x.date));
+  const ben = L.reduce((s, v) => s + v.benef, 0), pal = L.reduce((s, v) => s + v.palettes, 0), pc = Math.min(1, ben / obj);
+  const parC = new Map(); L.forEach(v => { const k = cleNom(v.client); const o = parC.get(k) || {nom: v.client, b: 0, n: 0, p: 0}; o.b += v.benef; o.n++; o.p += v.palettes; parC.set(k, o); });
+  const cs = [...parC.values()].sort((x, y) => y.b - x.b), max = cs[0] ? cs[0].b : 1;
+  const jours = []; L.forEach(v => { const g = jours.at(-1); if(g && g.d === v.date) g.v.push(v); else jours.push({d: v.date, v: [v]}); });
+  return `<div class="lm-mois">${mois.map(k => `<button class="${k === LVM ? "on" : ""}" onclick="choisirMoisLiv('${k}')">${MC[+k.slice(5) - 1].replace(".", "")}<small>${k.slice(2, 4)}</small></button>`).join("")}</div>
+    <div class="lm-corps">
+      <div class="lm-tot"><small>${moisLong(LVM)}</small><b><span data-count="${Math.round(ben)}">${num(ben)}</span> <em>DH</em></b>
+        <div class="lm-sub">${L.length} livraison${L.length > 1 ? "s" : ""} · ${num(pal)} palettes${LVM === today().slice(0, 7) ? ` · défi ${Math.round(pc * 100)} %` : ""}</div>
+        <i class="lm-obj"><i style="width:${(pc * 100).toFixed(1)}%;background:${pc >= 1 ? "var(--green)" : pc >= .7 ? "var(--orange)" : "var(--brick)"}"></i></i></div>
+      <div class="lm-t">Clients du mois</div>
+      <div class="lm-cl">${cs.map((o, k) => `<button class="lm-c press" style="--t:${teinte(o.nom)};--i:${k}" onclick="ouvrirClientMois('${esc(cleNom(o.nom))}')">
+        ${avatar(o.nom)}<div class="lm-c1"><div><b>${esc(nomPropre(o.nom))}</b><span>+${dh(o.b)}</span></div>
+        <i class="lm-bar"><i style="width:${Math.max(4, o.b / max * 100).toFixed(1)}%"></i></i>
+        <small>${o.n} livraison${o.n > 1 ? "s" : ""} · ${num(o.p)} pal. · voir sa situation</small></div><span class="chev">${ic("chev", 15)}</span></button>`).join("")}</div>
+      <div class="lm-t">Livraisons</div>
+      <div class="tl">${jours.map((g, gi) => `<div class="tl-j"><span>${jourLabel(g.d)}</span><b>+${dh(g.v.reduce((s, v) => s + v.benef, 0))}</b></div>
+        <div class="tl-c" style="--i:${Math.min(gi, 8)}">${g.v.map(v => `<div class="lv tl-n">${avatar(v.client)}
+          <div class="lv-c"><div class="lv-dest">${esc(v.chantier || v.ville || "—")}${v.client_final ? ` <span>· ${esc(v.client_final)}</span>` : ""}</div>
+            <div class="lv-m">${esc(nomPropre(v.client))} · <b class="${v.type === "B7" ? "t7" : "t10"}">${num(v.palettes)} pal. ${esc(v.type)}</b>${v.ville && v.chantier ? ` · ${esc(v.ville)}` : ""}</div></div>
+          <div class="lv-e"><b>+${dh(v.benef)}</b>${v.virtuelle ? `<span class="badge c-blue">Pas encore dans l'Excel</span>` : payBadge(v.paiement)}</div></div>`).join("")}</div>`).join("")}</div>
+    </div>`;
 }
-function cerclesActifs(el){
-  if(!el.isConnected || document.body.dataset.cz === "1" || LVC || !el.clientWidth) return;   // ancien écran : on ignore
-  const c = el.getBoundingClientRect().left + el.clientWidth / 2;
-  let best = null, d0 = 1e9;
-  el.querySelectorAll(".cz-m").forEach(b => { const r = b.getBoundingClientRect(), d = Math.abs(r.left + r.width / 2 - c); b.style.setProperty("--d", Math.min(1, d / r.width).toFixed(3)); if(d < d0){ d0 = d; best = b; } });
-  if(best){ el.querySelectorAll(".cz-m.on").forEach(b => b !== best && b.classList.remove("on")); best.classList.add("on"); LVM = best.dataset.k; }
+function choisirMoisLiv(k){
+  if(k === LVM) return; const avant = LVM; LVM = k; vibre();
+  const c = document.querySelector(".lm-corps"); if(c){ c.style.setProperty("--sx", (k < avant ? -1 : 1) * 30 + "px"); c.classList.add("sort"); }
+  setTimeout(() => { render(); const n = document.querySelector(".lm-corps"); if(n){ n.style.setProperty("--sx", (k < avant ? -1 : 1) * 30 + "px"); n.classList.add("entre"); }
+    document.querySelectorAll(".lm-corps [data-count]").forEach(compter); }, 140);
 }
-function ouvrirMois(k, b){
-  if(LVM !== k){ LVM = k; b.scrollIntoView({behavior: "smooth", inline: "center", block: "nearest"}); return; }
-  b.classList.add("entre"); vibre();
-  setTimeout(() => { document.body.dataset.cz = "1"; entrer(); }, 260);
+function ouvrirClientMois(cle){
+  const i = S.analyse.clients.findIndex(c => cleNom(c.nom) === cle);
+  if(i < 0) return toast("Client introuvable", false);
+  ficheClient(i, LVM);
 }
-function entrer(){ render(); const v = document.querySelector(".cz-bulles,.cz-tete,.cz-mois"); if(v) v.classList.add("zoom-in");
-  const m = document.querySelector(".cz-mois"); if(m){ const on = m.querySelector(`.cz-m[data-k="${LVM}"]`); if(on) m.scrollLeft = on.offsetLeft - (m.clientWidth - on.offsetWidth) / 2; cerclesActifs(m); } }
 function vLivrees(){
   const mc = S.analyse.mois_courant, ax = S.a_excel;
   const jours = []; S.livrees.slice(0,30).forEach(v => { const g = jours.at(-1); if(g && g.d===v.date) g.v.push(v); else jours.push({d:v.date, v:[v]}); });
@@ -2184,13 +2197,13 @@ function vClients(){
 }
 const moisLabel = k => { if(!k) return ""; const [y,m] = k.split("-"); return MC[+m-1] + " " + y.slice(2); };
 let SIT = null;
-async function ficheClient(i){
+async function ficheClient(i, moisVoulu){
   const c = S.analyse.clients[i];
   sheet(nomPropre(c.nom), `<div class="empty"><span class="spin" style="display:inline-block"></span></div>`);
   try{ const r = await api("/api/situation?client=" + encodeURIComponent(c.nom)); SIT = {c, lignes:r.lignes, mois:null}; }
   catch(e){ return toast(e.message, false); }
   const ms = [...new Set(SIT.lignes.map(l => l.date.slice(0,7)))].sort().reverse();
-  SIT.mois = ms[0] || today().slice(0,7); SIT.listeMois = ms;
+  SIT.mois = (moisVoulu && ms.includes(moisVoulu)) ? moisVoulu : (ms[0] || today().slice(0,7)); SIT.listeMois = ms;
   dessinerSituation();
 }
 const moisLong = k => { const [y,m] = k.split("-"); return MOIS[+m-1].replace(/^./, x=>x.toUpperCase()) + " " + y; };
