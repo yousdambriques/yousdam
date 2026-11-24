@@ -803,7 +803,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "3.2";
+const VERSION = "3.3";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -975,6 +975,13 @@ async function envoyerAuPC(silencieux){
     await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
     await load(); toast(`Envoyé au PC : ${e.nb} ligne${e.nb>1?"s":""} pour ton Excel`); return;
   }
+  if(typeof NATIF !== "undefined" && NATIF && NATIF.enregistrer){
+    const texte = await e.fichier.text();
+    const ok = await new Promise(r => { window.onEnvoiEnregistre = r; NATIF.enregistrer(e.fichier.name, texte); });
+    if(!ok){ toast("Pas enregistré. Touche « Envoyer au PC » pour réessayer.", false); return; }
+    await majAppli(d => e.ids.forEach(id => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_envoye = new Date().toISOString(); } }));
+    await load(); toast(`Envoyé au PC : ${e.nb} ligne${e.nb>1?"s":""} pour ton Excel`); return;
+  }
   if(silencieux) return;
   try{
     if(await partagerNatif(e.fichier)) {}
@@ -1024,9 +1031,9 @@ function boutonMaj(cls, style, lib){
 }
 /* APK : relier une fois le fichier « donnees-yousdam » de l'app OneDrive, puis tout se met à jour en tirant vers le bas */
 async function relierOneDrive(){
-  if(!(await dialogue({titre: "Relier ton OneDrive", texte: "OneDrive va s'ouvrir : ouvre le dossier YOUSDAM-appli, puis touche « Utiliser ce dossier » en bas, et « Autoriser ». Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
+  if(!(await dialogue({titre: "Relier ton OneDrive", texte: "Touche ☰ en haut à gauche, puis OneDrive > YOUSDAM-appli, et choisis « donnees-yousdam » (le fichier avec les flèches < >). Tu ne le feras qu'une fois.", ok: "Ouvrir OneDrive"}))) return;
   window.onOneDriveChoisi = async ok => { if(!ok) return toast("Aucun fichier choisi", false); toast("OneDrive relié : " + NATIF.nomOneDrive()); await sync(true); if($("#sheet").classList.contains("on") && $("#sheetTitle").textContent !== "Mes données") ouvrirThemes(); };
-  NATIF.choisirDossierOneDrive();
+  NATIF.choisirOneDrive();
 }
 /* partage (WhatsApp…) : par Android dans l'APK, sinon par le navigateur */
 async function partagerNatif(fichier){
@@ -1563,7 +1570,7 @@ function cellulesExcel(o){
 }
 function apercuExcel(nouvelles){
   return new Promise(res0 => {
-    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()) setTimeout(() => envoyerAuPC(true), 1200); };
+    const res = ok => { res0(ok); if(ok && typeof NATIF !== "undefined" && NATIF && (NATIF.aDossier() || NATIF.enregistrer)) setTimeout(() => envoyerAuPC(true), 1200); };
     const vraies = S.livrees.filter(v => !v.virtuelle && v.row).sort((a,b) => b.row - a.row);
     const avant = vraies.slice(0, 1);
     const enAttente = S.livrees.filter(v => v.virtuelle).length;      // déjà envoyées, pas encore écrites
