@@ -1105,15 +1105,79 @@ table.sit tfoot .tot small{font-size:12px;color:#6e6e73;font-weight:600;margin-l
 html.natif .tabs,html.natif .top,html.natif .busy div{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:color-mix(in srgb,var(--card) 96%,transparent)!important}
 html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+/* ================= APPARENCE 2026 (interrupteur dans Réglages ; éteint = appli d'avant, inchangée) ================= */
+:root[data-design=r26]{
+  --r:24px;
+  --shadow:0 0 0 .5px color-mix(in srgb,var(--label) 7%,transparent),0 12px 30px -16px color-mix(in srgb,var(--brick) 30%,rgba(0,0,0,.35));
+  --shadow-lg:0 26px 60px -22px rgba(40,10,20,.42),0 0 0 .5px color-mix(in srgb,var(--label) 8%,transparent);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  & .app{padding-top:calc(env(safe-area-inset-top) + 6px)}
+  /* titres : plus courts, l'écran commence par les chiffres */
+  & .head{margin:0 2px 18px;align-items:center}
+  & .head .over{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+  & .head h1{font-size:29px;font-weight:760;letter-spacing:-.045em;margin-top:3px}
+  & .head .fab{display:none}
+  & .sec{margin:30px 4px 12px}
+  & .sec h2{font-size:17.5px;font-weight:720;letter-spacing:-.025em}
+  & .flabel{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin:24px 16px 8px}
+  & .round{width:38px;height:38px}
+  /* une seule famille de cartes */
+  & :is(.group,.panel,.w,.kpi,.order,.dg,.pa,.form,.ep){border-radius:24px;box-shadow:var(--shadow)}
+  & .w{border-radius:22px}
+  /* bandeaux : verre, grain fin, reflet qui passe une fois */
+  & :is(.hero,.prh){border-radius:30px;box-shadow:0 22px 44px -22px color-mix(in srgb,var(--brick) 75%,#000)}
+  &:not([data-palette=beton]) .hero::before,& .prh::before{content:"";position:absolute;inset:0;border-radius:inherit;background-image:var(--grain);opacity:.09;mix-blend-mode:overlay;pointer-events:none}
+  & :is(.hero,.prh)::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 50%,transparent 65%) no-repeat;background-size:250% 100%;background-position:120% 0;animation:reflet 1.6s .35s var(--ease-out) both;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+  & .hero .foot{flex-wrap:nowrap;gap:6px}
+  & .hero .pill{white-space:nowrap;font-size:12.5px;padding:6px 11px;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.22)}
+  & .hero .big{font-weight:780;letter-spacing:-.055em}
+  /* pastilles et choix : une seule forme ; l'encre pour le choix actif, le bordeaux pour les actions */
+  & :is(.choix button,.chx,.lm-mois button){border-radius:14px}
+  & :is(.choix button.on,.chx.on,.lm-mois button.on,.pr-cl button.on){background:var(--ink-bg);color:var(--card);box-shadow:0 8px 18px -10px rgba(0,0,0,.45)}
+  & .chx:not(.on):not(.plus){background:var(--card);box-shadow:inset 0 0 0 .5px var(--sep)}
+  /* boutons : 3 niveaux (plein bordeaux, gris, lien) */
+  & .btn{border-radius:16px;font-weight:650}
+  & .btn-fill{background:linear-gradient(180deg,color-mix(in srgb,var(--brick) 86%,#fff),var(--brick));box-shadow:0 12px 24px -14px color-mix(in srgb,var(--brick) 85%,#000),inset 0 1px 0 rgba(255,255,255,.2)}
+  & .btn-gray{background:var(--card);box-shadow:inset 0 0 0 .5px var(--sep),0 1px 2px rgba(0,0,0,.04)}
+  /* dock flottant : verre, + au centre */
+  & .tabs{bottom:calc(10px + env(safe-area-inset-bottom));padding:6px;gap:0;border-radius:32px;
+    background:color-mix(in srgb,var(--card) 74%,transparent);box-shadow:0 22px 48px -18px rgba(40,10,20,.42),inset 0 .5px 0 rgba(255,255,255,.7),0 0 0 .5px var(--sep)}
+  & .tabs button{height:54px;font-size:10px;font-weight:650;gap:3px}
+  & .tabs button svg{width:23px;height:23px}
+  & .tabs button:not(.on):not(.dock-plus){font-size:0;gap:0}
+  & .tabs button.on{font-size:10px}
+  & .tabs .ind{border-radius:26px}
+  & .tabs .dock-plus{flex:0 0 54px;width:54px;height:54px;margin:0 6px;border-radius:50%;font-size:0;color:#fff;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--brick) 78%,#fff),var(--brick));box-shadow:0 12px 24px -10px color-mix(in srgb,var(--brick) 90%,#000),inset 0 1px 0 rgba(255,255,255,.25)}
+  & .tabs .dock-plus svg{width:26px;height:26px;transition:transform .32s var(--ease-pop)}
+  & .tabs .dock-plus.ouvert svg{transform:rotate(45deg)}
+  & .fab-m.bas{top:auto;right:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(50%);align-items:stretch;width:min(calc(100% - 40px),340px)}
+  & .fab-m.bas button{transform-origin:50% 100%}
+  /* analyse : une phrase et un chiffre ; le détail au toucher */
+  & .dg{cursor:pointer;padding:15px 16px 15px 20px}
+  & .dg :is(p,.go){display:none}
+  & .dg.ouvert p{display:block;animation:wcin .25s var(--ease-out) both}
+  & .dg.ouvert .go{display:inline-flex}
+  & .dg .t::after{content:"";flex:none;width:7px;height:7px;margin:9px 2px 0 2px;border-right:2px solid var(--sec);border-bottom:2px solid var(--sec);transform:rotate(45deg);transition:transform .22s var(--ease-out)}
+  & .dg.ouvert .t::after{transform:translateY(3px) rotate(-135deg)}
+  /* mouvements plus calmes */
+  & .rise{animation-duration:.34s}
+  & :is(.lv,.pa-l,.pr-t tbody tr.pr-in){animation-duration:.2s}
+}
+@keyframes reflet{to{background-position:-60% 0}}
+@media (prefers-reduced-motion:reduce){:root[data-design=r26] :is(.hero,.prh)::after{animation:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.9"></script>
-<script src="moteur.js?v=5.9"></script>
-<script src="app.js?v=5.9"></script>
-<script src="local.js?v=5.9"></script>
+<script src="config.js?v=6.0"></script>
+<script src="moteur.js?v=6.0"></script>
+<script src="app.js?v=6.0"></script>
+<script src="local.js?v=6.0"></script>
 </head>
 <body>
-<script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
+<script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';d.dataset.design=q.get('design')||localStorage.getItem('design')||'classique';})();</script>
 <div id="root"></div>
 <div class="scrim" id="scrim"></div>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true">
@@ -1127,7 +1191,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.9";
+const VERSION = "6.0";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1504,7 +1568,7 @@ function changerPal(id, el){
 function menuAjout(b){
   if(document.querySelector(".fab-m")) return fermerMenuAjout();
   b.classList.add("ouvert"); vibre();
-  const m = document.createElement("div"); m.className = "fab-m";
+  const m = document.createElement("div"); m.className = "fab-m" + (b.classList.contains("dock-plus") ? " bas" : "");
   m.innerHTML = `<button class="press" onclick="fermerMenuAjout();ouvrirWhatsApp()"><i class="wa">${ic("wa",20)}</i><span><b>Message WhatsApp</b><small>Colle le message, l'appli lit tout</small></span></button>
     <button class="press" onclick="fermerMenuAjout();ouvrirNouvelle()"><i>${ic("plus",20)}</i><span><b>Nouvelle commande</b><small>Remplir à la main</small></span></button>`;
   document.body.appendChild(m); requestAnimationFrame(() => m.classList.add("on"));
@@ -1513,7 +1577,7 @@ function menuAjout(b){
 function fermerSiDehors(e){ if(!e.target.closest(".fab-m,.fab")) fermerMenuAjout(); }
 function fermerMenuAjout(){
   removeEventListener("click", fermerSiDehors, true);
-  document.querySelector(".fab")?.classList.remove("ouvert");
+  document.querySelectorAll(".fab").forEach(x => x.classList.remove("ouvert"));
   const m = document.querySelector(".fab-m"); if(m){ m.classList.remove("on"); setTimeout(() => m.remove(), 220); }
 }
 /* geste retour : on part du bord gauche, la page suit le doigt, au-delà du tiers on revient en arrière */
@@ -1546,13 +1610,14 @@ function retour(){
 }
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
+const R26 = () => document.documentElement.dataset.design === "r26";
 function shell(over, title, body, action){
   const n = S.attente.length;
   return `<div class="aurora" aria-hidden="true"><i></i><i></i></div><div class="top" id="top">${title}</div><div class="app"><div class="view">
     <div class="head"><div><div class="over">${over}</div><h1>${title}</h1></div>${action ?? `<button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button>`}</div>
     ${body}
     </div></div>
-    <nav class="tabs" id="tabs"><span class="ind" id="ind"></span><div class="brand"><img src="icon-192.png" alt="">YOUSDAM</div>${TABS.map(([k,l,i])=>`<button class="${TAB===k?"on":""}" onclick="go('${k}')" aria-label="${l}">${ic(i)}${l}${k==="commandes"&&n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>`;
+    <nav class="tabs" id="tabs"><span class="ind" id="ind"></span><div class="brand"><img src="icon-192.png" alt="">YOUSDAM</div>${TABS.map(([k,l,i], j)=>`${R26() && j === 2 ? `<button class="dock-plus fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",26)}</button>` : ""}<button class="${TAB===k?"on":""}" onclick="go('${k}')" aria-label="${l}">${ic(i)}${l}${k==="commandes"&&n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>`;
 }
 const PREV = [];   // onglets visités, pour la flèche retour
 function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"}); return; } if(!retour){ PREV.push(TAB); if(PREV.length > 20) PREV.shift(); }
@@ -1599,7 +1664,7 @@ function render(anim){
   }
   if(ouverture){            // moment unique : l'ouverture de l'appli
     const blocs = [...document.querySelectorAll(".view > *:not(.head):not(.board), .deck > div > *, .board > *")].filter(e => !e.classList.contains("deck"));
-    blocs.forEach((e, i) => { e.classList.add("rise"); e.style.animationDelay = Math.min(i, 8) * 40 + "ms"; });
+    blocs.forEach((e, i) => { e.classList.add("rise"); e.style.animationDelay = Math.min(i, R26() ? 6 : 8) * (R26() ? 26 : 40) + "ms"; });
     document.querySelectorAll(".view .head").forEach(e => e.classList.add("rise"));
     document.querySelectorAll("[data-count]").forEach(compter);
   } else {
@@ -1824,7 +1889,7 @@ function vAccueil(){
       <button class="kpi press" onclick="go('analyse')"><span class="l">Marge par brique</span><span class="v">${p2(A.marge_mois)}<small>DH</small></span>
         <span class="dl">${delta(A.marge_mois, A.marge_avant)}</span>${spark(marges)}</button>
       <button class="kpi press" onclick="SEGC='attente';go('commandes')"><span class="l">À livrer</span><span class="v">${S.attente.length}</span>
-        <span class="dl muted">${S.attente.length ? `commande${S.attente.length>1?"s":""} en attente` : "aucune commande en attente"}</span>
+        <span class="dl muted">${S.attente.length ? `commande${S.attente.length>1?"s":""} en attente` : "rien à livrer"}</span>
         <span class="bar"><i style="width:${Math.min(100, S.attente.length*20)}%;background:${S.attente.some(c => ecart(c.date) > 3) ? "var(--orange)" : "var(--green)"}"></i></span></button>
       <button class="kpi press" onclick="go('reglements')"><span class="l">Solde usine</span><span class="v">${num((S.usine || A.solde).courant)}<small>DH</small></span>
         <span class="dl muted">${S.especes ? `${num(S.especes.reste)} DH pas encore pris` : `sur ${num(A.solde.initial)} d'avance`}</span>
@@ -2726,7 +2791,7 @@ function vAnalyse(){
   // filtre choisi ; par défaut le premier qui n'est pas vide (urgent d'abord)
   const filtre = FILTRE_A || (graves.length ? "grave" : aSurveiller.length ? "faible" : "fort");
   const liste = {grave:graves, faible:aSurveiller, fort:forts}[filtre];
-  const carte = (x, i) => `<div class="dg ${classeDiag(x)}">
+  const carte = (x, i) => `<div class="dg ${classeDiag(x)}" onclick="if(R26() && !event.target.closest('.go')) this.classList.toggle('ouvert')">
       <div class="t"><h3>${esc(x.titre)}</h3><span class="n">${esc(x.chiffre)}</span></div>
       <p>${esc(x.detail)}</p>
       ${x.action?`<button class="go press" onclick="agir('${x.cible}')">${esc(x.action)} ${ic("chev",15)}</button>`:""}</div>`;
@@ -2786,7 +2851,10 @@ function ouvrirThemes(){
   const ligne = z => `<div class="f"><label style="width:auto;flex:1">${z==="Casa"?"Casablanca":z==="Tetouan"?"Tétouan":z==="Kenitra"?"Kénitra":z}</label>
     ${["B7","B10"].map(t => `<input inputmode="decimal" data-z="${z}" data-t="${t}" style="flex:0 0 72px;text-align:center;background:var(--fill);border-radius:9px;padding:8px 4px;margin:6px 0 6px 8px;color:var(--label)" value="${T[z]?.[t] != null ? Number(T[z][t]).toFixed(2) : ""}" placeholder="—">`).join("")}</div>`;
   sheet("Réglages", `
-    <div class="flabel" style="margin-top:4px">Appli</div>
+    <div class="flabel" style="margin-top:4px">Apparence 2026</div>
+    <div class="group">${[["r26", "Nouvelle apparence", "Dock avec « + », cartes et boutons unifiés, titres compacts"], ["classique", "Apparence d'avant", "Revenir exactement à l'ancienne version"]].map(([k, n, d]) =>
+      `<button class="item" onclick="choisirDesign('${k}')"><div class="body"><div class="ttl">${n}</div><div class="meta">${d}</div></div>${(document.documentElement.dataset.design || "classique") === k ? `<span style="color:var(--brick)">${ic("check", 20)}</span>` : ""}</button>`).join("")}</div>
+    <div class="flabel">Appli</div>
     <div class="group"><div class="item"><div class="body"><div class="ttl">Version ${VERSION}</div><div class="meta">${NOUVELLE ? "Nouvelle version " + esc(NOUVELLE.version) + " disponible" : "À jour"}</div></div>
       ${NOUVELLE ? `<button class="btn btn-fill btn-sm press" onclick="installerMaj()">Mettre à jour</button>` : `<button class="btn btn-gray btn-sm press" onclick="verifierMaj().then(()=>{ouvrirThemes(); if(!NOUVELLE) toast('Tu as la dernière version')})">Vérifier</button>`}</div></div>
     <div class="group"><button class="item" onclick="ouvrirDonnees()"><div class="body"><div class="ttl">Mes données</div><div class="meta">Excel, photos des règlements, prospection</div></div><span class="chev">${ic("chev",16)}</span></button></div>
@@ -2828,6 +2896,7 @@ async function sauverTarifs(){
   try{ await api("/api/tarifs", {tarifs:t}); S = await api("/api/etat"); toast("Tarifs enregistrés"); } catch(e){ toast(e.message, false); }
 }
 const PALETTES = [["bordeaux","Bordeaux","Bordeaux et or rosé"],["ciel","Ciel","Blanc, noir, turquoise et touches bleu ciel"],["terre","Terre cuite","Brique et mortier"],["atlas","Atlas","Bleu nuit et or"],["zellige","Zellige","Vert émeraude et sable"],["majorelle","Majorelle","Bleu Majorelle et jaune"],["beton","Béton","Graphite et orange chantier"]];
+function choisirDesign(k){ localStorage.setItem("design", k); document.documentElement.dataset.design = k; vibre(); closeSheet(); render(); toast(k === "r26" ? "Nouvelle apparence" : "Apparence d'avant"); }
 function choisirPalette(k){ localStorage.setItem("palette", k); appliquerApparence(); $("#themeColor").content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(); ouvrirThemes(); render(); }
 function choisirTheme(k){ localStorage.setItem("apparence", k); appliquerApparence(); $("#themeColor").content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim(); ouvrirThemes(); render(); }
 
