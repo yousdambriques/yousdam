@@ -349,6 +349,29 @@ button.item:active{background:var(--fill)}
 .pr-t .pr-pt{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--t);margin-right:8px;vertical-align:middle;position:relative;top:-1px}
 .pr-hint{font-size:12px;color:#888;text-align:center;margin:10px 14px 0}
 @media (prefers-reduced-motion:reduce){.pr-t tbody tr,.pr-st>div,.pa-l{animation:none}}
+.ph{position:relative;overflow:hidden;border-radius:28px;padding:20px 20px 16px;margin:4px 0 14px;color:#fff;
+  background:linear-gradient(150deg,#8a2442 0%,#5e1428 55%,#3a0b18 100%);box-shadow:0 18px 40px -18px rgba(90,20,40,.7);animation:wcin .35s var(--ease-out) both}
+.ph-glow{position:absolute;inset:-40% -20% auto auto;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(255,170,150,.35),transparent 65%);pointer-events:none;animation:phg 9s ease-in-out infinite alternate}
+@keyframes phg{to{transform:translate(-60px,40px) scale(1.15)}}
+.ph-top{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ph-top small{font-size:13px;font-weight:650;opacity:.75}
+.ph-top span{font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.14);backdrop-filter:blur(6px)}
+.ph-big{position:relative;display:flex;align-items:baseline;gap:6px;font-size:46px;font-weight:780;letter-spacing:-.05em;line-height:1.05;margin-top:6px;font-variant-numeric:tabular-nums}
+.ph-big em{font-style:normal;font-size:18px;font-weight:650;letter-spacing:0;opacity:.7}
+.ph-bars{position:relative;display:flex;align-items:flex-end;gap:2px;height:56px;margin-top:14px}
+.ph-bars i{display:block;height:var(--h);min-height:3px;border-radius:3px 3px 1.5px 1.5px;background:linear-gradient(#ffd9cf,#ff9f8a);transform-origin:bottom;
+  animation:phb .55s var(--ease-out) both;animation-delay:calc(120ms + var(--i) * 14ms)}
+.ph-bars i.zero{background:rgba(255,255,255,.16)}
+@keyframes phb{from{transform:scaleY(0)}}
+.ph-leg{position:relative;display:flex;justify-content:space-between;font-size:11px;font-weight:600;opacity:.6;margin-top:5px}
+.ph-mini{position:relative;display:grid;grid-template-columns:repeat(3,1fr);margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.16)}
+.ph-mini div{padding:0 8px}.ph-mini div:first-child{padding-left:0}.ph-mini div+div{border-left:1px solid rgba(255,255,255,.16)}
+.ph-mini small{display:block;font-size:11.5px;font-weight:600;opacity:.65;white-space:nowrap}
+.ph-mini b{display:block;font-size:17px;font-weight:750;margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums}.ph-mini em{font-style:normal;font-size:11px;opacity:.7}
+.pr-bar{display:flex;justify-content:space-between;align-items:center;padding:0 16px 12px;border-bottom:1.5px solid #111;margin:0 14px 0}
+.pr-bar span{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;letter-spacing:.06em;color:#111}.pr-bar span svg{color:#7B1E3A}
+.pr-bar em{font-style:normal;font-size:12.5px;font-weight:650;color:#777}
+@media (prefers-reduced-motion:reduce){.ph,.ph-bars i,.ph-glow{animation:none}}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
 .av{position:relative;width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:17px;
@@ -1084,10 +1107,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.6"></script>
-<script src="moteur.js?v=5.6"></script>
-<script src="app.js?v=5.6"></script>
-<script src="local.js?v=5.6"></script>
+<script src="config.js?v=5.7"></script>
+<script src="moteur.js?v=5.7"></script>
+<script src="app.js?v=5.7"></script>
+<script src="local.js?v=5.7"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1104,7 +1127,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.6";
+const VERSION = "5.7";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1893,24 +1916,46 @@ function vPrincipal(){
       `<button class="press${k === PRC ? " on" : ""}" data-k="${esc(k)}" onclick="PRC=this.dataset.k;filtreP()">${k ? avatar(n) : ""}<span>${esc(k ? nomPropre(n) : n)}</span></button>`).join("")}</div>
     <div class="lm-mois">${mois.map(k => `<button class="${k === PRM ? "on" : ""}" onclick="PRM='${k}';filtreP()">${MC[+k.slice(5) - 1].replace(".", "")}<small>${k.slice(2, 4)}</small></button>`).join("")}
       <button class="${PRM === "tout" ? "on" : ""}" onclick="PRM='tout';filtreP()">Tout</button></div>
-    <div class="pr-st">
-      <div><small>Bénéfice</small><b><span data-count="${Math.round(T("benef"))}">${num(T("benef"))}</span> <em>DH</em></b></div>
-      <div><small>Livraisons</small><b>${LX.length}</b></div>
-      <div><small>Palettes</small><b>${num(T("palettes"))}</b></div>
-      <div><small>Chiffre d'affaires</small><b>${num(T("ca"))} <em>DH</em></b></div></div>
+    ${heroP(LX, T)}
     ${ci >= 0 ? `<button class="btn btn-fill btn-w press pr-act" onclick="ficheClient(${ci}, ${PRM === "tout" ? "null" : `'${PRM}'`})">${ic("doc", 18)} Situation de ${esc(nomC)}</button>` : ""}
     ${A.length ? `<div class="pa"><div class="pa-h"><b>À livrer</b><span>${A.length} commande${s(A.length)} en attente</span></div>
       ${A.map((c, k) => `<button class="pa-l press" style="--i:${k}" onclick="ouvrirLivrer('${c.id}')"><span class="pa-p" style="--t:${teinte(c.client)}"><b>${num(c.palettes)}</b><small>pal.</small></span>
         <span class="pa-c"><b>${esc(c.chantier || c.ville || "—")}${c.client_final ? ` <em>· ${esc(c.client_final)}</em>` : ""}</b>
         <small>${esc(nomPropre(c.client))} · ${esc(c.type)} · ${esc(c.ville || "ville à choisir")}${c.grue ? " · grue" : ""} · ${depuis(c.date)}</small></span><span class="chev">${ic("chev", 15)}</span></button>`).join("")}</div>` : ""}
     <div class="doc pr-doc an">
-      <div class="doc-h"><div><b>PRINCIPAL</b><span>${PRC ? esc(nomC) : "Tous les clients"} · ${PRM === "tout" ? "tous les mois" : moisLong(PRM)}</span></div><em>${LX.length} ligne${s(LX.length)}</em></div>
+      <div class="pr-bar"><span>${ic("doc", 16)} PRINCIPAL</span><em>${PRC ? esc(nomC) + " · " : ""}${LX.length} ligne${s(LX.length)}</em></div>
       <div class="pr-sc" onscroll="this.classList.toggle('fin', this.scrollLeft + this.clientWidth >= this.scrollWidth - 4)"><table class="pr-t"><thead><tr><th class="st">Date</th><th>Client</th><th class="n">Pal.</th><th>Type</th><th class="n">Qté briques</th><th class="n">P.U usine</th><th class="n">Total usine</th>
         <th class="n">P.U vente</th><th class="n">Prix total</th><th>Destination</th><th>Chantier</th><th>Client final</th><th>Grue</th><th class="n">Mt grue</th><th class="n">Bénéfice</th><th>Paiement</th></tr></thead>
         <tbody>${lignes || `<tr><td class="st">—</td><td colspan="15" style="color:#888">Aucune livraison pour ce choix.</td></tr>`}</tbody>
         <tfoot><tr><td class="st">Total</td><td></td><td class="n">${num(T("palettes"))}</td><td></td><td class="n">${num(T("qte"))}</td><td></td><td class="n">${mad(T("tu"))}</td><td></td>
           <td class="n">${mad(T("ca"))}</td><td></td><td></td><td></td><td></td><td class="n">${num(T("mdech"))}</td><td class="n ben">${mad(T("benef"))}</td><td></td></tr></tfoot></table></div>
       <div class="pr-hint">Glisse le tableau vers la gauche pour toutes les colonnes · touche une ligne pour le détail</div></div>`;
+}
+/* bandeau du haut : bénéfice qui s'anime, barres par jour (un mois) ou par mois (« Tout »), puis les autres chiffres */
+function heroP(LX, T){
+  let barres = [], leg = "";
+  if(PRM === "tout"){
+    const m = {}; LX.forEach(v => { const k = v.date.slice(0, 7); m[k] = (m[k] || 0) + v.benef; });
+    barres = Object.keys(m).sort().slice(-12).map(k => ({v: m[k], t: MC[+k.slice(5) - 1].replace(".", "")}));
+    leg = "par mois";
+  } else {
+    const [y, mo] = PRM.split("-").map(Number), n = new Date(y, mo, 0).getDate(), j = Array(n).fill(0);
+    LX.forEach(v => { j[+v.date.slice(8, 10) - 1] += v.benef; });
+    barres = j.map((v, i) => ({v, t: String(i + 1)})); leg = "par jour";
+  }
+  const max = Math.max(1, ...barres.map(b => b.v)), W = 100 / Math.max(1, barres.length);
+  const briques = T("qte"), marge = briques ? T("benef") / briques : 0;
+  return `<div class="ph">
+    <div class="ph-glow"></div>
+    <div class="ph-top"><small>Bénéfice · ${PRM === "tout" ? "tous les mois" : moisLong(PRM)}</small><span>${LX.length} livraison${LX.length > 1 ? "s" : ""}</span></div>
+    <b class="ph-big"><span data-count="${Math.round(T("benef"))}">${num(T("benef"))}</span><em>DH</em></b>
+    <div class="ph-bars" aria-label="Bénéfice ${leg}">${barres.map((b, i) => `<i style="--h:${(b.v / max * 100).toFixed(1)}%;--i:${i};width:${W}%" class="${b.v ? "" : "zero"}"></i>`).join("")}</div>
+    <div class="ph-leg"><span>${barres[0] ? barres[0].t : ""}</span><span>${leg}</span><span>${barres.at(-1) ? barres.at(-1).t : ""}</span></div>
+    <div class="ph-mini">
+      <div><small>Palettes</small><b>${num(T("palettes"))}</b></div>
+      <div><small>Chiffre d'affaires</small><b>${num(T("ca"))}<em> DH</em></b></div>
+      <div><small>Marge / brique</small><b>${p2(marge)}</b></div></div>
+  </div>`;
 }
 /* détail d'une ligne : tout en clair, bon de livraison PDF, situation du client */
 function ligneP(i){
