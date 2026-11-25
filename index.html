@@ -1171,10 +1171,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-motion:reduce){:root[data-design=r26] :is(.hero,.prh)::after{animation:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=6.0"></script>
-<script src="moteur.js?v=6.0"></script>
-<script src="app.js?v=6.0"></script>
-<script src="local.js?v=6.0"></script>
+<script src="config.js?v=6.1"></script>
+<script src="moteur.js?v=6.1"></script>
+<script src="app.js?v=6.1"></script>
+<script src="local.js?v=6.1"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';d.dataset.design=q.get('design')||localStorage.getItem('design')||'classique';})();</script>
@@ -1191,7 +1191,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "6.0";
+const VERSION = "6.1";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1610,6 +1610,9 @@ function retour(){
 }
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
+/* apparence 2026 : chaque onglet a un rôle — Commandes = quoi faire, Principal = ton Excel (avec les clients), Règlements = l'argent, Analyse = pourquoi */
+const TABS26 = [["accueil","Accueil","home"],["commandes","Commandes","box"],["principal","Principal","doc"],["reglements","Règlements","money"],["analyse","Analyse","chart"]];
+const onglets = () => R26() ? TABS26 : TABS;
 const R26 = () => document.documentElement.dataset.design === "r26";
 function shell(over, title, body, action){
   const n = S.attente.length;
@@ -1617,11 +1620,11 @@ function shell(over, title, body, action){
     <div class="head"><div><div class="over">${over}</div><h1>${title}</h1></div>${action ?? `<button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button>`}</div>
     ${body}
     </div></div>
-    <nav class="tabs" id="tabs"><span class="ind" id="ind"></span><div class="brand"><img src="icon-192.png" alt="">YOUSDAM</div>${TABS.map(([k,l,i], j)=>`${R26() && j === 2 ? `<button class="dock-plus fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",26)}</button>` : ""}<button class="${TAB===k?"on":""}" onclick="go('${k}')" aria-label="${l}">${ic(i)}${l}${k==="commandes"&&n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>`;
+    <nav class="tabs" id="tabs"><span class="ind" id="ind"></span><div class="brand"><img src="icon-192.png" alt="">YOUSDAM</div>${onglets().map(([k,l,i], j)=>`${R26() && j === 2 ? `<button class="dock-plus fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",26)}</button>` : ""}<button class="${TAB===k?"on":""}" onclick="go('${k}')" aria-label="${l}">${ic(i)}${l}${k==="commandes"&&n?`<span class="n">${n}</span>`:""}</button>`).join("")}</nav>`;
 }
 const PREV = [];   // onglets visités, pour la flèche retour
 function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"}); return; } if(!retour){ PREV.push(TAB); if(PREV.length > 20) PREV.shift(); }
-  const ordre = TABS.map(x => x[0]), sens = (ordre.indexOf(t) < ordre.indexOf(TAB)) !== !!retour ? "arriere" : "avant";
+  const ordre = onglets().map(x => x[0]), sens = (ordre.indexOf(t) < ordre.indexOf(TAB)) !== !!retour ? "arriere" : "avant";
   TAB = t; localStorage.setItem("tab", t); if(typeof fermerMenuAjout === "function") fermerMenuAjout();
   const faire = () => { render(false); window.scrollTo(0,0); };
   if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){ document.documentElement.dataset.sens = sens; document.startViewTransition(faire); }
@@ -1656,7 +1659,11 @@ let PREMIER = true;
 function render(anim){
   if(!S) return;
   const ouverture = PREMIER; PREMIER = false;
-  $("#root").innerHTML = ({accueil:vAccueil, commandes:vCommandes, reglements:vReglements, clients:vClients, analyse:vAnalyse}[TAB] || vAccueil)();
+  if(R26() && TAB === "clients") TAB = "principal";                       // les clients sont dans le Principal
+  if(!R26() && TAB === "principal"){ TAB = "commandes"; SEGC = "principal"; }
+  if(R26() && TAB === "commandes" && SEGC === "principal") SEGC = "livrees";
+  $("#root").innerHTML = ({accueil:vAccueil, commandes:vCommandes, reglements:vReglements, clients:vClients, analyse:vAnalyse,
+    principal: () => shell("Ton Excel, ligne par ligne", "Principal", vPrincipal())}[TAB] || vAccueil)();
   const ring = document.querySelector(".ring circle.val");
   if(ring){
     if(ouverture){ ring.style.transition = "stroke-dashoffset 1s var(--ease-out) .15s"; requestAnimationFrame(() => requestAnimationFrame(() => ring.style.strokeDashoffset = ring.dataset.to)); }
@@ -1946,7 +1953,7 @@ function vCommandes(){
   return shell("Suivi des livraisons", "Commandes", `
     <div class="sw-t" data-on="${SEGC}"><button class="${SEGC==="attente"?"on":""}" onclick="basculer('attente')">À livrer${att.length?`<sup>${att.length}</sup>`:""}</button>
       <button class="${SEGC==="livrees"?"on":""}" onclick="basculer('livrees')">Livrées</button>
-      <button class="${SEGC==="principal"?"on":""}" onclick="basculer('principal')">Principal</button><i class="sw-dot"></i></div>${body}`, `<div style="display:flex;gap:10px"><button class="round press" onclick="refresh()" aria-label="Mettre à jour">${ic("refresh",20)}</button><button class="round fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",24)}</button></div>`);
+      ${R26() ? "" : `<button class="${SEGC==="principal"?"on":""}" onclick="basculer('principal')">Principal</button>`}<i class="sw-dot"></i></div>${body}`, `<div style="display:flex;gap:10px"><button class="round press" onclick="refresh()" aria-label="Mettre à jour">${ic("refresh",20)}</button><button class="round fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",24)}</button></div>`);
 }
 function jourLabel(s){ const n = ecart(s), d = pd(s); if(n===0) return "Aujourd'hui"; if(n===1) return "Hier"; return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`; }
 /* ============ PRINCIPAL : ton onglet Excel dans l'appli (toutes les lignes, par client et par mois) ============ */
