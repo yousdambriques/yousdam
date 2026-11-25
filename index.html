@@ -1168,13 +1168,18 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
   & :is(.lv,.pa-l,.pr-t tbody tr.pr-in){animation-duration:.2s}
 }
 @keyframes reflet{to{background-position:-60% 0}}
+.ana-l{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;border:0;font:inherit;text-align:left;padding:10px 14px 10px 10px;border-radius:22px;background:var(--card);color:var(--label);box-shadow:var(--shadow);cursor:pointer}
+.ana-l b{font-size:15px;font-weight:700;letter-spacing:-.02em}
+.ana-i{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:var(--brick-soft);color:var(--brick);flex:none}
+.ana-n{margin-left:auto;display:flex;gap:6px}.ana-n i{font-style:normal;font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--orange-soft);color:var(--orange)}
+.ana-n i.u{background:var(--red-soft);color:var(--red)}.ana-n i.ok{background:var(--green-soft);color:var(--green)}
 @media (prefers-reduced-motion:reduce){:root[data-design=r26] :is(.hero,.prh)::after{animation:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=6.1"></script>
-<script src="moteur.js?v=6.1"></script>
-<script src="app.js?v=6.1"></script>
-<script src="local.js?v=6.1"></script>
+<script src="config.js?v=6.2"></script>
+<script src="moteur.js?v=6.2"></script>
+<script src="app.js?v=6.2"></script>
+<script src="local.js?v=6.2"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';d.dataset.design=q.get('design')||localStorage.getItem('design')||'classique';})();</script>
@@ -1191,7 +1196,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "6.1";
+const VERSION = "6.2";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1611,7 +1616,7 @@ function retour(){
 /* ============ coquille ============ */
 const TABS = [["accueil","Accueil","home"],["commandes","Commandes","box"],["reglements","Règlements","money"],["clients","Clients","people"],["analyse","Analyse","chart"]];
 /* apparence 2026 : chaque onglet a un rôle — Commandes = quoi faire, Principal = ton Excel (avec les clients), Règlements = l'argent, Analyse = pourquoi */
-const TABS26 = [["accueil","Accueil","home"],["commandes","Commandes","box"],["principal","Principal","doc"],["reglements","Règlements","money"],["analyse","Analyse","chart"]];
+const TABS26 = [["accueil","Accueil","home"],["commandes","Commandes","box"],["principal","Principal","doc"],["reglements","Règlements","money"]];   // l'Analyse s'ouvre depuis l'Accueil
 const onglets = () => R26() ? TABS26 : TABS;
 const R26 = () => document.documentElement.dataset.design === "r26";
 function shell(over, title, body, action){
@@ -1682,6 +1687,7 @@ function render(anim){
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
   placerPoint();
   setTimeout(natifMaj, 400);
+  if(S) setTimeout(() => window.onPartage(), 400);        // un message partagé pendant que l'appli était fermée ou verrouillée
   if(!window.__wifiOuverture && S){ window.__wifiOuverture = true; setTimeout(async () => { await envoiWifi(true); await sauvegardeAuto(); if(typeof pcDispo === "function" && pcDispo()) sync(false); }, 1500); }
   const lmm = document.querySelector(".lm-mois .on"); if(lmm) lmm.parentElement.scrollLeft = lmm.offsetLeft - 24;
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
@@ -1689,7 +1695,9 @@ function render(anim){
 /* indicateur qui glisse d'un élément à l'autre (part de sa dernière position) */
 const POS = {};
 function glisser(ind, cible, cle){
-  if(!ind || !cible) return;
+  if(!ind) return;
+  if(!cible){ if(cle === "tabs") ind.style.opacity = 0; return; }
+  if(cle === "tabs") ind.style.opacity = "";
   const p = ind.parentElement.getBoundingClientRect(), r = cible.getBoundingClientRect();
   const to = {x:r.left - p.left, y:r.top - p.top, w:r.width, h:r.height}, from = POS[cle];
   const set = q => { ind.style.transform = `translate3d(${q.x}px,${q.y}px,0)`; ind.style.width = q.w + "px"; ind.style.height = q.h + "px"; };
@@ -1772,6 +1780,11 @@ function progression(){
 }
 function medaille(nv, taille){
   return `<span class="med" style="--mc:${NIVEAUX[nv][2]};--ms:${taille || 54}px"><em>${nv + 1}</em></span>`;
+}
+function carteAnalyse(){
+  const D = S.analyse.diag || [], u = D.filter(x => x.niveau === "grave").length, w = D.filter(x => x.niveau === "faible").length;
+  return `<button class="ana-l press" onclick="go('analyse')"><span class="ana-i">${ic("chart", 18)}</span><b>Analyse du mois</b>
+    <span class="ana-n">${u ? `<i class="u">${u} urgent${u > 1 ? "s" : ""}</i>` : ""}${w ? `<i>${w} à surveiller</i>` : ""}${!u && !w ? "<i class=\"ok\">tout va bien</i>" : ""}</span><span class="chev">${ic("chev", 14)}</span></button>`;
 }
 function carteProgression(){
   const P = progression(), aj = P.aujd, nv = NIVEAUX[P.nv];
@@ -1889,7 +1902,7 @@ function vAccueil(){
           <circle class="val" cx="46" cy="46" r="38" style="stroke:var(--ring,#fff)" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" data-to="${C*(1-p)}"/></svg><b>${Math.round(p*100)}%</b></div></div>
       <div class="foot"><span class="pill">Objectif ${dh(A.objectif)}</span><span class="pill">Projection ${dh(A.projection)}</span></div>
     </div></div>
-    <div class="b-prog">${carteProgression()}</div>
+    <div class="b-prog">${carteProgression()}${R26() ? carteAnalyse() : ""}</div>
     <div class="b-kpi"><div class="dash">
       <button class="kpi press" onclick="go('analyse')"><span class="l">Cette semaine</span><span class="v">${num(A.semaine)}<small>DH</small></span>
         <span class="dl">${delta(A.semaine, A.semaine_prec)}</span>${spark(A.semaines)}</button>
@@ -2365,11 +2378,21 @@ function clientField(){
     ${noms.map(n => `<button type="button" class="press${n === choisi ? " on" : ""}" data-v="${esc(n)}">${esc(nomPropre(n))}</button>`).join("")}</div>`;
 }
 
-function ouvrirWhatsApp(){
+/* commande reçue de WhatsApp : « Partager → YOUSDAM », ou un message copié qui ressemble à une commande */
+const resembleCommande = t => /livrer|chantier|palette|\bsolo|plateau|remorque|camion|voyage|\bbrs?\s*\d/i.test(t || "");
+window.onPartage = () => { if(!S || typeof NATIF === "undefined" || !NATIF || !NATIF.textePartage) return; const t = NATIF.textePartage(); if(t) ouvrirWhatsApp(t); };
+function collerSiCommande(){
+  if(typeof NATIF === "undefined" || !NATIF || !NATIF.pressePapier) return;
+  const t = (NATIF.pressePapier() || "").trim(); if(!resembleCommande(t) || t === sessionStorage.getItem("deja_colle")) return;
+  sessionStorage.setItem("deja_colle", t); const z = $("#wTxt"); if(z && !z.value){ z.value = t; toast("Message collé depuis WhatsApp"); lireMessage(); }
+}
+function ouvrirWhatsApp(texte){
   sheet("Commande WhatsApp", `${clientField()}
     <textarea id="wTxt" placeholder="Colle ici le message WhatsApp…&#10;&#10;Ex. : Merci de me livrer 1 solo de brs 7, chantier Tit Mellil (Y)"></textarea>
     <button class="btn btn-tint btn-w press" style="margin:12px 0 4px" onclick="lireMessage()">${ic("chat",18)} Lire le message</button>
     <div id="wRes"></div><div class="stick" id="wBtns"></div>`);
+  if(typeof texte === "string" && texte.trim()){ $("#wTxt").value = texte.trim(); setTimeout(lireMessage, 250); }
+  else setTimeout(collerSiCommande, 300);
 }
 async function lireMessage(){
   const t = $("#wTxt").value.trim(); if(!t) return toast("Colle d'abord le message", false);
