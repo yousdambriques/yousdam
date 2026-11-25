@@ -1168,7 +1168,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
   & :is(.lv,.pa-l,.pr-t tbody tr.pr-in){animation-duration:.2s}
 }
 @keyframes reflet{to{background-position:-60% 0}}
-.prh.bm{margin-top:4px}
+.prh.bm{margin-top:4px}.prh-top span{white-space:nowrap}
 .bm-obj{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.16);margin-top:12px;overflow:hidden}
 .bm-obj i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:linear-gradient(90deg,#ffd9cf,#ff9f8a);animation:bmo .8s var(--ease-out) both}
 @keyframes bmo{from{width:0}}
@@ -1193,10 +1193,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-motion:reduce){:root[data-design=r26] :is(.hero,.prh)::after{animation:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=6.3"></script>
-<script src="moteur.js?v=6.3"></script>
-<script src="app.js?v=6.3"></script>
-<script src="local.js?v=6.3"></script>
+<script src="config.js?v=6.4"></script>
+<script src="moteur.js?v=6.4"></script>
+<script src="app.js?v=6.4"></script>
+<script src="local.js?v=6.4"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';d.dataset.design=q.get('design')||localStorage.getItem('design')||'classique';})();</script>
@@ -1213,7 +1213,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "6.3";
+const VERSION = "6.4";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1824,7 +1824,7 @@ function dessinerBenefMois(){
       <button class="press" ${apres ? `onclick="ouvrirBenefMois('${apres}')"` : "disabled"} aria-label="Mois d'après">${ic("chev", 18)}</button></div>
     <div class="prh bm">
       <div class="prh-glow"></div>
-      <div class="prh-top"><small>Bénéfice · ${moisLong(m)}</small><span>${nb} livraison${nb > 1 ? "s" : ""} · ${num(pal)} pal.</span></div>
+      <div class="prh-top"><small>Bénéfice</small><span>${nb} livraison${nb > 1 ? "s" : ""} · ${num(pal)} pal.</span></div>
       <b class="prh-big"><span data-count="${Math.round(tot)}">${num(tot)}</span><em>DH</em></b>
       <div class="bm-obj"><i style="width:${Math.min(100, tot / obj * 100).toFixed(1)}%"></i></div>
       <div class="bm-objl"><span>${Math.round(tot / obj * 100)} % de l'objectif</span><button onclick="event.stopPropagation();closeSheet();editObjectif()">Objectif ${dh(obj)}</button></div>
