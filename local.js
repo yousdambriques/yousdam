@@ -99,7 +99,32 @@ async function synchroniserOneDrive() {
   localStorage.setItem("sync_vu", new Date().toISOString());
   return {nouveau: true, cree: d.cree, photos: JSON.parse(localStorage.getItem("photos") || "[]").filter(n => !avant.has(n)).length};
 }
+/* à la maison : le PC donne directement les dernières données par le Wi-Fi (demande signée avec la clé partagée) */
+const pcDispo = () => !!(NATIF && NATIF.aPC && localStorage.getItem("pc_ip") && localStorage.getItem("sync_cle"));
+async function adressePC(nom) {
+  const t = String(Math.floor(Date.now() / 1000)), cle = localStorage.getItem("sync_cle");
+  const k = await crypto.subtle.importKey("raw", Uint8Array.from(atob(cle), c => c.charCodeAt(0)), {name: "HMAC", hash: "SHA-256"}, false, ["sign"]);
+  const s = [...new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(`get|${nom}|${t}`)))].map(b => b.toString(16).padStart(2, "0")).join("");
+  return `__natif/pc/${nom}?h=${encodeURIComponent(localStorage.getItem("pc_ip") + ":" + (localStorage.getItem("pc_port") || "8792"))}&t=${t}&s=${s}`;
+}
+async function synchroniserPC() {
+  if (!pcDispo()) return null;
+  let v;
+  try { const r = await fetch(await adressePC("version"), {cache: "no-store"}); if (!r.ok) return null; v = (await r.json()).v; }
+  catch (e) { return null; }                                   // pas sur le Wi-Fi du PC, ou PC éteint
+  localStorage.setItem("sync_vu", new Date().toISOString());
+  if (v && v === localStorage.getItem("pc_version")) return {nouveau: false, pc: true};
+  let texte, d;
+  try { const r = await fetch(await adressePC("donnees"), {cache: "no-store"}); if (!r.ok) return null; texte = await r.text(); d = JSON.parse(texte); }
+  catch (e) { return null; }
+  if (d.type !== "yousdam-donnees") return null;
+  const avant = new Set(JSON.parse(localStorage.getItem("photos") || "[]"));
+  await STOCK.importerDonnees(new File([texte], "donnees-yousdam.json"));
+  localStorage.setItem("pc_version", v || "");
+  return {nouveau: true, pc: true, cree: d.cree, photos: JSON.parse(localStorage.getItem("photos") || "[]").filter(n => !avant.has(n)).length};
+}
 async function synchroniser() {
+  const p = await synchroniserPC(); if (p) return p;
   if (NATIF && NATIF.aOneDrive()) return synchroniserOneDrive();
   const lien = (localStorage.getItem("sync_lien") || "").trim(), cle = localStorage.getItem("sync_cle");
   if (!lien) throw new Error("Colle d'abord le lien de partage dans Réglages > Synchronisation.");

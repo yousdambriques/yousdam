@@ -277,6 +277,78 @@ button.item:active{background:var(--fill)}
 .f input,.f select{flex:1;min-width:0;border:0;background:none;padding:13px 0;text-align:right;outline:none;color:var(--sec);appearance:none;-webkit-appearance:none}
 .f input:focus{color:var(--label)}
 .f select{direction:rtl}.f select option{direction:ltr}
+.pills{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x proximity}
+.pills::-webkit-scrollbar{display:none}
+.f.blk{flex-direction:column;align-items:stretch;gap:10px;padding:12px 0 14px 16px}
+.f.blk label{width:auto}
+.f.blk .pills{padding:2px 16px 4px 0}
+.f:not(.blk) .pills{margin-left:auto;padding:6px 0}
+.pill{flex:none;scroll-snap-align:start;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;border:0;border-radius:15px;padding:9px 14px;min-height:40px;
+  background:var(--fill);color:var(--label);font:inherit;font-size:15px;font-weight:650;letter-spacing:-.01em;cursor:pointer;
+  transition:background .22s var(--ease-out),color .22s,transform .16s var(--ease-out),box-shadow .22s}
+.pill small{font-size:11px;font-weight:600;opacity:.55;letter-spacing:0}
+.pill:active{transform:scale(.95)}
+.pill.on{background:linear-gradient(135deg,var(--brick),#5c1526);color:#fff;box-shadow:0 8px 18px -8px rgba(122,28,50,.65)}
+.pill.on small{opacity:.8}
+.pill.plus{background:none;box-shadow:inset 0 0 0 1.5px var(--sep);color:var(--sec)}
+.f .aide{color:var(--orange);font-weight:600}
+.f:not(.a-choisir) .aide{display:none}
+.f.a-choisir .pills{animation:attire .9s var(--ease-out) .25s 2}
+@keyframes attire{0%,100%{transform:none}15%{transform:translateX(-5px)}30%{transform:translateX(5px)}45%{transform:none}}
+.pas-date{margin-left:auto;display:flex;align-items:center;gap:4px;background:var(--fill);border-radius:15px;padding:3px}
+.pas-date button{border:0;background:none;width:34px;height:34px;border-radius:12px;font:inherit;font-size:20px;line-height:1;color:var(--brick);cursor:pointer;transition:background .18s,transform .14s}
+.pas-date button:active{transform:scale(.9);background:var(--card)}
+.pas-date b{min-width:104px;text-align:center;font-size:15px;font-weight:650;transition:opacity .15s}
+@media (prefers-reduced-motion:reduce){.f.a-choisir .pills{animation:none}.pill{transition:none}}
+.pad .fp{color:var(--brick)}
+.lock.ouvre{animation:ouvre .22s var(--ease-out) forwards}
+@keyframes ouvre{to{opacity:0;transform:scale(1.04)}}
+.f .val{flex:1;min-width:0;text-align:right;color:var(--sec);padding:12px 0;overflow-wrap:anywhere}
+.pr-cl{display:flex;gap:8px;overflow-x:auto;margin:0 -18px 6px;padding:2px 18px 8px;scrollbar-width:none}.pr-cl::-webkit-scrollbar{display:none}
+.pr-cl button{flex:none;display:flex;align-items:center;gap:8px;border:0;font:inherit;font-size:14.5px;font-weight:650;padding:5px 15px 5px 5px;border-radius:999px;background:var(--card);color:var(--label);box-shadow:var(--shadow);cursor:pointer;
+  transition:background .25s var(--ease-out),color .25s,transform .15s var(--ease-out)}
+.pr-cl button:first-child{padding:10px 18px}
+.pr-cl button.on{background:var(--label);color:var(--card)}
+.pr-cl button:active{transform:scale(.95)}
+.pr-cl .av{width:28px;height:28px;font-size:13px}
+.pr-st{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 14px}
+.pr-st>div{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:13px 15px;animation:wcin .32s var(--ease-out) both}
+.pr-st>div:nth-child(2){animation-delay:40ms}.pr-st>div:nth-child(3){animation-delay:80ms}.pr-st>div:nth-child(4){animation-delay:120ms}
+.pr-st>div:first-child{background:linear-gradient(135deg,var(--brick),#4d1020);color:#fff}
+.pr-st small{display:block;font-size:12.5px;font-weight:650;opacity:.7}
+.pr-st b{display:block;font-size:24px;font-weight:750;letter-spacing:-.03em;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap}.pr-st em{font-style:normal;font-size:13px;opacity:.7}
+.pr-act{margin:0 0 14px}
+.pa{background:var(--card);border-radius:22px;box-shadow:var(--shadow);padding:4px 0;margin-bottom:14px;overflow:hidden}
+.pa-h{display:flex;justify-content:space-between;align-items:baseline;padding:12px 16px 6px}.pa-h b{font-size:17px}.pa-h span{font-size:12.5px;color:var(--sec)}
+.pa-l{display:flex;align-items:center;gap:12px;width:100%;border:0;background:none;font:inherit;text-align:left;padding:10px 16px;color:var(--label);cursor:pointer;animation:wcin .28s var(--ease-out) both;animation-delay:calc(var(--i) * 30ms)}
+.pa-l+.pa-l{border-top:.5px solid var(--sep)}
+.pa-p{flex:none;width:50px;height:50px;border-radius:16px;display:grid;place-content:center;text-align:center;line-height:1.05;background:color-mix(in srgb,var(--t) 16%,transparent);color:var(--t)}
+.pa-p b{font-size:18px}.pa-p small{font-size:10.5px;font-weight:700}
+.pa-c{flex:1;min-width:0}.pa-c b{display:block;font-size:15px;font-weight:650}.pa-c em{font-style:normal;font-weight:500;color:var(--sec)}.pa-c small{display:block;font-size:12.5px;color:var(--sec);margin-top:2px}
+.pr-doc{padding:14px 0 10px;overflow:hidden}
+.pr-doc .doc-h{margin:0 14px}
+.pr-sc{overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;-webkit-tap-highlight-color:transparent;
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 34px),transparent)}
+.pr-sc.fin{-webkit-mask-image:none;mask-image:none}
+.pr-sc::-webkit-scrollbar{display:none}
+.pr-t{border-collapse:separate;border-spacing:0;font-size:13px;white-space:nowrap;min-width:100%}
+.pr-t th{background:#fff;text-align:left;font-size:11px;font-weight:700;color:#777;padding:10px;border-bottom:1px solid #ddd}
+.pr-t td{padding:11px 10px;border-bottom:1px solid #eee;color:#111;background:#fff}
+.pr-t .n{text-align:right;font-variant-numeric:tabular-nums}
+.pr-t .st{position:sticky;left:0;z-index:1;font-weight:700;box-shadow:1px 0 0 #e6e6e6;padding-left:14px}
+.pr-t th.st{z-index:2}.pr-t tfoot td{background:#fff}
+.pr-t td small{display:block;font-size:10.5px;font-weight:600;color:#999;margin-top:1px}
+.pr-t tbody tr{cursor:pointer}
+.pr-t tbody tr.an{animation:wcin .26s var(--ease-out) both;animation-delay:calc(var(--i) * 16ms)}
+.pr-doc.an{animation:wcin .3s var(--ease-out) both}
+.pr-t tbody tr:active td{background:#f7eef0}
+.pr-t .t7{color:#C9711F;font-weight:700}.pr-t .t10{color:#2F6FD0;font-weight:700}
+.pr-t .oui{color:#c62828;font-weight:700}.pr-t .ben{color:#1e8e4e;font-weight:700}
+.pr-t tr.pv-att td{background:#fff7ea;color:#7a5a2a}
+.pr-t tfoot td{border-top:2px solid #111;border-bottom:0;font-weight:800;padding-top:12px;padding-bottom:12px}
+.pr-t .pr-pt{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--t);margin-right:8px;vertical-align:middle;position:relative;top:-1px}
+.pr-hint{font-size:12px;color:#888;text-align:center;margin:10px 14px 0}
+@media (prefers-reduced-motion:reduce){.pr-t tbody tr,.pr-st>div,.pa-l{animation:none}}
 .f.warn{background:var(--orange-soft);color:var(--orange);font-size:14px;font-weight:600;min-height:44px}
 .flabel{font-size:14px;font-weight:600;color:var(--sec);margin:22px 16px 8px}
 .av{position:relative;width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;font-size:17px;
@@ -400,7 +472,8 @@ button.item:active{background:var(--fill)}
 .sw-t button:not(.on) sup{min-width:20px;height:20px;font-size:12px;top:0}
 @keyframes badgepop{from{transform:scale(0)}}
 .sw-dot{position:absolute;bottom:0;left:2px;width:8px;height:8px;border-radius:50%;background:var(--brick);transition:transform .45s cubic-bezier(.34,1.3,.64,1)}
-.sw-t[data-on=livrees] .sw-dot{transform:translateX(var(--dx,150px))}
+.sw-t .sw-dot{transform:translateX(var(--dx,0px))}
+.sw-t{gap:14px;white-space:nowrap}.sw-t button.on{font-size:30px}
 .view.bascule > *:not(.head):not(.sw-t){animation:bascule .38s var(--ease-out) both}
 @keyframes bascule{from{opacity:0;transform:translateX(var(--sx,26px))}}
 @media (prefers-reduced-motion:reduce){.sw-t button,.sw-dot{transition:none}.view.bascule > *{animation:none!important}}
@@ -1011,10 +1084,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.5"></script>
-<script src="moteur.js?v=5.5"></script>
-<script src="app.js?v=5.5"></script>
-<script src="local.js?v=5.5"></script>
+<script src="config.js?v=5.6"></script>
+<script src="moteur.js?v=5.6"></script>
+<script src="app.js?v=5.6"></script>
+<script src="local.js?v=5.6"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1031,7 +1104,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.5";
+const VERSION = "5.6";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1088,6 +1161,7 @@ const I = {
   chart:'<rect x="3" y="12.5" width="4.4" height="8.5" rx="1.6" fill="currentColor" opacity=".5"/><rect x="9.8" y="7.5" width="4.4" height="13.5" rx="1.6" fill="currentColor" opacity=".75"/><rect x="16.6" y="3" width="4.4" height="18" rx="1.6" fill="currentColor"/>',
   refresh:'<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
   flame:'<path d="M12 2.5c.6 3-1.6 4.6-2.9 6.4-1 1.4-1.6 2.8-1.6 4.4A4.5 4.5 0 0 0 12 18a4.5 4.5 0 0 0 4.5-4.7c0-1.3-.5-2.4-1.2-3.4-.3 1-.9 1.8-1.8 2.2.4-3.6-.9-7-1.5-9.6z" fill="currentColor"/>',
+  doc:'<path d="M7 3.5h7l4.5 4.5v12.5H7z" fill="currentColor" opacity=".2"/><path d="M7 3.5h7l4.5 4.5v12.5H7zM14 3.5V8h4.5M9.8 12.5h5.4M9.8 16h5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>',
   envoi:'<path d="M12 15.5V4.5M7.5 9 12 4.5 16.5 9M5 19.5h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
   x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
   check:'<path d="M5 12.5 10 17.5 19 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -1237,14 +1311,18 @@ function ecranMicrosoft(){
 function lock(nouveau){
   let pin = "", premier = "", msg = "";
   const titre = () => nouveau ? (premier ? "Confirme ton code" : "Choisis ton code") : "YOUSDAM";
-  const sous = () => msg || (nouveau ? "4 chiffres pour protéger tes chiffres" : "Entre ton code");
+  const sous = () => msg || (nouveau ? "4 chiffres pour protéger tes chiffres" : fp ? "Pose ton doigt, ou entre ton code" : "Entre ton code");
+  const fp = !nouveau && typeof NATIF !== "undefined" && NATIF && NATIF.aEmpreinte && NATIF.aEmpreinte();
+  window.onEmpreinte = r => { if(r === "ok"){ sessionStorage.setItem("ok", "1"); vibre(); const l = document.querySelector(".lock"); if(l) l.classList.add("ouvre"); setTimeout(load, 220); } };
+  const demanderEmpreinte = () => { if(fp) NATIF.empreinte(); };
   const draw = (shake) => {
     $("#root").innerHTML = `<div class="lock"><img src="icon-192.png" alt=""><h1>${titre()}</h1><div class="muted">${esc(sous())}</div>
       <div class="dots ${shake?"shake":""}">${[0,1,2,3].map(i=>`<i class="${i<pin.length?"plein":""}"></i>`).join("")}</div>
-      <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}<span></span><button data-k="0">0</button><button class="t" data-k="del">Effacer</button></div></div>`;
+      <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}">${n}</button>`).join("")}${fp ? `<button class="fp" data-k="fp" aria-label="Empreinte"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 11v3.5c0 2-.6 3.7-1.7 5.2"/><path d="M8.6 9.6A3.6 3.6 0 0 1 15.6 11v2.4c0 1.6-.3 3.1-.8 4.5"/><path d="M5.6 8.2a7.2 7.2 0 0 1 13.6 3.3v1.6c0 1.2-.1 2.3-.4 3.4"/><path d="M5 12v1.2c0 1.9-.4 3.6-1.2 5"/><path d="M7.8 4.3A9.6 9.6 0 0 1 20.3 6.8"/><path d="M9 14.3c0 1.8-.5 3.5-1.4 4.9"/></svg></button>` : "<span></span>"}<button data-k="0">0</button><button class="t" data-k="del">Effacer</button></div></div>`;
     document.querySelectorAll(".pad button").forEach(b => b.addEventListener("pointerdown", e => { e.preventDefault(); key(b.dataset.k); }));
   };
   async function key(k){
+    if(k==="fp") return demanderEmpreinte();
     if(k==="del"){ pin = pin.slice(0,-1); return draw(); }
     if(pin.length>=4) return;
     pin += k; vibre(); draw();
@@ -1255,6 +1333,7 @@ function lock(nouveau){
     catch(e){ pin = ""; msg = e.message; draw(true); }
   }
   draw();
+  setTimeout(demanderEmpreinte, 350);
 }
 
 /* bouton « Mettre à jour » : va chercher directement dans OneDrive si le lien est réglé, sinon ouvre le sélecteur (fichiers .json seulement) */
@@ -1264,6 +1343,23 @@ function boutonMaj(cls, style, lib){
   if(localStorage.getItem("sync_lien") && localStorage.getItem("sync_cle"))
     return `<button class="${cls}" style="${style}" onclick="event.stopPropagation();sync(true)">${lib}</button>`;
   return `<label class="${cls}" style="${style}" onclick="event.stopPropagation()">${lib}<input type="file" hidden onchange="importer('excel', this)"></label>`;
+}
+/* sauvegarde automatique, une fois par jour : copie des commandes de l'appli sur le PC (Wi-Fi, signée) */
+async function signer(corps){
+  const k = await crypto.subtle.importKey("raw", Uint8Array.from(atob(localStorage.getItem("sync_cle")), c => c.charCodeAt(0)), {name: "HMAC", hash: "SHA-256"}, false, ["sign"]);
+  return [...new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(corps)))].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+async function sauvegardeAuto(){
+  if(typeof NATIF === "undefined" || !NATIF || !NATIF.envoyerPC || WIFI_EN_COURS || !localStorage.getItem("pc_ip") || !localStorage.getItem("sync_cle")) return;
+  if(localStorage.getItem("sauvegarde_le") === today() || !CACHE.appli) return;
+  WIFI_EN_COURS = true;
+  try{
+    const corps = JSON.stringify({type: "yousdam-sauvegarde", le: new Date().toISOString(), appli: CACHE.appli}), sig = await signer(corps);
+    const rep = await new Promise(r => { const t = setTimeout(() => r(null), 15000); window.onEnvoiPC = x => { clearTimeout(t); r(x); };
+      NATIF.envoyerPC(`http://${localStorage.getItem("pc_ip")}:${localStorage.getItem("pc_port") || "8792"}/yousdam/sauvegarde`, corps, sig); });
+    if(rep && JSON.parse(rep).ok) localStorage.setItem("sauvegarde_le", today());
+  }catch(e){ /* PC pas joignable : on réessaiera à la prochaine ouverture */ }
+  finally{ WIFI_EN_COURS = false; }
 }
 /* envoi direct au PC sur le Wi-Fi (APK) : signé avec la clé partagée ; le PC écrit tout de suite et répond la ligne */
 let WIFI_EN_COURS = false;
@@ -1289,6 +1385,7 @@ async function envoiWifi(silencieux){
       const txt = ecrites.map(([id, f]) => { const c = (CACHE.appli.commandes || []).find(x => x.id === id), L = c && c.livraison;
         return c ? `${nomPropre(c.client)} · ${num(L.palettes)} pal. · ${L.chantier || ""} → ligne ${f.row}${f.doublon ? " (déjà là)" : ""}` : `ligne ${f.row}`; }).join("\n");
       NATIF.notifier("Ajouté dans ton Excel", txt);
+      setTimeout(() => sync(false), 6000);
       toast(`Ajouté dans ton Excel : ${ecrites.length} ligne${ecrites.length > 1 ? "s" : ""}`);
     }
     const errs = Object.values(erreurs);
@@ -1350,12 +1447,13 @@ function filtresLivrees(){
     <div class="group">${[`<button class="item" onclick="FLC='';render();closeSheet()"><div class="body"><div class="ttl">Tous les clients</div></div>${!FLC ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`,
       ...clients.map(c => `<button class="item" onclick="FLC='${esc(cleNom(c))}';render();closeSheet()">${avatar(c)}<div class="body"><div class="ttl nom">${esc(nomPropre(c))}</div><div class="meta">${nb(c)} livraison${nb(c) > 1 ? "s" : ""}</div></div>${FLC === cleNom(c) ? `<span style="color:var(--brick)">${ic("check",18)}</span>` : ""}</button>`)].join("")}</div>`);
 }
-function placerPoint(){ const t = document.querySelector(".sw-t"); if(!t) return; const b = t.querySelectorAll("button")[1]; t.style.setProperty("--dx", (b.offsetLeft - 2) + "px"); }
+function placerPoint(){ const t = document.querySelector(".sw-t"); if(!t) return; const b = t.querySelector("button.on") || t.querySelector("button"); t.style.setProperty("--dx", (b.offsetLeft - 2) + "px"); }
+const SEGS = ["attente", "livrees", "principal"];
 /* « À livrer » / « Livrées » : le titre bascule, puis le contenu glisse dans le bon sens */
 function basculer(seg){
-  if(SEGC === seg) return; const sens = seg === "livrees" ? 1 : -1; SEGC = seg; vibre();
+  if(SEGC === seg) return; const sens = SEGS.indexOf(seg) > SEGS.indexOf(SEGC) ? 1 : -1; SEGC = seg; vibre();
   const t = document.querySelector(".sw-t");
-  if(t){ placerPoint(); t.dataset.on = seg; t.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", (i === 0) === (seg === "attente"))); }
+  if(t){ t.dataset.on = seg; t.querySelectorAll("button").forEach((b, i) => b.classList.toggle("on", SEGS[i] === seg)); placerPoint(); }
   setTimeout(placerPoint, 400);
   setTimeout(() => { render(); const v = document.querySelector(".view"); if(v){ v.style.setProperty("--sx", sens * 26 + "px"); v.classList.add("bascule"); } }, 170);
 }
@@ -1440,22 +1538,32 @@ function go(t, retour){ if(TAB===t){ window.scrollTo({top:0,behavior:"smooth"});
   const faire = () => { render(false); window.scrollTo(0,0); };
   if(document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches){ document.documentElement.dataset.sens = sens; document.startViewTransition(faire); }
   else { render(true); window.scrollTo(0,0); } }
-async function refresh(){ if(typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) return majOneDrive(); await sync(true); }
+/* ↻ ou tirer vers le bas : d'abord le PC sur le Wi-Fi (direct) ; sinon OneDrive */
+async function refresh(){
+  if(typeof pcDispo === "function" && pcDispo()){
+    busy(true, "Mise à jour depuis le PC…"); const r = await synchroniserPC().catch(() => null); busy(false);
+    if(r){ await load(); return toast(r.nouveau ? "Données à jour (PC)" : "Déjà à jour"); }
+  }
+  if(typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) return majOneDrive(); await sync(true);
+}
 /* va chercher les nouvelles données dans OneDrive (copie chiffrée), sinon recharge ce qui est sur le téléphone */
 let SYNC_EN_COURS = false;
 async function sync(bruyant){
   if(SYNC_EN_COURS) return; SYNC_EN_COURS = true;
-  const relie = (typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) || (localStorage.getItem("sync_lien") && localStorage.getItem("sync_cle"));
+  const relie = (typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) || (localStorage.getItem("sync_lien") && localStorage.getItem("sync_cle")) || (typeof pcDispo === "function" && pcDispo());
   if(typeof synchroniser !== "function" || !relie){ await load(); SYNC_EN_COURS = false; if(bruyant) toast(typeof NATIF !== "undefined" && NATIF ? "Relie d'abord ton fichier OneDrive (Réglages)" : "À jour", !(typeof NATIF !== "undefined" && NATIF)); return; }
-  if(bruyant) busy(true, "Lecture dans OneDrive…");
+  if(bruyant) busy(true, "Mise à jour…");
   try{
     const r = await synchroniser(); await load();
     if(typeof NATIF !== "undefined" && NATIF && NATIF.aDossier()) envoyerAuPC(true);   // lignes confirmées pas encore parties
-    if(bruyant) toast(r.nouveau ? `Données à jour${r.photos ? ` · ${r.photos} nouvelle${r.photos > 1 ? "s" : ""} photo${r.photos > 1 ? "s" : ""}` : ""}` : "Déjà à jour");
+    if(r.nouveau && !bruyant) render();
+    if(bruyant) toast(r.nouveau ? `Données à jour${r.pc ? " (PC)" : ""}${r.photos ? ` · ${r.photos} nouvelle${r.photos > 1 ? "s" : ""} photo${r.photos > 1 ? "s" : ""}` : ""}` : "Déjà à jour");
   }catch(e){ await load(); if(bruyant) toast(e.message, false); }
   finally{ busy(false); SYNC_EN_COURS = false; }
 }
-document.addEventListener("visibilitychange", () => { if(!document.hidden && S && ((typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) || localStorage.getItem("sync_lien")) && Date.now() - Date.parse(localStorage.getItem("sync_vu") || 0) > 10 * 60 * 1000) sync(false); });
+document.addEventListener("visibilitychange", () => { if(document.hidden || !S) return;
+  const pc = typeof pcDispo === "function" && pcDispo();
+  if((pc || (typeof NATIF !== "undefined" && NATIF && NATIF.aOneDrive()) || localStorage.getItem("sync_lien")) && Date.now() - Date.parse(localStorage.getItem("sync_vu") || 0) > (pc ? 30e3 : 10 * 60e3)) sync(false); });
 let PREMIER = true;
 function render(anim){
   if(!S) return;
@@ -1479,7 +1587,7 @@ function render(anim){
   glisser($("#ind"), document.querySelector(".tabs button.on"), "tabs");
   placerPoint();
   setTimeout(natifMaj, 400);
-  if(!window.__wifiOuverture && S){ window.__wifiOuverture = true; setTimeout(() => envoiWifi(true), 1500); }
+  if(!window.__wifiOuverture && S){ window.__wifiOuverture = true; setTimeout(async () => { await envoiWifi(true); await sauvegardeAuto(); if(typeof pcDispo === "function" && pcDispo()) sync(false); }, 1500); }
   const lmm = document.querySelector(".lm-mois .on"); if(lmm) lmm.parentElement.scrollLeft = lmm.offsetLeft - 24;
   document.querySelectorAll(".view .seg").forEach((s, i) => { if(!s.querySelector(".thumb")) s.insertAdjacentHTML("afterbegin", `<span class="thumb"></span>`); glisser(s.querySelector(".thumb"), s.querySelector("button.on"), "seg" + TAB + i); });
 }
@@ -1746,12 +1854,113 @@ function vCommandes(){
         <button class="rond r-x press" onclick="annuler('${c.id}')" aria-label="Annuler">${ic("x",20)}<small>Annuler</small></button>
       </div></div></div>`; }).join("") + `</div>`
       : `<div class="group"><div class="empty"><div class="chip c-orange">${ic("box")}</div><b style="color:var(--label)">Aucune commande en attente</b><br>Colle un message WhatsApp pour en ajouter une.</div></div>`;
-  } else body = vLivrees();
+  } else body = SEGC === "principal" ? vPrincipal() : vLivrees();
   return shell("Suivi des livraisons", "Commandes", `
     <div class="sw-t" data-on="${SEGC}"><button class="${SEGC==="attente"?"on":""}" onclick="basculer('attente')">À livrer${att.length?`<sup>${att.length}</sup>`:""}</button>
-      <button class="${SEGC==="livrees"?"on":""}" onclick="basculer('livrees')">Livrées</button><i class="sw-dot"></i></div>${body}`, `<div style="display:flex;gap:10px"><button class="round press" onclick="refresh()" aria-label="Mettre à jour">${ic("refresh",20)}</button><button class="round fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",24)}</button></div>`);
+      <button class="${SEGC==="livrees"?"on":""}" onclick="basculer('livrees')">Livrées</button>
+      <button class="${SEGC==="principal"?"on":""}" onclick="basculer('principal')">Principal</button><i class="sw-dot"></i></div>${body}`, `<div style="display:flex;gap:10px"><button class="round press" onclick="refresh()" aria-label="Mettre à jour">${ic("refresh",20)}</button><button class="round fab press" onclick="menuAjout(this)" aria-label="Ajouter une commande">${ic("plus",24)}</button></div>`);
 }
 function jourLabel(s){ const n = ecart(s), d = pd(s); if(n===0) return "Aujourd'hui"; if(n===1) return "Hier"; return `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`; }
+/* ============ PRINCIPAL : ton onglet Excel dans l'appli (toutes les lignes, par client et par mois) ============ */
+let PRC = "", PRM = null, PRL = [];
+function filtreP(){
+  vibre();
+  const garde = [".pr-cl", ".view .lm-mois"].map(s => (document.querySelector(s) || {}).scrollLeft || 0), y = scrollY;
+  render();
+  [".pr-cl", ".view .lm-mois"].forEach((s, k) => { const e = document.querySelector(s); if(!e) return; e.scrollLeft = garde[k];
+    const on = e.querySelector(".on"); if(on) on.scrollIntoView({inline: "nearest", block: "nearest", behavior: "smooth"}); });
+  window.scrollTo(0, y);
+}
+function vPrincipal(){
+  const tout = toutesVentes(), V = tout.filter(v => !v.virtuelle);
+  const mois = [...new Set(V.map(v => v.date.slice(0, 7)))].sort().reverse().slice(0, 12);
+  if(PRM === null || (PRM !== "tout" && !mois.includes(PRM))) PRM = mois[0] || "tout";
+  const duClient = x => !PRC || cleNom(x.client) === PRC;
+  PRL = tout.filter(v => duClient(v) && (PRM === "tout" || v.date.startsWith(PRM)))
+    .sort((a, b) => (!!b.virtuelle - !!a.virtuelle) || b.date.localeCompare(a.date) || (b.row || 0) - (a.row || 0));
+  const LX = PRL.filter(v => !v.virtuelle), T = k => LX.reduce((s, v) => s + (v[k] || 0), 0);
+  const A = S.attente.filter(duClient).sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  const cls = S.analyse.clients || [], ci = cls.findIndex(c => cleNom(c.nom) === PRC), nomC = ci >= 0 ? nomPropre(cls[ci].nom) : "";
+  const s = n => n > 1 ? "s" : "";
+  const lignes = PRL.map((v, i) => `<tr class="${v.virtuelle ? "pv-att " : ""}${i < 18 ? "an" : ""}" style="--i:${i}" onclick="ligneP(${i})">
+    <td class="st">${dfr(v.date)}</td><td><span class="pr-pt" style="--t:${teinte(v.client)}"></span>${esc(String(v.brut || v.client).trim())}</td><td class="n">${num(v.palettes)}</td>
+    <td class="${v.type === "B7" ? "t7" : "t10"}">${esc(v.type)}</td><td class="n">${num(v.qte)}</td><td class="n">${p2(v.pu)}</td><td class="n">${mad(v.tu)}</td>
+    <td class="n">${p2(v.pv)}</td><td class="n">${mad(v.ca)}</td><td>${esc(v.ville)}</td><td>${esc(v.chantier)}</td><td>${esc(v.client_final)}</td>
+    <td class="${/oui/i.test(v.decharge) ? "oui" : ""}">${esc(v.decharge || "")}</td><td class="n">${num(v.mdech)}</td>
+    <td class="n ben">${mad(v.benef)}</td><td>${v.virtuelle ? "Pas encore dans l'Excel" : esc(v.paiement || "")}</td></tr>`).join("");
+  return `
+    <div class="pr-cl">${[["", "Tous"], ...cls.map(c => [cleNom(c.nom), c.nom])].map(([k, n]) =>
+      `<button class="press${k === PRC ? " on" : ""}" data-k="${esc(k)}" onclick="PRC=this.dataset.k;filtreP()">${k ? avatar(n) : ""}<span>${esc(k ? nomPropre(n) : n)}</span></button>`).join("")}</div>
+    <div class="lm-mois">${mois.map(k => `<button class="${k === PRM ? "on" : ""}" onclick="PRM='${k}';filtreP()">${MC[+k.slice(5) - 1].replace(".", "")}<small>${k.slice(2, 4)}</small></button>`).join("")}
+      <button class="${PRM === "tout" ? "on" : ""}" onclick="PRM='tout';filtreP()">Tout</button></div>
+    <div class="pr-st">
+      <div><small>Bénéfice</small><b><span data-count="${Math.round(T("benef"))}">${num(T("benef"))}</span> <em>DH</em></b></div>
+      <div><small>Livraisons</small><b>${LX.length}</b></div>
+      <div><small>Palettes</small><b>${num(T("palettes"))}</b></div>
+      <div><small>Chiffre d'affaires</small><b>${num(T("ca"))} <em>DH</em></b></div></div>
+    ${ci >= 0 ? `<button class="btn btn-fill btn-w press pr-act" onclick="ficheClient(${ci}, ${PRM === "tout" ? "null" : `'${PRM}'`})">${ic("doc", 18)} Situation de ${esc(nomC)}</button>` : ""}
+    ${A.length ? `<div class="pa"><div class="pa-h"><b>À livrer</b><span>${A.length} commande${s(A.length)} en attente</span></div>
+      ${A.map((c, k) => `<button class="pa-l press" style="--i:${k}" onclick="ouvrirLivrer('${c.id}')"><span class="pa-p" style="--t:${teinte(c.client)}"><b>${num(c.palettes)}</b><small>pal.</small></span>
+        <span class="pa-c"><b>${esc(c.chantier || c.ville || "—")}${c.client_final ? ` <em>· ${esc(c.client_final)}</em>` : ""}</b>
+        <small>${esc(nomPropre(c.client))} · ${esc(c.type)} · ${esc(c.ville || "ville à choisir")}${c.grue ? " · grue" : ""} · ${depuis(c.date)}</small></span><span class="chev">${ic("chev", 15)}</span></button>`).join("")}</div>` : ""}
+    <div class="doc pr-doc an">
+      <div class="doc-h"><div><b>PRINCIPAL</b><span>${PRC ? esc(nomC) : "Tous les clients"} · ${PRM === "tout" ? "tous les mois" : moisLong(PRM)}</span></div><em>${LX.length} ligne${s(LX.length)}</em></div>
+      <div class="pr-sc" onscroll="this.classList.toggle('fin', this.scrollLeft + this.clientWidth >= this.scrollWidth - 4)"><table class="pr-t"><thead><tr><th class="st">Date</th><th>Client</th><th class="n">Pal.</th><th>Type</th><th class="n">Qté briques</th><th class="n">P.U usine</th><th class="n">Total usine</th>
+        <th class="n">P.U vente</th><th class="n">Prix total</th><th>Destination</th><th>Chantier</th><th>Client final</th><th>Grue</th><th class="n">Mt grue</th><th class="n">Bénéfice</th><th>Paiement</th></tr></thead>
+        <tbody>${lignes || `<tr><td class="st">—</td><td colspan="15" style="color:#888">Aucune livraison pour ce choix.</td></tr>`}</tbody>
+        <tfoot><tr><td class="st">Total</td><td></td><td class="n">${num(T("palettes"))}</td><td></td><td class="n">${num(T("qte"))}</td><td></td><td class="n">${mad(T("tu"))}</td><td></td>
+          <td class="n">${mad(T("ca"))}</td><td></td><td></td><td></td><td></td><td class="n">${num(T("mdech"))}</td><td class="n ben">${mad(T("benef"))}</td><td></td></tr></tfoot></table></div>
+      <div class="pr-hint">Glisse le tableau vers la gauche pour toutes les colonnes · touche une ligne pour le détail</div></div>`;
+}
+/* détail d'une ligne : tout en clair, bon de livraison PDF, situation du client */
+function ligneP(i){
+  const v = PRL[i]; if(!v) return;
+  const ci = (S.analyse.clients || []).findIndex(c => cleNom(c.nom) === cleNom(v.client)), grue = /oui/i.test(v.decharge);
+  const L = [["Date", dfr(v.date)], ["Client", esc(nomPropre(v.client))], ["Palettes", `${num(v.palettes)} · ${esc(v.type)}`], ["Briques", num(v.qte)],
+    ["Destination", esc(v.ville)], ["Chantier", esc(v.chantier)], ["Client final", esc(v.client_final)], ["Grue", grue ? `Oui · ${dh(v.mdech)}` : "Non"],
+    ["Prix usine", `${p2(v.pu)} · total ${mad(v.tu)}`], ["Prix vente", `${p2(v.pv)} · total ${mad(v.ca)}`],
+    ["Bénéfice", `<b style="color:var(--green)">${mad(v.benef)} DH</b>`], ["Paiement", v.virtuelle ? "Pas encore dans l'Excel" : esc(v.paiement || "")]];
+  sheet(v.row ? `Ligne ${v.row} de ton Excel` : "Pas encore dans l'Excel", `<div class="form">${L.filter(x => x[1] !== "").map(([l, x]) => `<div class="f"><label>${l}</label><span class="val">${x}</span></div>`).join("")}</div>
+    <button class="btn btn-fill btn-w press" onclick="bonLivraison(${i})">${ic("envoi", 18)} Bon de livraison (PDF)</button>
+    ${ci >= 0 ? `<button class="btn btn-gray btn-w press" style="margin-top:10px" onclick="ficheClient(${ci}, '${v.date.slice(0, 7)}')">Situation de ${esc(nomPropre(v.client))}</button>` : ""}`);
+}
+async function partagerFichier(file){
+  if(await partagerNatif(file)) return;
+  if(navigator.canShare && navigator.canShare({files: [file]})){ try{ await navigator.share({files: [file], title: file.name}); return; } catch(e){ if(e.name === "AbortError") return; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(file); a.download = file.name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast("Enregistré dans tes téléchargements");
+}
+/* bon de livraison : une page, sans prix, à signer par le chantier */
+async function bonLivraison(i){
+  const v = PRL[i]; if(!v) return;
+  const W = 1240, H = 1560, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  const F = (w, t) => `${w} ${t}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+  g.fillStyle = "#fff"; g.fillRect(0, 0, W, H);
+  g.fillStyle = "#7B1E3A"; g.fillRect(0, 0, W, 200);
+  const logo = await new Promise(r => { const im = new Image(); im.onload = () => r(im); im.onerror = () => r(null); im.src = "icon-192.png"; });
+  if(logo) g.drawImage(logo, 70, 50, 100, 100);
+  g.fillStyle = "#fff"; g.font = F(800, 56); g.fillText("YOUSDAM", 196, 116); g.font = F(500, 26); g.globalAlpha = .8; g.fillText("Briques rouges", 198, 154); g.globalAlpha = 1;
+  g.textAlign = "right"; g.font = F(800, 40); g.fillText("BON DE LIVRAISON", W - 70, 104); g.font = F(500, 27); g.fillText(`${v.row ? "N° " + v.row + " · " : ""}${dfr(v.date)}`, W - 70, 150); g.textAlign = "left";
+  const champ = (x, y, l, t) => { g.fillStyle = "#888"; g.font = F(600, 23); g.fillText(l, x, y); g.fillStyle = "#111"; g.font = F(700, 34);
+    let s = String(t || "—"); while(g.measureText(s).width > 500 && s.length > 4) s = s.slice(0, -2) + "…"; g.fillText(s, x, y + 46); };
+  champ(70, 290, "Client", nomPropre(v.client)); champ(660, 290, "Chantier", v.chantier);
+  champ(70, 420, "Client final", v.client_final); champ(660, 420, "Ville", v.ville);
+  // tableau de la marchandise
+  let y = 560; g.fillStyle = "#111"; g.fillRect(70, y, W - 140, 3);
+  g.fillStyle = "#666"; g.font = F(700, 22); [["Désignation", 70], ["Format", 640], ["Palettes", 820], ["Briques", 1000]].forEach(([t, x]) => g.fillText(t, x, y + 44));
+  g.fillStyle = "#ddd"; g.fillRect(70, y + 66, W - 140, 2);
+  g.fillStyle = "#111"; g.font = F(600, 32); g.fillText("Briques rouges", 70, y + 124); g.fillText(v.type, 640, y + 124);
+  g.font = F(800, 34); g.fillText(num(v.palettes), 820, y + 124); g.fillText(num(v.qte), 1000, y + 124);
+  g.fillStyle = "#111"; g.fillRect(70, y + 160, W - 140, 3);
+  g.font = F(600, 28); g.fillStyle = /oui/i.test(v.decharge) ? "#B3261E" : "#555";
+  g.fillText(/oui/i.test(v.decharge) ? "Déchargement à la grue : OUI" : "Déchargement à la grue : non", 70, y + 220);
+  // signatures
+  y = 1080; g.strokeStyle = "#bbb"; g.lineWidth = 2;
+  [[70, "Signature du livreur"], [660, "Cachet et signature du client"]].forEach(([x, t]) => { g.strokeRect(x, y, 510, 300); g.fillStyle = "#777"; g.font = F(600, 23); g.fillText(t, x + 22, y + 42); });
+  g.fillStyle = "#999"; g.font = F(500, 21); g.fillText("Marchandise reçue en bon état et conforme au bon de livraison.", 70, y + 360);
+  const nom = `Bon de livraison ${nomPropre(v.client)} ${dfr(v.date).replace(/\//g, "-")}.pdf`;
+  await partagerFichier(new File([pdfDepuisCanvas(cv)], nom, {type: "application/pdf"}));
+}
 /* livraisons : mois à glisser en haut, total du mois, classement des clients (toucher = sa situation du mois), puis les livraisons */
 let LVM = null, LVC = null;
 function cerclesLivrees(){
@@ -1916,12 +2125,52 @@ addEventListener("popstate", () => {
   ["grab","sheetBar"].forEach(id => { const el = $("#"+id); el.addEventListener("pointerdown", start); el.addEventListener("pointermove", move); el.addEventListener("pointerup", end); el.addEventListener("pointercancel", end); });
 })();
 
-const optClients = sel => S.clients_noms.map(n=>`<option ${n.trim().toLowerCase()===String(sel||"").trim().toLowerCase()?"selected":""}>${esc(n)}</option>`).join("");
-const optVilles = sel => { const v = [...new Set(S.villes.map(x=>x.ville).concat(["Marrakech","Benguerir","Beni Mellal","Kenitra","Tetouan","Azemour"]))]; if(sel && !v.includes(sel)) v.unshift(sel); return v.map(n=>`<option ${n===sel?"selected":""}>${esc(n)}</option>`).join(""); };
-const optType = sel => ["B7","B10"].map(t=>`<option ${t===sel?"selected":""}>${t}</option>`).join("");
+/* choix intégrés à l'appli : des « pilules » au lieu des listes Android (valeur dans un champ caché, même nom qu'avant) */
+function pilules(nom, liste, sel, autre){
+  return `<input type="hidden" name="${nom}" value="${esc(sel ?? "")}"><div class="pills" data-n="${nom}">${liste.map(o => `<button type="button" class="pill${String(o.v) === String(sel) ? " on" : ""}" data-v="${esc(o.v)}" onclick="choisirPilule(this)">${esc(o.l)}${o.s ? `<small>${esc(o.s)}</small>` : ""}</button>`).join("")}${autre ? `<button type="button" class="pill plus" onclick="${autre}(this)">+ Autre</button>` : ""}</div>`;
+}
+function choisirPilule(b){
+  const box = b.closest(".pills"), f = b.closest(".f"), inp = f.querySelector(`input[name=${box.dataset.n}]`);
+  box.querySelectorAll(".pill").forEach(x => x.classList.toggle("on", x === b)); inp.value = b.dataset.v; vibre();
+  f.classList.remove("a-choisir"); b.scrollIntoView({inline: "nearest", block: "nearest", behavior: "smooth"});
+  inp.dispatchEvent(new Event("change"));
+}
+/* villes : celles de ton Excel, les plus livrées d'abord ; prix de la grue de chaque ville (colonnes AB:AC de PRINCIPAL) */
+function villesConnues(){
+  const n = {}; toutesVentes().forEach(v => { if(v.ville) n[v.ville] = (n[v.ville] || 0) + 1; });
+  S.villes.forEach(x => { if(x.ville && !(x.ville in n)) n[x.ville] = 0; });
+  return Object.keys(n).sort((a, b) => n[b] - n[a]);
+}
+const prixGrue = ville => (S.villes.find(v => cleNom(v.ville) === cleNom(ville)) || {}).decharge || 0;
+function champVille(sel){
+  const v = villesConnues(); if(sel && !v.includes(sel)) v.unshift(sel);
+  return `<div class="f blk${sel ? "" : " a-choisir"}"><label>Ville <span class="aide">· à choisir, le prix en dépend</span></label>
+    ${pilules("ville", v.map(n => ({v: n, l: n, s: prixGrue(n) ? `grue ${num(prixGrue(n))} DH` : ""})), sel || "", "autreVille")}</div>`;
+}
+async function autreVille(b){
+  const n = String(await dialogue({titre: "Autre ville", champ: "", ok: "Ajouter"}) || "").trim(); if(!n) return;
+  const nom = n.replace(/^./, x => x.toUpperCase()), nb = document.createElement("button");
+  nb.type = "button"; nb.className = "pill"; nb.dataset.v = nom; nb.textContent = nom; nb.onclick = () => choisirPilule(nb);
+  b.before(nb); choisirPilule(nb);
+}
+/* date : ‹ Aujourd'hui › (un jour de plus ou de moins à chaque toucher) */
+const nomJour = s => { const k = ecart(s); return k === 0 ? "Aujourd'hui" : k === 1 ? "Hier" : k === -1 ? "Demain" : `${JOURS[pd(s).getDay()].slice(0, 3)}. ${dcourt(s)}`; };
+function champDate(sel){
+  sel = sel || today();
+  return `<div class="f"><label>Date</label><input type="hidden" name="date" value="${sel}">
+    <div class="pas-date"><button type="button" onclick="pasDate(this,-1)" aria-label="Jour d'avant">‹</button><b>${nomJour(sel)}</b><button type="button" onclick="pasDate(this,1)" aria-label="Jour d'après">›</button></div></div>`;
+}
+function pasDate(b, k){
+  const f = b.closest(".f"), inp = f.querySelector("input[name=date]"), d = pd(inp.value); d.setDate(d.getDate() + k);
+  inp.value = iso(d); const t = f.querySelector("b"); t.style.opacity = 0; setTimeout(() => { t.textContent = nomJour(inp.value); t.style.opacity = 1; }, 110); vibre();
+  inp.dispatchEvent(new Event("change"));
+}
+const champType = sel => `<div class="f"><label>Format</label>${pilules("type", [{v: "B7", l: "B7"}, {v: "B10", l: "B10"}], sel || "B7")}</div>`;
+const champGrue = on => `<div class="f"><label>Grue</label><label class="switch"><input type="checkbox" name="decharge"${on ? " checked" : ""}><span></span></label></div>`;
 /* palettes : boutons à toucher quand le camion est à confirmer (plateau/remorque : 44·48·52, avec grue : 44·48) */
 function champPal(c){
-  if(!c.choix) return `<div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes||24)}</select></div>`;
+  if(!c.choix){ const o = [24, 44, 48, 52], p = +c.palettes || 24; if(!o.includes(p)) o.push(p);
+    return `<div class="f"><label>Palettes</label>${pilules("palettes", o.map(n => ({v: n, l: String(n)})), p)}</div>`; }
   const v = c.choix.includes(+c.palettes) ? +c.palettes : c.choix[c.choix.length > 2 ? 1 : 1];
   return `<div class="f pal-f"><label>Palettes${c.grue ? " (grue)" : ""}</label><input type="hidden" name="palettes" value="${v}">
     <div class="pal-c">${c.choix.map(n => `<button type="button" class="press${n === v ? " on" : ""}" onclick="choisirPal(this, ${n})">${n}</button>`).join("")}</div></div>`;
@@ -1931,7 +2180,6 @@ function choisirPal(b, n){
   f.querySelectorAll(".pal-c button").forEach(x => x.classList.toggle("on", x === b)); inp.value = n; vibre();
   inp.dispatchEvent(new Event("change"));
 }
-const optPal = (sel, choix) => { const o = choix ? [...choix] : [24,44,48,52]; if(sel && !o.includes(+sel)) o.push(+sel); return o.map(p=>`<option value="${p}" ${+p===+sel?"selected":""}>${p} palettes</option>`).join(""); };
 
 /* Formulaire d'une commande. Interrupteur « Déjà livrée » : ajoute prix + bénéfice, et le bouton Passer à Excel. */
 function cmdForm(c, i){
@@ -1940,19 +2188,19 @@ function cmdForm(c, i){
     <div class="form">
       ${c.a_confirmer?`<div class="f warn">${ic("warn",16)} ${c.grue ? (c.unite === "remorque" ? "Remorque" : "Plateau") + " avec grue : 44 ou 48 palettes" : (c.unite === "plateau" ? "Plateau" : "Remorque") + " : vérifie 44, 48 ou 52 palettes avec l'usine"}</div>`:""}
       ${champPal(c)}
-      <div class="f"><label>Format</label><select name="type">${optType(c.type||"B7")}</select></div>
+      ${champType(c.type)}
+      ${champGrue(c.grue)}
       <div class="f"><label>Chantier</label><input name="chantier" value="${esc(c.chantier||"")}" placeholder="Quartier"></div>
-      <div class="f"><label>Ville</label><select name="ville">${optVilles(c.ville||"Casa")}</select></div>
       <div class="f"><label>Client final</label><input name="client_final" value="${esc(c.client_final||"")}" placeholder="Entreprise"></div>
       <div class="f"><label>Contact</label><input name="contact" value="${esc(c.contact||"")}" placeholder="Téléphone" inputmode="tel"></div>
-      <div class="f"><label>Date</label><input type="date" name="date" value="${today()}"></div>
+      ${champDate()}
       <div class="f"><label>Déjà livrée</label><label class="switch"><input type="checkbox" name="livree" onchange="toggleLivree(this)"><span></span></label></div>
     </div>
+    <div class="form">${champVille(c.ville)}</div>
     <div class="liv hidden">
       <div class="form">
         <div class="f"><label>Prix usine</label><input name="pu" inputmode="decimal"></div>
         <div class="f"><label>Prix vente</label><input name="pv" inputmode="decimal"></div>
-        <div class="f"><label>Grue</label><label class="switch"><input type="checkbox" name="decharge"><span></span></label></div>
       </div>
       <div class="card recap" style="margin-bottom:14px"></div>
     </div></div>`;
@@ -1966,18 +2214,18 @@ async function prixCF(cf, client){
 function recapCF(cf){
   const pal = +fval(cf,"palettes").value, q = pal*(PAR[fval(cf,"type").value]||256);
   const pu = parseFloat(String(fval(cf,"pu").value).replace(",","."))||0, pv = parseFloat(String(fval(cf,"pv").value).replace(",","."))||0;
-  const dech = fval(cf,"decharge").checked ? (S.villes.find(v=>v.ville===fval(cf,"ville").value)||{}).decharge||0 : 0;
-  cf.querySelector(".recap").innerHTML = `<div><span class="muted">Briques</span><b>${num(q)}</b></div><div><span class="muted">Marge</span><b>${p2(pv-pu)}</b></div>
+  const ville = fval(cf,"ville").value, grue = fval(cf,"decharge").checked, dech = grue ? prixGrue(ville) : 0;
+  cf.querySelector(".recap").innerHTML = (grue ? `<div><span class="muted">Grue${ville ? " · " + esc(ville) : ""}</span><b style="${dech ? "" : "color:var(--orange)"}">${dech ? dh(dech) : ville ? "pas de prix dans ton Excel" : "choisis la ville"}</b></div>` : "") + `<div><span class="muted">Briques</span><b>${num(q)}</b></div><div><span class="muted">Marge</span><b>${p2(pv-pu)}</b></div>
     <div><span class="muted">Total usine</span><b>${dh(q*pu+dech)}</b></div><div><span class="muted">Total vente</span><b>${dh(q*pv+dech)}</b></div>
     <div class="tot"><span>Bénéfice</span><span class="${pv>=pu?"up":"down"}">${dh(q*(pv-pu))}</span></div>`;
 }
 function brancherCF(cf, client){
-  ["type","ville"].forEach(n => fval(cf,n).addEventListener("change", () => fval(cf,"livree").checked && prixCF(cf, client())));
+  ["type","ville"].forEach(n => fval(cf,n).addEventListener("change", () => fval(cf,"livree").checked && fval(cf,"ville").value && prixCF(cf, client())));
   ["palettes","pu","pv","decharge"].forEach(n => ["input","change"].forEach(ev => fval(cf,n).addEventListener(ev, () => fval(cf,"livree").checked && recapCF(cf))));
 }
 function toggleLivree(box){
   const cf = box.closest(".cf"); cf.querySelector(".liv").classList.toggle("hidden", !box.checked);
-  if(box.checked) prixCF(cf, $("#wClient").value);
+  if(box.checked && fval(cf,"ville").value) prixCF(cf, $("#wClient").value); else if(box.checked) recapCF(cf);
   majBoutons();
 }
 function majBoutons(){
@@ -2015,10 +2263,13 @@ async function lireMessage(){
   majBoutons(); vibre();
 }
 function ouvrirNouvelle(){
-  sheet("Nouvelle commande", `${clientField()}<div id="wRes">${cmdForm({palettes:24,type:"B7",ville:"Casa"},0)}</div><div class="stick" id="wBtns"></div>`);
+  sheet("Nouvelle commande", `${clientField()}<div id="wRes">${cmdForm({palettes:24,type:"B7",ville:""},0)}</div><div class="stick" id="wBtns"></div>`);
   brancherCF($("#wRes .cf"), () => $("#wClient").value); majBoutons();
 }
+const villeManque = () => { const f = document.querySelector("#sheetBody .f.a-choisir"); if(!f) return false;
+  f.scrollIntoView({block: "center", behavior: "smooth"}); f.classList.remove("a-choisir"); void f.offsetWidth; f.classList.add("a-choisir"); toast("Choisis la ville", false); return true; };
 async function enregistrer(excel){
+  if(villeManque()) return;
   const client = $("#wClient").value; localStorage.setItem("dernierClient", client);
   const cmds = [...document.querySelectorAll("#sheetBody .cf")].map(lireCF);
   for(const c of cmds) if(c.livree && !(parseFloat(String(c.pu).replace(",","."))>0 && parseFloat(String(c.pv).replace(",","."))>0)) return toast("Indique les prix", false);
@@ -2052,26 +2303,27 @@ async function ouvrirLivrer(id){
   sheet("Livraison", `<div class="form"><div class="f"><label>Client</label><input value="${esc(c.client)}" disabled></div></div>
     <div class="cf" data-i="0">
       <div class="form">
-        <div class="f"><label>Date</label><input type="date" name="date" value="${today()}"></div>
-        <div class="f"><label>Palettes</label><select name="palettes">${optPal(c.palettes)}</select></div>
-        <div class="f"><label>Format</label><select name="type">${optType(c.type)}</select></div>
-        <div class="f"><label>Ville</label><select name="ville">${optVilles(c.ville||"Casa")}</select></div>
+        ${champDate()}
+        ${champPal({palettes: c.palettes})}
+        ${champType(c.type)}
+        ${champGrue(c.grue || /\bgrue\b/i.test(c.message || ""))}
         <div class="f"><label>Chantier</label><input name="chantier" value="${esc(c.chantier)}"></div>
         <div class="f"><label>Client final</label><input name="client_final" value="${esc(c.client_final)}"></div>
         <input type="checkbox" name="livree" checked hidden>
       </div>
+      <div class="form">${champVille(c.ville)}</div>
       <div class="liv"><div class="form">
         <div class="f"><label>Prix usine</label><input name="pu" inputmode="decimal"></div>
         <div class="f"><label>Prix vente</label><input name="pv" inputmode="decimal"></div>
-        <div class="f"><label>Grue</label><label class="switch"><input type="checkbox" name="decharge"><span></span></label></div>
       </div><div class="card recap" style="margin-bottom:14px"></div></div>
     </div>
     <div class="stick"><div class="duo"><button class="btn btn-gray press" onclick="livrer('${c.id}',false)">Enregistrer</button>
       <button class="btn btn-fill press" onclick="livrer('${c.id}',true)">${ic("excel",18)} Passer à Excel</button></div>
       <div class="note">« Passer à Excel » envoie la ligne vers ton Excel : ton PC l'écrit dans PRINCIPAL dès qu'il est allumé. « Enregistrer » la garde dans l'appli.</div></div>`);
-  const cf = $("#sheetBody .cf"); brancherCF(cf, () => c.client); await prixCF(cf, c.client);
+  const cf = $("#sheetBody .cf"); brancherCF(cf, () => c.client); if(c.ville) await prixCF(cf, c.client); else recapCF(cf);
 }
 async function livrer(id, excel){
+  if(villeManque()) return;
   const c = S.attente.find(x=>x.id===id), v = lireCF($("#sheetBody .cf"));
   if(!(parseFloat(String(v.pu).replace(",","."))>0 && parseFloat(String(v.pv).replace(",","."))>0)) return toast("Indique les prix", false);
   if(!(await margeOk(v))) return;

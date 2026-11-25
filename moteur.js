@@ -98,7 +98,7 @@ function lireProspects(buf) {
 function zoneTarif(ville) {
   const vk = cle(ville).replace(/é/g, "e");
   if (CASA.has(vk)) return "Casa";
-  for (const [k, z] of [["jadida", "El Jadida"], ["marrakech", "Marrakech"], ["benguerir", "Benguerir"], ["ben guerir", "Benguerir"], ["beni mellal", "Beni Mellal"],
+  for (const [k, z] of [["jadida", "El Jadida"], ["marrakech", "Marrakech"], ["benguerir", "Benguerir"], ["ben guerir", "Benguerir"], ["beni mellal", "Beni Mellal"], ["bni mellal", "Beni Mellal"],
     ["bouznika", "Bouznika"], ["rabat", "Rabat"], ["kenitra", "Kenitra"], ["tetouan", "Tetouan"]]) if (vk.includes(k)) return z;
   return null;
 }
@@ -221,9 +221,17 @@ const CHOIX_PLATEAU = [44, 48, 52], CHOIX_GRUE = [44, 48];
 const VILLES_WA = [["jadida", "Jadida"], ["azemmour", "Azemour"], ["azemour", "Azemour"], ["mohammedia", "Mohamadia"], ["mohamadia", "Mohamadia"], ["mohammadia", "Mohamadia"],
   ["mansouria", "Mohamadia"], ["marrakech", "Marrakech"], ["kech", "Marrakech"], ["benguerir", "Benguerir"], ["bouznika", "Bouznika"], ["settat", "Settat"],
   ["khouribga", "Khouribga"], ["berrechid", "Berrechid"], ["mediouna", "Mediouna"], ["soualem", "Had Soualem"], ["temara", "Temara"], ["rabat", "Rabat"],
-  ["sale", "Salé"], ["kenitra", "Kenitra"], ["beni mellal", "Beni Mellal"]];
+  ["sale", "Salé"], ["kenitra", "Kenitra"], ["beni mellal", "Bni Mellal"], ["bni mellal", "Bni Mellal"]];
 const sansAccent = s => s.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
-function villeDe(chantier) { const p = sansAccent(chantier || ""); for (const [k, v] of VILLES_WA) if (new RegExp(`\\b${k}\\b`).test(p)) return v; return "Casa"; }
+// quartiers de Casablanca reconnus dans le message : la ville est Casa
+const QUARTIERS_CASA = ["casa", "casablanca", "bouskoura", "tit mellil", "tit melil", "sidi maarouf", "ain sebaa", "sidi bernoussi", "hay hassani", "lissasfa", "oulfa", "dar bouazza",
+  "nouaceur", "ain chock", "sidi moumen", "hay moulay rachid", "hay moulay rechid", "californie", "maarif", "bourgogne", "sbata", "derb sultan", "lahraouine", "lahraouyine", "sidi hajjaj"];
+/* ville trouvée dans le texte, ou "" si le message ne la dit pas (l'appli demande alors de la choisir) */
+function villeDe(texte) {
+  const p = sansAccent(texte || ""), mot = k => new RegExp(`\\b${k}\\b`).test(p);
+  for (const [k, v] of VILLES_WA) if (mot(k)) return v;
+  return QUARTIERS_CASA.some(mot) ? "Casa" : "";
+}
 function lireBloc(txt) {
   const p = sansAccent(txt), o = {palettes: null, unite: "", a_confirmer: false, type: "B7", chantier: "", client_final: "", contact: "", brut: txt.trim()};
   // « grand voyage » = remorque = plateau = semi = camion (même camion : 44, 48 ou 52 palettes, 48 par défaut)
@@ -239,7 +247,7 @@ function lireBloc(txt) {
   if ((m = txt.match(/chantier\s*:?\s*([^\n(]*)(?:\(([^)]*)\))?/i))) { o.chantier = m[1].replace(/^[\s:-]+|[\s:-]+$/g, ""); o.client_final = (m[2] || "").trim(); }
   if ((m = txt.match(/(?:contact|t[eé]l)\s*:?\s*([+\d][\d .\-]{5,})/i))) o.contact = m[1].replace(/\s+/g, " ").trim();
   const maj1 = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : t; o.chantier = maj1(o.chantier); o.client_final = maj1(o.client_final);  // « tit melil » -> « Tit melil », comme dans ton Excel
-  o.ville = villeDe(o.chantier); o.quantite = (o.palettes || 0) * PAR_PALETTE[o.type];
+  o.ville = villeDe(o.chantier) || villeDe(txt); o.quantite = (o.palettes || 0) * PAR_PALETTE[o.type];
   return o;
 }
 function lireMessageWA(message) {
@@ -250,10 +258,11 @@ function lireMessageWA(message) {
 /* ---------- vérification rapide (window.testMoteur()) ---------- */
 function testMoteur() {
   const [a, b] = lireMessageWA("Bonjour\nMerci de me livrer\n1SOLO de  brs 7\nChantier quartier nord  (Y )\nContact :0600000000\n\nMerci de me livrer\n1 remorque brs 7\nChantier :  el jadida  (X )\nContact ‪+212 600 00 00 00‬");
-  console.assert(a.palettes === 24 && a.type === "B7" && a.chantier === "Quartier nord" && a.client_final === "Y" && a.ville === "Casa" && a.quantite === 6144 && !a.a_confirmer, "wa 1", a);
+  console.assert(a.palettes === 24 && a.type === "B7" && a.chantier === "Quartier nord" && a.client_final === "Y" && a.ville === "" && a.quantite === 6144 && !a.a_confirmer, "wa 1", a);
   console.assert(b.palettes === 48 && b.ville === "Jadida" && b.a_confirmer && b.contact.startsWith("+212"), "wa 2", b);
   const [c] = lireMessageWA("Merci de me livrer un plateau avec grue brs 7\nChantier : bouskoura (Z)");
-  console.assert(c.palettes === 48 && c.grue && c.choix.join() === "44,48", "wa plateau grue", c);
+  console.assert(c.palettes === 48 && c.grue && c.choix.join() === "44,48" && c.ville === "Casa", "wa plateau grue", c);
+  console.assert(lireMessageWA("Merci de me livrer 1 solo brs 7 à Marrakech\nChantier : gueliz (Z)")[0].ville === "Marrakech", "wa ville dans le texte");
   const [e] = lireMessageWA("Merci de me livrer 1 plateau brs 10\nChantier : had soualem (Z)");
   console.assert(e.palettes === 48 && !e.grue && e.choix.join() === "44,48,52" && e.type === "B10", "wa plateau", e);
   const [f] = lireMessageWA("Merci de me livrer un grand voyage brs 7 avec grue\nChantier : tit mellil (Y)");

@@ -131,21 +131,26 @@ const trouver = (d, id) => { const c = d.commandes.find(x => x.id === id); if (!
 
 /* ---------- état complet pour l'interface (même forme que /api/etat sur PC) ---------- */
 function ligneExcelDe(c) { return c.excel_row || (CACHE.fait.faits[c.id] || {}).row || null; }
-/* livraisons envoyées à Excel mais pas encore écrites : affichées dans les listes, jamais comptées dans les chiffres */
+/* livraisons envoyées à Excel mais pas encore écrites : affichées dans les listes, jamais comptées dans les chiffres.
+   Une ligne que le PC a confirmée (numéro de ligne reçu) est dans l'Excel : elle compte, même si les données du téléphone n'ont pas encore été relues. */
 function ventesCompletes() {
-  const {ventes: v0, villes} = CACHE.classeur, cmds = CACHE.appli.commandes;
-  const brut = {}; v0.forEach(v => { if (!(v.ck in brut)) brut[v.ck] = v.brut; });
-  const virtuelles = cmds.filter(c => c.statut === "livree" && c.excel_demande && !ligneExcelDe(c)).map(c => {
-    const L = c.livraison, md = L.decharge ? ((villes.find(x => x.ville === L.ville) || {}).decharge || 0) : 0;
-    return {row: null, virtuelle: true, date: L.date, client: c.client.trim(), brut: brut[cle(c.client)] || c.client, ck: cle(c.client), palettes: L.palettes, type: L.type, qte: L.qte,
+  const {ventes: vx, villes} = CACHE.classeur, cmds = CACHE.appli.commandes;
+  const brut = {}; vx.forEach(v => { if (!(v.ck in brut)) brut[v.ck] = v.brut; });
+  const lignes = new Set(vx.map(v => v.row)), derniere = Math.max(0, ...vx.map(v => v.row || 0));
+  const enVente = (c, extra) => { const L = c.livraison, md = L.decharge ? ((villes.find(x => cle(x.ville) === cle(L.ville)) || {}).decharge || 0) : 0;
+    return {date: L.date, client: c.client.trim(), brut: brut[cle(c.client)] || c.client, ck: cle(c.client), palettes: L.palettes, type: L.type, qte: L.qte,
       pu: L.pu, tu: L.qte * L.pu + md, pv: L.pv, ca: L.qte * L.pv + md, ville: L.ville, chantier: L.chantier, client_final: L.client_final,
-      decharge: L.decharge ? "Oui" : "Non", mdech: md, benef: L.qte * (L.pv - L.pu), paiement: "En cours"}; });
-  return {ventes: v0.concat(virtuelles), brut};
+      decharge: L.decharge ? "Oui" : "Non", mdech: md, benef: L.qte * (L.pv - L.pu), paiement: "En cours", ...extra}; };
+  const ecrites = cmds.filter(c => c.statut === "livree" && c.livraison && ligneExcelDe(c) > derniere && !lignes.has(ligneExcelDe(c)))
+    .map(c => enVente(c, {row: ligneExcelDe(c), recente: true}));
+  const v0 = vx.concat(ecrites);
+  const virtuelles = cmds.filter(c => c.statut === "livree" && c.excel_demande && !ligneExcelDe(c)).map(c => enVente(c, {row: null, virtuelle: true}));
+  return {ventes: v0.concat(virtuelles), excel: v0, brut};
 }
 function etatComplet() {
-  const {ventes: v0, villes, solde, regs} = CACHE.classeur;
+  const {villes, solde, regs} = CACHE.classeur;
   const A = CACHE.appli, cmds = A.commandes;
-  const {ventes, brut} = ventesCompletes();
+  const {ventes, excel: v0, brut} = ventesCompletes();
   const attente = cmds.filter(c => c.statut === "attente").map(c => ({...c}));
   const a = analyse(v0, attente, regs, solde, A.objectif || 30000);   // chiffres = Excel uniquement
   const prises = new Set(cmds.map(ligneExcelDe).filter(Boolean));
@@ -161,10 +166,11 @@ function etatComplet() {
   const auj = new Date().toISOString().slice(0, 10), virt = ventes.filter(v => v.virtuelle);
   const echus = regs.filter(r => r.echeance && r.echeance <= auj).reduce((s, r) => s + r.montant, 0);
   const avenir = regs.filter(r => r.echeance && r.echeance > auj).sort((x, y) => x.echeance.localeCompare(y.echeance));
-  const courant = solde.courant - solde.encaisse + echus;
+  const recentes = v0.filter(v => v.recente);   // écrites par le PC, pas encore relues : elles sont dans l'Excel
+  const courant = solde.courant - solde.encaisse + echus - recentes.reduce((s, v) => s + v.tu, 0);
   const usine = {courant, initial: solde.initial, avenir: avenir.reduce((s, r) => s + r.montant, 0), apres: courant + avenir.reduce((s, r) => s + r.montant, 0),
     prochaine: avenir[0] || null, en_attente_excel: virt.length};
-  const esp = CACHE.classeur.especes || [], benefTotal = CACHE.classeur.sommeO || 0;
+  const esp = CACHE.classeur.especes || [], benefTotal = (CACHE.classeur.sommeO || 0) + recentes.reduce((s, v) => s + v.benef, 0);
   const tire = esp.reduce((s, e) => s + e.montant, 0);
   const especes = {liste: esp, tire, benef_total: benefTotal, reste: benefTotal - tire};
   const m = CACHE.maj ? new Date(CACHE.maj) : new Date();
@@ -214,7 +220,7 @@ async function routeur(path, body) {
     case "/api/maj": { const i = await STOCK.infos(CHEMINS.excel), a = await STOCK.infos(F_APPLI), f = await STOCK.infos(F_FAIT);
       return {ts: i && i.etag, app: (a && a.etag) + "|" + (f && f.etag)}; }
     case "/api/prix": return prixDefaut(CACHE.classeur.ventes, q.client || "", q.type || "B7", q.ville || "Casa", CACHE.appli.tarifs || TARIFS_DEFAUT);
-    case "/api/situation": return {lignes: situation(CACHE.classeur.ventes, q.client || "")};
+    case "/api/situation": return {lignes: situation(ventesCompletes().excel, q.client || "")};
     case "/api/lire_message": return {commandes: lireMessageWA(b.texte || "")};
     case "/api/verifier_livraison": return {doublon: doublon(CACHE.classeur.ventes, b.client, b.palettes, b.client_final || "", (b.date || aujourdhui()).slice(0, 10))};
     case "/api/commande": {
@@ -224,7 +230,7 @@ async function routeur(path, body) {
           const typ = c.type || "B7", pal = parseInt(c.palettes, 10);
           const n = {id: idNouveau(), client: b.client.trim(), statut: "attente", cree: new Date().toISOString().slice(0, 16), date: (c.date || aujourdhui()).slice(0, 10),
             palettes: pal, type: typ, qte: pal * (PAR_PALETTE[typ] || 256), chantier: (c.chantier || "").trim(), ville: c.ville || "Casa",
-            client_final: (c.client_final || "").trim(), contact: (c.contact || "").trim(), message: c.brut || ""};
+            client_final: (c.client_final || "").trim(), contact: (c.contact || "").trim(), message: c.brut || "", grue: !!c.decharge};
           if (c.livree) { n.statut = "livree"; n.livraison = livraisonDe(c); if (b.excel) { n.excel_demande = true; n.excel_demande_le = new Date().toISOString(); enFile.push("file"); } }
           d.commandes.push(n);
         }
