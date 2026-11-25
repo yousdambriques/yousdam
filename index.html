@@ -1168,6 +1168,23 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
   & :is(.lv,.pa-l,.pr-t tbody tr.pr-in){animation-duration:.2s}
 }
 @keyframes reflet{to{background-position:-60% 0}}
+.prh.bm{margin-top:4px}
+.bm-obj{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.16);margin-top:12px;overflow:hidden}
+.bm-obj i{position:absolute;inset:0 auto 0 0;border-radius:3px;background:linear-gradient(90deg,#ffd9cf,#ff9f8a);animation:bmo .8s var(--ease-out) both}
+@keyframes bmo{from{width:0}}
+.bm-objl{position:relative;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:650;margin-top:6px;opacity:.85}
+.bm-objl button{border:0;background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;cursor:pointer}
+.bm-bars{position:relative;display:flex;align-items:flex-end;gap:3px;height:150px;margin-top:18px}
+.bm-bars button{flex:1;height:100%;border:0;padding:0;background:none;display:flex;align-items:flex-end;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bm-bars button i{display:block;width:100%;height:var(--h);min-height:4px;border-radius:4px 4px 2px 2px;background:rgba(255,200,185,.55);transform-origin:bottom;
+  animation:phb .5s var(--ease-out) both;animation-delay:calc(80ms + var(--i) * 12ms);transition:background .2s,transform .2s var(--ease-out)}
+.bm-bars button.on i{background:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 6px 16px -4px rgba(255,255,255,.6)}
+.bm-bars button:active i{transform:scaleY(.94)}
+.bm-bars button.zero{cursor:default}.bm-bars button.zero i{background:rgba(255,255,255,.14)}
+.bm-jour{display:flex;justify-content:space-between;align-items:flex-end;margin:22px 4px 10px;animation:wcin .25s var(--ease-out) both}
+.bm-jour b{display:block;font-size:20px;font-weight:750;letter-spacing:-.03em}.bm-jour span{font-size:13px;color:var(--sec)}
+.bm-jour em{font-style:normal;font-size:20px;font-weight:750;color:var(--green);font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.bm-bars button i,.bm-obj i{animation:none}}
 .ana-l{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;border:0;font:inherit;text-align:left;padding:10px 14px 10px 10px;border-radius:22px;background:var(--card);color:var(--label);box-shadow:var(--shadow);cursor:pointer}
 .ana-l b{font-size:15px;font-weight:700;letter-spacing:-.02em}
 .ana-i{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:var(--brick-soft);color:var(--brick);flex:none}
@@ -1176,10 +1193,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-motion:reduce){:root[data-design=r26] :is(.hero,.prh)::after{animation:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=6.2"></script>
-<script src="moteur.js?v=6.2"></script>
-<script src="app.js?v=6.2"></script>
-<script src="local.js?v=6.2"></script>
+<script src="config.js?v=6.3"></script>
+<script src="moteur.js?v=6.3"></script>
+<script src="app.js?v=6.3"></script>
+<script src="local.js?v=6.3"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';d.dataset.design=q.get('design')||localStorage.getItem('design')||'classique';})();</script>
@@ -1196,7 +1213,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "6.2";
+const VERSION = "6.3";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1781,6 +1798,46 @@ function progression(){
 function medaille(nv, taille){
   return `<span class="med" style="--mc:${NIVEAUX[nv][2]};--ms:${taille || 54}px"><em>${nv + 1}</em></span>`;
 }
+/* bénéfice du mois en grand : une barre par jour, toucher un jour = ses livraisons (chiffres de l'Excel) */
+let BM = null;
+function ouvrirBenefMois(mois){
+  const V = ventesExcel(), ms = [...new Set(V.map(v => v.date.slice(0, 7)))].sort();
+  const m = mois || today().slice(0, 7);
+  const L = V.filter(v => v.date.startsWith(m)), jours = {};
+  L.forEach(v => { (jours[v.date] ||= []).push(v); });
+  const avec = Object.keys(jours).sort();
+  BM = {m, ms, jours, sel: (BM && BM.m === m && jours[BM.sel]) ? BM.sel : (jours[today()] ? today() : avec.at(-1) || null)};
+  sheet("Bénéfice du mois", `<div id="bmCorps"></div>`);
+  dessinerBenefMois();
+}
+function dessinerBenefMois(){
+  const {m, ms, jours, sel} = BM, [y, mo] = m.split("-").map(Number), n = new Date(y, mo, 0).getDate();
+  const parJ = Array.from({length: n}, (_, i) => { const d = `${m}-${String(i + 1).padStart(2, "0")}`; return {d, v: (jours[d] || []).reduce((s, x) => s + x.benef, 0)}; });
+  const tot = parJ.reduce((s, x) => s + x.v, 0), max = Math.max(1, ...parJ.map(x => x.v)), obj = S.analyse.objectif || 30000;
+  const nb = Object.values(jours).reduce((s, l) => s + l.length, 0), pal = Object.values(jours).flat().reduce((s, x) => s + x.palettes, 0);
+  const i = ms.indexOf(m), avant = ms[i - 1], apres = ms[i + 1] || (m < today().slice(0, 7) ? today().slice(0, 7) : null);
+  const J = sel ? jours[sel] || [] : [], tj = J.reduce((s, x) => s + x.benef, 0);
+  $("#bmCorps").innerHTML = `
+    <div class="mnav">
+      <button class="press" ${avant ? `onclick="ouvrirBenefMois('${avant}')"` : "disabled"} aria-label="Mois d'avant"><svg width="18" height="18" viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <b>${moisLong(m)}</b>
+      <button class="press" ${apres ? `onclick="ouvrirBenefMois('${apres}')"` : "disabled"} aria-label="Mois d'après">${ic("chev", 18)}</button></div>
+    <div class="prh bm">
+      <div class="prh-glow"></div>
+      <div class="prh-top"><small>Bénéfice · ${moisLong(m)}</small><span>${nb} livraison${nb > 1 ? "s" : ""} · ${num(pal)} pal.</span></div>
+      <b class="prh-big"><span data-count="${Math.round(tot)}">${num(tot)}</span><em>DH</em></b>
+      <div class="bm-obj"><i style="width:${Math.min(100, tot / obj * 100).toFixed(1)}%"></i></div>
+      <div class="bm-objl"><span>${Math.round(tot / obj * 100)} % de l'objectif</span><button onclick="event.stopPropagation();closeSheet();editObjectif()">Objectif ${dh(obj)}</button></div>
+      <div class="bm-bars">${parJ.map((x, k) => `<button class="${x.d === sel ? "on " : ""}${x.v ? "" : "zero"}" style="--h:${(x.v / max * 100).toFixed(1)}%;--i:${k}" ${x.v ? `onclick="BM.sel='${x.d}';dessinerBenefMois();vibre()"` : "disabled"} aria-label="${dcourt(x.d)} : ${dh(x.v)}"><i></i></button>`).join("")}</div>
+      <div class="prh-leg"><span>1</span><span>touche un jour</span><span>${n}</span></div>
+    </div>
+    ${sel ? `<div class="bm-jour"><div><b>${nomJour(sel)}</b><span>${dfr(sel)}</span></div><em>+${dh(tj)}</em></div>
+      <div class="group">${J.map((v, k) => `<div class="lv" style="--i:${k}">${avatar(v.client)}
+        <div class="lv-c"><div class="lv-dest">${esc(v.chantier || v.ville || "—")}${v.client_final ? ` <span>· ${esc(v.client_final)}</span>` : ""}</div>
+          <div class="lv-m">${esc(nomPropre(v.client))} · <b class="${v.type === "B7" ? "t7" : "t10"}">${num(v.palettes)} pal. ${esc(v.type)}</b>${/oui/i.test(v.decharge) ? " · grue" : ""} · ${esc(v.ville || "")}</div></div>
+        <div class="lv-e"><b>+${dh(v.benef)}</b>${payBadge(v.paiement)}</div></div>`).join("")}</div>` : `<div class="note">Aucune livraison ce mois-ci.</div>`}`;
+  document.querySelectorAll("#bmCorps [data-count]").forEach(compter);
+}
 function carteAnalyse(){
   const D = S.analyse.diag || [], u = D.filter(x => x.niveau === "grave").length, w = D.filter(x => x.niveau === "faible").length;
   return `<button class="ana-l press" onclick="go('analyse')"><span class="ana-i">${ic("chart", 18)}</span><b>Analyse du mois</b>
@@ -1895,7 +1952,7 @@ function vAccueil(){
   const actions = `<div style="display:flex;gap:10px"><button class="round press" onclick="ouvrirThemes()" aria-label="Réglages"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.3" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><button class="round press" onclick="refresh()" aria-label="Actualiser">${ic("refresh",20)}</button></div>`;
   return shell(`${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`, `Bonjour${S.prenom ? " " + esc(S.prenom) : ""}`, `<div class="sync" onclick="if(!event.target.closest('label')) ouvrirDonnees()" style="cursor:pointer"><i></i>Données du ${esc(dcourt(S.maj))} à ${esc(S.maj.slice(11,16))}
       ${boutonMaj("press", "margin-left:auto;color:var(--link);font-weight:600;cursor:pointer;border:0;background:none;font:inherit;font-weight:600;padding:0", "Mettre \u00e0 jour")}</div><div class="board">
-    <div class="b-hero"><div class="hero press" onclick="editObjectif()">
+    <div class="b-hero"><div class="hero press" onclick="ouvrirBenefMois()">
       <div class="row1"><div><div class="lab">Bénéfice de ${MOIS[d.getMonth()]}</div><div class="big"><span data-count="${Math.round(mc.benef)}">${num(mc.benef)}</span> <small>DH</small></div>
         <div style="font-size:14.5px;opacity:.88">${mc.livraisons} livraisons, ${num(mc.palettes)} palettes</div></div>
         <div class="ring"><svg width="92" height="92"><circle cx="46" cy="46" r="38" stroke="rgba(255,255,255,.22)" stroke-width="10" fill="none"/>
