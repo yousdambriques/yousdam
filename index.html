@@ -1107,10 +1107,10 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 @media (prefers-reduced-transparency:reduce){.tabs,.top,.busy div{background:var(--card);backdrop-filter:none;-webkit-backdrop-filter:none}}
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="config.js?v=5.7"></script>
-<script src="moteur.js?v=5.7"></script>
-<script src="app.js?v=5.7"></script>
-<script src="local.js?v=5.7"></script>
+<script src="config.js?v=5.8"></script>
+<script src="moteur.js?v=5.8"></script>
+<script src="app.js?v=5.8"></script>
+<script src="local.js?v=5.8"></script>
 </head>
 <body>
 <script>(function(){var q=new URLSearchParams(location.search),c=q.get('mode')||localStorage.getItem('apparence')||'clair',d=document.documentElement;d.dataset.palette=q.get('palette')||localStorage.getItem('palette')||'bordeaux';d.dataset.mode=(c==='sombre'||(c==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))?'sombre':'clair';})();</script>
@@ -1127,7 +1127,7 @@ html.natif .sheet{-webkit-backdrop-filter:none!important;backdrop-filter:none!im
 
 <script>
 /* ============ version et mises à jour ============ */
-const VERSION = "5.7";
+const VERSION = "5.8";
 let NOUVELLE = null;
 async function verifierMaj(){
   try{
@@ -1402,7 +1402,7 @@ async function envoiWifi(silencieux){
     if(!rep){ if(!silencieux) toast("PC pas joignable : la ligne partira toute seule dès que tu seras sur son Wi-Fi", false); return false; }
     const R = JSON.parse(rep), faits = R.faits || {}, erreurs = R.erreurs || {};
     const ecrites = Object.entries(faits);
-    await majAppli(d => ecrites.forEach(([id, f]) => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_row = f.row; delete c.excel_demande; } }));
+    await majAppli(d => ecrites.forEach(([id, f]) => { const c = d.commandes.find(x => x.id === id); if(c){ c.excel_row = f.row; c.excel_ecrit_le = f.le || ""; delete c.excel_demande; } }));
     await load();
     if(ecrites.length){
       const txt = ecrites.map(([id, f]) => { const c = (CACHE.appli.commandes || []).find(x => x.id === id), L = c && c.livraison;

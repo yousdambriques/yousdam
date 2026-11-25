@@ -130,7 +130,18 @@ const idNouveau = () => Math.random().toString(16).slice(2, 12);
 const trouver = (d, id) => { const c = d.commandes.find(x => x.id === id); if (!c) throw new Error("Commande introuvable."); return c; };
 
 /* ---------- état complet pour l'interface (même forme que /api/etat sur PC) ---------- */
-function ligneExcelDe(c) { return c.excel_row || (CACHE.fait.faits[c.id] || {}).row || null; }
+/* même livraison : date, client, palettes, chantier, client final identiques */
+const memeLivraison = (v, c) => { const L = c.livraison || c;
+  return v.date === L.date && v.ck === cle(c.client) && +v.palettes === +L.palettes && cle(v.chantier || "") === cle(L.chantier || "") && cle(v.client_final || "") === cle(L.client_final || ""); };
+/* numéro de ligne dans l'Excel ; si des lignes ont été supprimées au-dessus, la livraison a remonté : on la retrouve par son contenu */
+function ligneExcelDe(c) {
+  const n = c.excel_row || (CACHE.fait.faits[c.id] || {}).row || null;
+  if (!n || !c.livraison || !CACHE.classeur) return n;
+  const V = CACHE.classeur.ventes, ici = V.find(v => v.row === n);
+  if (ici && memeLivraison(ici, c)) return n;
+  const m = V.filter(v => memeLivraison(v, c));
+  return m.length === 1 ? m[0].row : n;
+}
 /* livraisons envoyées à Excel mais pas encore écrites : affichées dans les listes, jamais comptées dans les chiffres.
    Une ligne que le PC a confirmée (numéro de ligne reçu) est dans l'Excel : elle compte, même si les données du téléphone n'ont pas encore été relues. */
 function ventesCompletes() {
@@ -141,7 +152,9 @@ function ventesCompletes() {
     return {date: L.date, client: c.client.trim(), brut: brut[cle(c.client)] || c.client, ck: cle(c.client), palettes: L.palettes, type: L.type, qte: L.qte,
       pu: L.pu, tu: L.qte * L.pu + md, pv: L.pv, ca: L.qte * L.pv + md, ville: L.ville, chantier: L.chantier, client_final: L.client_final,
       decharge: L.decharge ? "Oui" : "Non", mdech: md, benef: L.qte * (L.pv - L.pu), paiement: "En cours", ...extra}; };
-  const ecrites = cmds.filter(c => c.statut === "livree" && c.livraison && ligneExcelDe(c) > derniere && !lignes.has(ligneExcelDe(c)))
+  const donnees = localStorage.getItem("sync_date") || "";
+  const ecrites = cmds.filter(c => c.statut === "livree" && c.livraison && c.excel_ecrit_le && (!donnees || c.excel_ecrit_le > donnees)
+      && ligneExcelDe(c) > derniere && !lignes.has(ligneExcelDe(c)) && !vx.some(v => memeLivraison(v, c)))
     .map(c => enVente(c, {row: ligneExcelDe(c), recente: true}));
   const v0 = vx.concat(ecrites);
   const virtuelles = cmds.filter(c => c.statut === "livree" && c.excel_demande && !ligneExcelDe(c)).map(c => enVente(c, {row: null, virtuelle: true}));
